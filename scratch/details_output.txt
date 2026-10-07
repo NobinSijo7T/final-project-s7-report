@@ -1,0 +1,76 @@
+=== s00521-023-09033-7.json ===
+ORIGINAL ARTICLE
+Multi-objective reward generalization: improving performance of Deep Reinforcement Learning for applications in single-asset trading
+Federico Cornalba1,2 • Constantin Disselkamp3 • Davide Scassola4 • Christopher Helf3
+Received: 4 May 2023 / Accepted: 6 September 2023 / Published online: 5 October 2023  The Author(s) 2023
+Abstract We investigate the potential of Multi-Objective, Deep Reinforcement Learning for stock and cryptocurrency single-asset trading: in particular, we consider a Multi-Objective algorithm which generalizes the reward functions and discount factor (i.e., these components are not specified a priori, but incorporated in the learning process). Firstly, using several important assets (BTCUSD, ETHUSDT, XRPUSDT, AAPL, SPY, NIFTY50), we verify the reward generalization property of the proposed Multi-Objective algorithm, and provide preliminary statistical evidence showing increased predictive stability over the corresponding Single-Objective strategy. Secondly, we show that the Multi-Objective algorithm has a clear edge over the corresponding Single-Objective strategy when the reward mechanism is sparse (i.e., when non-null feedback is infrequent over time). Finally, we discuss the generalization properties with respect to the discount factor. The entirety of our code is provided in open-source format.
+Keywords Deep Reinforcement Learning  Multi-objective generalization  Multi-task learning  Stock trading  Cryptocurrency trading  Discount factor generalization
+1 Introduction
+Deep Reinforcement Learning (RL) is a subfield of machine learning specifically designed to handle learning processes for problems which involve a dynamic
+interaction with a given underlying environment. Deep RL techniques have initially been deployed—among many—in the field of gaming [1], robotics [2], personalized recom- mendations [3], and resource management [4].
+In this contribution, we showcase the potential of Deep Reinforcement Learning for problems re
+==================================================
+
+=== s00521-024-10620-5.json ===
+S.I.: ADAPTIVE AND LEARNING AGENTS 2022 (ALA 2022)
+Average reward adjusted discounted reinforcement learning
+Manuel Schneckenreither1 • Georg Moser2
+Received: 17 November 2022 / Accepted: 4 October 2024 / Published online: 18 January 2025  The Author(s) 2025
+Abstract In this paper, we provide a novel view upon reinforcement learning (RL for short). In particular, we are interested in applications of RL in use cases, where average rewards may be nonzero. While RL methodologies have been extensively researched upon, this particular application area has only received scarce attention in the Literature. In part, our motivation stems from applications in Operation Research (OR for short), where it is typically the case that rewards are profit derived. Similar use cases can be found in more general applications in economics. Based on a principled study of the mathematical background of discounted reinforcement learning we establish a novel adaptation of standard RL, dubbed Average Reward Adjusted Discounted Reinforcement Learning (ARAL for short). Our approach stems from revisiting the Laurent Series expansion of the discounted state value and a subsequent reformulation of the target function guiding the learning process. While the theoretical advance is arguably incremental, we provide ample experimental evidence that the thus obtained novel RL methodology compares favorable to well-established techniques like Q-learning or R-learning.
+Keywords Machine learning  Reinforcement learning  Average reward learning  Operations research  Applications
+1 Introduction
+Due to its generality Reinforcement Learning (RL for short) methodologies have been investigated in many application areas and RL has seen astonishing success in many such areas. We are concerned with an adaption of standard discounted reinforcement learning. The motivation for this study—in part—stems from our interest in applications in Operation Research (OR for short), where it is typically the case that in 
+==================================================
+
+=== s11036-025-02465-6.json ===
+RESEARCH
+Mobile Networks and Applications (2025) 30:395–413 https://doi.org/10.1007/s11036-025-02465-6
+is used to reduce latency and congestion which occur on  mobile networks [1]. Workflow scheduling is a process that  produces sufficient maps to execute work within a process.  Workflow scheduling in MEC is a crucial task to perform
+1  Introduction
+Mobile edge computing (MEC) is a network architecture  that allows cloud capabilities for edge computing. MEC
+Mohammad Kamrul Hasan
+hasankamrul@ieee.org
+Shayla Islam
+shayla@ucsiuniversity.edu.my
+Adeel Iqbal
+adeeliqbal@yu.ac.kr
+1	 Faculty of Computing and IT, Sohar University, Sohar, Oman
+2	 Networks and Cybersecurity Department, Hourani Center for  Applied Scientific Research, Al-Ahliyya Amman University,  Amman, Jordan
+3	 Center for Cyber Security, Faculty of Information Science  and Technology, Universiti Kebangsaan Malaysia (UKM),  43600, SelangorBangi, Malaysia
+4	 Faculty of Information Science and Technology, Universiti  Kebangsaan Malaysia (UKM), Bangi 43600, Malaysia
+5	 College of Engineering Mechanical engineering department,  Bisha University, Bisha, Saudi Arabia
+6	 Institute Computer Science and Digital Innovation, UCSI  University, Kuala Lumpur 56000, Malaysia
+7	 Deparment of Computer Engineering, College of Computers  and Information Technology, Taif University, P.O. Box  11099, Taif 21944, Saudi Arabia
+8	 Department of Computer Engineering, College of Computer  Science, King Khalid University, Abha Main Campus Al  farah, Abha 61421, Saudi Arabia
+9	 School of Computer Science and Engineering, Yeungnam  University, Gyeongsan-si 38541, Republic of Korea
+10	 College of Engineering, Sudan University of Science and  Technology, Khartoum, Sudan
+Abstract Mobile Edge Computing (MEC) is capable of inheriting cloud and Internet of Things (IoT) resources to the brim of the  computational and communication networks. Conservatively, the MEC is outsourced from the IoT/ cloud platforms to  Maximize the workflow and task com
+==================================================
+
+=== s11047-025-10023-y.json ===
+Energy-aware cooperative multi-fitness evolutionary algorithm for workflow scheduling in cloud computing
+Pablo Barredo1 • Jorge Puente1
+Accepted: 5 May 2025 / Published online: 11 June 2025  The Author(s) 2025
+Abstract The growing energy consumption of cloud infrastructure has attained levels that are no longer viable, necessitating the development of energy-aware scheduling algorithms. This work focuses on optimising the scheduling of scientific workflows, which requires extensive computation to achieve time-efficient results, often at the cost of excessive energy consumption. To address this challenge, a multi-fitness evolutionary algorithm that integrates multiple heuristic functions in a cooperative manner to minimise energy consumption is proposed. The approach not only facilitates the reuse of heuristics but also provides novel insights into the interplay between energy consumption and makespan, traditionally viewed as conflicting objectives. This flexible framework demonstrates its adaptability for optimising both total energy consumption and completion time, offering a robust tool for sustainable workflow scheduling.
+Keywords Cooperative multi-fitness  Evolutionary algorithms  Scientific workflow  Cloud computing
+1 Introduction
+Cloud computing has emerged as a cornerstone technology for processing large volumes of data, offering unparalleled flexibility and scalability. Among its diverse service models, Infrastructure as a Service (IaaS) stands out by allowing users to rent virtual machines (VMs) with cus- tomizable capabilities. This model enables horizontal scalability, by increasing the number of VMs, and vertical scalability, by enhancing the capacity of individual servers. Users benefit from a pay-as-you-go pricing scheme, which charges for computational resources like CPU and mem- ory, as well as additional costs for network bandwidth and storage based on usage. Furthermore, IaaS provides sig- nificant control, letting users tailor their environmen
+==================================================
+
+=== s13428-023-02062-z.json ===
+https://doi.org/10.3758/s13428-023-02062-z
+Automatic discovery and description of human planning strategies
+Julian Skirzy ́nski1,2 · Yash Raj Jain1 · Falk Lieder1
+Accepted: 6 January 2023 © The Author(s) 2023
+Abstract Scientific discovery concerns finding patterns in data and creating insightful hypotheses that explain these patterns. Traditionally, each step of this process required human ingenuity. But the galloping development of computer chips and advances in artificial intelligence (AI) make it increasingly more feasible to automate some parts of scientific discovery. Understanding human planning is one of the fields in which AI has not yet been utilized. State-of-the-art methods for discovering new planning strategies still rely on manual data analysis. Data about the process of human planning is often used to group similar behaviors together. Researchers then use this data to formulate verbal descriptions of the strategies which might underlie those groups of behaviors. In this work, we leverage AI to automate these two steps of scientific discovery. We introduce a method for automatic discovery and description of human planning strategies from process-tracing data collected with the Mouselab-MDP paradigm. Our method utilizes a new algorithm, called Human-Interpret, that performs imitation learning to describe sequences of planning operations in terms of a procedural formula and then translates that formula to natural language. We test our method on a benchmark data set that researchers have previously scrutinized manually. We find that the descriptions of human planning strategies that we obtain automatically are about as understandable as human- generated descriptions. They also cover a substantial proportion of relevant types of human planning strategies that had been discovered manually. Our method saves scientists’ time and effort, as all the reasoning about human planning is done automatically. This might make it feasible to more rapidly scale up the se
+==================================================
+
+=== s13677-025-00828-8.json ===
+RESEARCH Open Access
+© The Author(s) 2025. Open Access  This article is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0  International License, which permits any non-commercial use, sharing, distribution and reproduction in any medium or format, as long as you  give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indicate if you modified the  licensed material. You do not have permission under this licence to share adapted material derived from this article or parts of it. The images or  other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the  material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory regulation or  exceeds the permitted use, you will need to obtain permission directly from the copyright holder. To view a copy of this licence, visit ​h​t​t​p​:​/​/​c​r​e​a​t​i​ v​e​c​o​m​m​o​n​s​.​o​r​g​/​l​i​c​e​n​s​e​s​/​b​y​-​n​c​-​n​d​/​4​.​0​/.
+Subashree et al. Journal of Cloud Computing           (2025) 14:80  https://doi.org/10.1186/s13677-025-00828-8
+Introduction The innovative cloud computing technology allows the  users to perform different operations with large amount  of data through the network of servers deployed in wide  remote areas. Large number of organizations and Gov­ ernment entities now rely on cloud computing and its  services. Cloud offers a wide range of solutions to every­ one’s needs in the present era. Cloud services for busi­ ness and scientific applications are mainly task oriented  and its workflows structure the business needs [1]. The  scientific workflows are mainly data dependent, and it  has highly intensive applications. These applications are  structured into scientific works and managed through
+Journal of Cloud Computing
+*Correspondence: S. Subashree drsubashree1989@gmail
+==================================================
+

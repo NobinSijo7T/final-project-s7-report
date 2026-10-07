@@ -1,0 +1,491 @@
+[
+  {
+    "index": 1,
+    "filename": "1_CPN-HRL.json",
+    "doi": "10.1007/s44443-026-00690-x",
+    "first_lines": [
+      "Journal of King Saud University Computer and Information Sciences         (2026) 38:290  https://doi.org/10.1007/s44443-026-00690-x",
+      "RESEARCH",
+      "CPN-HRL :a hierarchical deep reinforcement learning approach for priority–aware task scheduling in CPN enabled by cloud–edge–end environments",
+      "Qiqiang Yue1 · Le Tian1,2,3,4 · Xu Feng1 · Zheng Yuan1,2,3,4 · Shuai Wei1 · Jiqiang Xia1 · Bo Chen1,2,3,4 · Xuanyan Song1,2,3,4 · Ying Yao1 · Yi Liu5",
+      "Received: 20 January 2026 / Accepted: 19 March 2026 © The Author(s) 2026",
+      "Abstract A Computing Power Network (CPN) is a cloud–edge–end integrated infrastructure that interconnects heterogeneous com- puting resources to support latency-sensitive and volatile workloads. A core challenge in CPN task scheduling is to jointly determine task prioritization and computational node selection under dynamic arrivals, resource heterogeneity, and multi- objective conflicts. In this paper, we study dynamic task scheduling in a CPN and aim to (i) minimize average task completion time, (ii) maximize scheduling success rate under deadline constraints, and (iii) improve global resource utilization. We propose CPN-HRL, a hierarchical deep reinforcement learning framework that decomposes scheduling into two coordinated subproblems: a high-level agent (LSTM-PPO) generates global priority weights for queued tasks, and a low-level agent (GAT-PPO) performs topology-aware node selection for each task in the ranked sequence. To further guarantee timeliness for latency-critical tasks, we introduce a two-queue mechanism with an Urgent Queue and a Main Queue, together with a dynamic reordering trigger. Simulation results on multiple real-world topologies show that, under our experimental settings, CPN-HRL reduces average completion time and maintains high scheduling success rate under high loads, while improving overall resource utilization.",
+      "Keywords Computing power networks · Priority-aware scheduling · Hierarchical deep reinforcement learning · Resource allocation",
+      "1 Introduction",
+      "With the advancement of technologies such as the Industrial Internet, Internet of Things, and artificial intelligence, emerg- ing application scenarios have seen an explosive growth in demand for computing power, making it increasingly dif- ficult for single computing facilities to meet these needs. Computing power networks (Yukun et al. 2024; Tang et al. 2021; Huijuan et al. 2021; Bo et al. 2019), as a new type of information infrastructure integrating multi-dimensional heterogeneous computing resources across cloud, edge, and endpoint, have become pivotal to supporting the digital econ- omy. Within computing power networks, task scheduling (Li et al. 2020, 2022) refers to the process of determining the final execution location when a user-submitted computa-",
+      "Le Tian, Xu Feng, Zheng Yuan, Shuai Wei, Jiqiang Xia, Bo Chen, Xuanyan Song, Ying Yao and Yi Liu contributed equally to this work.",
+      "Extended author information available on the last page of the article",
+      "tional task can be"
+    ]
+  },
+  {
+    "index": 2,
+    "filename": "s00521-023-09033-7.json",
+    "doi": "10.1007/s00521-023-09033-7",
+    "first_lines": [
+      "ORIGINAL ARTICLE",
+      "Multi-objective reward generalization: improving performance of Deep Reinforcement Learning for applications in single-asset trading",
+      "Federico Cornalba1,2 • Constantin Disselkamp3 • Davide Scassola4 • Christopher Helf3",
+      "Received: 4 May 2023 / Accepted: 6 September 2023 / Published online: 5 October 2023 \u0002 The Author(s) 2023",
+      "Abstract We investigate the potential of Multi-Objective, Deep Reinforcement Learning for stock and cryptocurrency single-asset trading: in particular, we consider a Multi-Objective algorithm which generalizes the reward functions and discount factor (i.e., these components are not specified a priori, but incorporated in the learning process). Firstly, using several important assets (BTCUSD, ETHUSDT, XRPUSDT, AAPL, SPY, NIFTY50), we verify the reward generalization property of the proposed Multi-Objective algorithm, and provide preliminary statistical evidence showing increased predictive stability over the corresponding Single-Objective strategy. Secondly, we show that the Multi-Objective algorithm has a clear edge over the corresponding Single-Objective strategy when the reward mechanism is sparse (i.e., when non-null feedback is infrequent over time). Finally, we discuss the generalization properties with respect to the discount factor. The entirety of our code is provided in open-source format.",
+      "Keywords Deep Reinforcement Learning \u0002 Multi-objective generalization \u0002 Multi-task learning \u0002 Stock trading \u0002 Cryptocurrency trading \u0002 Discount factor generalization",
+      "1 Introduction",
+      "Deep Reinforcement Learning (RL) is a subfield of machine learning specifically designed to handle learning processes for problems which involve a dynamic",
+      "interaction with a given underlying environment. Deep RL techniques have initially been deployed—among many—in the field of gaming [1], robotics [2], personalized recom- mendations [3], and resource management [4].",
+      "In this contribution, we showcase the potential of Deep Reinforcement Learning for problems related to profitable, risk-reduced trading of single-asset financial tools based on historical data (the necessary financial terminology is given in Sect. 1.1). Our starting point is the general—non-fi- nance-related—algorithm developed by Fontaine and Friedman [5] (see also [6, 7]), which is a specific declination of Multi-Objective Reinforcement Learning (RL): while we postpone rigorous details to the next sections below, we can—for now—informally describe the methodology in [5] as a RL declination which allows to simultaneously train all possible strategies associated with exploring a dynamic environment. Specifically, each strategy is identified by the reward mechanism associated with a given linear combi- nation of multiple, pre-specified (and possibly conflicting) objective functions. This simultaneous learning process over all possible strategies, which gives the user the free- dom to specify the combination of the objective functions after the training has been completed, makes"
+    ]
+  },
+  {
+    "index": 3,
+    "filename": "s00521-024-10620-5.json",
+    "doi": "",
+    "first_lines": [
+      "S.I.: ADAPTIVE AND LEARNING AGENTS 2022 (ALA 2022)",
+      "Average reward adjusted discounted reinforcement learning",
+      "Manuel Schneckenreither1 • Georg Moser2",
+      "Received: 17 November 2022 / Accepted: 4 October 2024 / Published online: 18 January 2025 \u0002 The Author(s) 2025",
+      "Abstract In this paper, we provide a novel view upon reinforcement learning (RL for short). In particular, we are interested in applications of RL in use cases, where average rewards may be nonzero. While RL methodologies have been extensively researched upon, this particular application area has only received scarce attention in the Literature. In part, our motivation stems from applications in Operation Research (OR for short), where it is typically the case that rewards are profit derived. Similar use cases can be found in more general applications in economics. Based on a principled study of the mathematical background of discounted reinforcement learning we establish a novel adaptation of standard RL, dubbed Average Reward Adjusted Discounted Reinforcement Learning (ARAL for short). Our approach stems from revisiting the Laurent Series expansion of the discounted state value and a subsequent reformulation of the target function guiding the learning process. While the theoretical advance is arguably incremental, we provide ample experimental evidence that the thus obtained novel RL methodology compares favorable to well-established techniques like Q-learning or R-learning.",
+      "Keywords Machine learning \u0002 Reinforcement learning \u0002 Average reward learning \u0002 Operations research \u0002 Applications",
+      "1 Introduction",
+      "Due to its generality Reinforcement Learning (RL for short) methodologies have been investigated in many application areas and RL has seen astonishing success in many such areas. We are concerned with an adaption of standard discounted reinforcement learning. The motivation for this study—in part—stems from our interest in applications in Operation Research (OR for short), where it is typically the case that in general rewards are positive. Similar use cases can be found in more general applications in Economics. In such cases the average rewards of the agent’s actions may be nonzero. While RL methodologies have been",
+      "extensively researched upon, this particular application area has only received scarce attention in the Literature.",
+      "To wit, RL is most often applied to control problems, games and other sequential decision-making tasks, where—historically— in almost all steps the reward function returns 0, cf. [1].1 Sometimes also a fixed constant value, e.g. \u00031, is used as reward in every step, resulting in the inability of improving the policy by optimizing the average reward.",
+      "Hence, we focus on application areas and use cases that produce an average reward per step that cannot be approximated by 0. Based on a principled study of the mathematical background of discounted reinforcement learning we establish a novel adaptation of standard RL, dubbed Average Reward Adjusted Discounted Reinforce- m"
+    ]
+  },
+  {
+    "index": 4,
+    "filename": "s10015-025-01089-z.json",
+    "doi": "10.1007/s10015-025-01089-z",
+    "first_lines": [
+      "Vol:.(1234567890)",
+      "Artificial Life and Robotics (2026) 31:484–494 https://doi.org/10.1007/s10015-025-01089-z",
+      "ORIGINAL ARTICLE",
+      "Deep reinforcement learning for multi‐agent coordination",
+      "Kehinde O. Aina1 · Sehoon Ha1",
+      "Received: 31 August 2022 / Accepted: 4 October 2025 / Published online: 26 November 2025  This is a U.S. Government work and not under copyright protection in the US; foreign copyright protection may apply 2025",
+      "Abstract We address the challenge of coordinating multiple robots in narrow and confined environments, where congestion and  interference often hinder collective task performance. Drawing inspiration from insect colonies, which achieve robust coor- dination through stigmergy—modifying and interpreting environmental traces—we propose a stigmergic multi-agent deep  reinforcement learning (S-MADRL) framework that leverages virtual pheromones to model local and social interactions,  enabling decentralized emergent coordination without explicit communication. To overcome the convergence and scalabil- ity limitations of existing algorithms such as MADQN, MADDPG, and MAPPO, we leverage curriculum learning, which  decomposes complex tasks into progressively harder sub-problems. Simulation results show that our framework achieves  the most effective coordination of up to eight agents, where robots self-organize into asymmetric workload distributions that  reduce congestion and modulate group performance. This emergent behavior, analogous to strategies observed in nature,  demonstrates a scalable solution for decentralized multi-agent coordination under crowded environments with communica- tion constraints.",
+      "Keywords  Deep reinforcement learning · Multi-agent systems · Swarm robotics · Stigmergy · Emergent coordination",
+      "1  Introduction",
+      "Social insect such as ants exhibit remarkable emergent coor- dination in tasks like nest construction or tunnel excavation.  These behaviors remain robust regardless of colony size and  rely on simple decentralized mechanisms such as local and  social interactions like stigmergy, where agents leave traces  in the environment that guide the actions of others  [1, 2].  Such mechanisms allow large groups to operate effectively  in constrained, shared environments where congestion and  jamming would otherwise occur. In particular, stigmergy  provides a bio-inspired form of indirect communication that",
+      "enables efficient group performance in crowded and con- fined environments  [3–5].",
+      "Translating these strategies into multi-robot systems,  however, poses significant challenges  [6, 7]. Achieving  comparable levels of coordination and efficiency is hindered  by the difficulty of accurately modeling the sensing and  communication capabilities that underpin biological swarm  interactions. In swarm robotics, researchers have often  attempted to address this challenge through ad hoc con- trol laws or optimization methods. These typically rely on  detailed modeling of the environment and robot interactions,  frequently under"
+    ]
+  },
+  {
+    "index": 5,
+    "filename": "s10458-025-09723-7.json",
+    "doi": "10.1007/s10458-025-09723-7",
+    "first_lines": [
+      "Received: 19 February 2025 / Accepted: 17 September 2025 / Published online: 10 October 2025 © The Author(s) 2025",
+      "Extended author information available on the last page of the article",
+      "Open-ended coordination for multi-agent systems using  modular open policies",
+      "David Rother1,3 · Joni Pajarinen2 · Jan Peters1 · Thomas H. Weisswange3",
+      "Auton Agent Multi-Agent Syst (2025) 39:40 https://doi.org/10.1007/s10458-025-09723-7",
+      "Abstract Significant multi-agent advances addressing the challenge of learning policies for acting in  ad hoc teamwork have been made. In ad hoc teamwork, a team of agents must cooperate  effectively without prior coordination or communication. Many existing approaches, how­ ever, struggle to perform well in open environments where the setting can change signifi­ cantly during deployment. This paper presents a new reinforcement learning approach to  tackle collaboration in open environments controlling one agent with a changing number  of distinct other agents, each with an individual task. The approach uses policy blending  based on an online goal inference module and a collection of learned policies modeling the  individual interaction impact between the agent and populations of partners with different  tasks. Blending is done using the estimated goals of others and a posterior-based action  blending with entropy adjustment and regularization. Our approach addresses issues of  existing policy blending mechanisms, such as handling conflicting modes in action distri­ butions leading to oscillation and instability and adapting to uncertain states dynamically.  In experiments in two collaborative open environments based on Overcooked and Level- based Foraging, our approach outperforms a baseline learner, trained with the joint reward  of all agents, across changes to both agents and tasks. Ablation studies further highlight  the importance of our posterior-based blending mechanism to achieve high rewards as  well as the provided goal weighting. The proposed approach provides an important step  towards the application of reinforcement learning to AI assistance beyond strictly closed  worlds and towards more realistic scenarios.",
+      "Keywords  Reinforcement learning · Multi-agent systems · Policy blending · Maximum  entropy · Cooperative intelligence",
+      "1  Introduction",
+      "In real-world multi-agent environments, autonomous agents must interact with diverse part­ ners, each potentially pursuing different tasks, all while adapting to new and evolving objec­ tives over time. Consider a warehouse robot that must simultaneously coordinate with other",
+      "1 3",
+      "--- Page Break ---",
+      "Autonomous Agents and Multi-Agent Systems (2025) 39:40",
+      "robots, human workers, and incoming delivery drones. Each of these entities has distinct  goals, which may change as new tasks emerge. This complexity highlights the necessity of  scalable and adaptable frameworks capable of handling variable team compositions, mixed  motives, and continuously expanding task sets.",
+      "The challenge lies"
+    ]
+  },
+  {
+    "index": 6,
+    "filename": "s10458-025-09729-1.json",
+    "doi": "10.1007/s10458-025-09729-1",
+    "first_lines": [
+      "Received: 29 January 2024 / Accepted: 19 December 2025 / Published online: 10 January 2026 © The Author(s) 2026",
+      "Fenghui Ren, Jun Yan, Guoxin Su, Wen Gu, and Shohei Kato contributed equally to this work.",
+      "Extended author information available on the last page of the article",
+      "Improving scalability of multi-agent deep reinforcement  learning with suboptimal human knowledge",
+      "Dingbang Liu1,2 · Fenghui Ren1 · Jun Yan1 · Guoxin Su1 · Wen Gu2 · Shohei Kato2",
+      "Auton Agent Multi-Agent Syst (2026) 40:2 https://doi.org/10.1007/s10458-025-09729-1",
+      "Abstract Due to its exceptional learning ability, multi-agent deep reinforcement learning (MADRL)  has garnered widespread research interest. However, since the learning is data-driven and  involves sampling from millions of steps, training a large number of agents is inherently  challenging and inefficient. Inspired by the human learning process, we aim to transfer  knowledge from humans to avoid starting from scratch. Given the growing emphasis on  the Human-on-the-Loop concept, this study focuses on addressing the challenges of large- population learning by incorporating suboptimal human knowledge into the cooperative  multi-agent environment. To leverage human experience, we integrate human knowledge  into the training process of MADRL, representing it in natural language rather than spe­ cific action-state pairs. Compared to previous works, we further consider the attributes  of transferred knowledge to assess its impact on algorithm scalability. Additionally, we  examine several features of knowledge mapping to effectively convert human knowledge  to the action space where agent learning occurs. In reaction to the disparity in knowledge  construction between humans and agents, our approach allows agents to decide freely  which portions of the state space to leverage human knowledge. From the challenging  domains of the StarCraft Multi-agent Challenge, our method successfully alleviates the  scalability issue in MADRL. Furthermore, we find that, despite individual-type knowledge  significantly accelerating the training process, cooperative-type knowledge is more desir­ able for addressing a large agent population. We hope this study provides valuable insights  into applying and mapping human knowledge, ultimately enhancing the interpretability of  agent behavior.",
+      "Keywords  Multi-agent learning · Reinforcement learning · Human knowledge transfer ·  Scalability",
+      "1 3",
+      "--- Page Break ---",
+      "Autonomous Agents and Multi-Agent Systems (2026) 40:2",
+      "1  Introduction",
+      "Empowered by deep learning, multi-agent deep reinforcement learning (MADRL) has tran­ scended the limitations of historical tabular methods and found application in complex sce­ narios, stimulating widespread research interest [8, 13, 32, 52]. As a rapidly evolving field,  MADRL has achieved rapid development with numerous frameworks proposed. These  approaches leverage novel technologies in communication [14, 47], attention mechanisms  [20, 33], and graph theory [25,"
+    ]
+  },
+  {
+    "index": 7,
+    "filename": "s10458-026-09748-6.json",
+    "doi": "10.1007/s10458-026-09748-6",
+    "first_lines": [
+      "Received: 22 September 2025 / Accepted: 16 April 2026 / Published online: 4 May 2026 © The Author(s), under exclusive licence to Springer Science+Business Media, LLC, part of Springer Nature 2026",
+      "Luca Marzari",
+      "luca.marzari@tuwien.ac.at",
+      "Enrico Marchesini",
+      "emarche@mit.edu",
+      "Changliu Liu cliu6@andrew.cmu.edu",
+      "Priya L. Donti donti@mit.edu",
+      "1\t TU Wien, Vienna, Austria",
+      "2\t Carnegie Mellon University, Pittsburgh, PA, USA",
+      "3\t Massachusetts Institute of Technology, Cambridge, MA, USA",
+      "ε-retraining reinforcement learning algorithms",
+      "Luca Marzari1 · Changliu Liu2 · Priya L. Donti3 · Enrico Marchesini3",
+      "Auton Agent Multi-Agent Syst (2026) 40:24 https://doi.org/10.1007/s10458-026-09748-6",
+      "Abstract We present ε-retrain, a general exploration strategy for reinforcement learning (RL)  that encourages adherence to behavioral preferences while preserving the convergence  guarantees of the underlying RL algorithm. ε-retrain maintains a dynamic collection  of retrain areas—regions of the state space where the agent previously violated a specified  preference—and mixes the standard uniform restart distribution with states from these ar­ eas, according to a decaying parameter ε. This mixed retraining thus focuses on enforcing  the desired behaviors in the collected areas. We develop the theory for both policy and  value-based methods, showing that: (i) in policy-based settings, our method retains mono­ tonic improvement bounds; and (ii) in value-based settings, ε-retrain preserves con­ vergence properties without additional assumptions. The approach is simple to integrate  into existing RL algorithms and improves sample efficiency and behavioral adherence in  the locomotion, power systems, and navigation tasks tested. These results establish ε-re­ train as a lightweight, theoretically grounded mechanism for incorporating behavioral  preferences into RL.",
+      "Keywords  Reinforcement learning · Formal verification · Safety"
+    ]
+  },
+  {
+    "index": 8,
+    "filename": "s10462-022-10299-x.json",
+    "doi": "10.1007/s10462-022-10299-x",
+    "first_lines": [
+      "Vol.:(0123456789)",
+      "Artificial Intelligence Review (2023) 56:5023–5056 https://doi.org/10.1007/s10462-022-10299-x",
+      "1 3",
+      "Deep multiagent reinforcement learning: challenges  and directions",
+      "Annie Wong1   · Thomas Bäck1   · Anna V. Kononova1   · Aske Plaat1",
+      "Published online: 19 October 2022  © The Author(s) 2022",
+      "Abstract This paper surveys the field of deep multiagent reinforcement learning (RL). The combi- nation of deep neural networks with RL has gained increased traction in recent years and  is slowly shifting the focus from single-agent to multiagent environments. Dealing with  multiple agents is inherently more complex as (a) the future rewards depend on multiple  players’ joint actions and (b) the computational complexity increases. We present the most  common multiagent problem representations and their main challenges, and identify five  research areas that address one or more of these challenges: centralised training and decen- tralised execution, opponent modelling, communication, efficient coordination, and reward  shaping. We find that many computational studies rely on unrealistic assumptions or are  not generalisable to other settings; they struggle to overcome the curse of dimensionality  or nonstationarity. Approaches from psychology and sociology capture promising relevant  behaviours, such as communication and coordination, to help agents achieve better perfor- mance in multiagent settings. We suggest that, for multiagent RL to be successful, future  research should address these challenges with an interdisciplinary approach to open up new  possibilities in multiagent RL.",
+      "Keywords  Reinforcement learning · Deep learning · Multiagent systems · Evolutionary  algorithms · Psychology · Survey",
+      "1  Introduction",
+      "Reinforcement learning (RL) is a machine-learning method in which one agent or a group  of agents maximises its long-term return through repeated interaction with its environ- ment. Agents are not told what actions to take and must learn their optimal behaviour via  trial-and-error. Since rewards may be delayed, an agent has to make a trade-off between  exploiting states with the current highest reward and exploring states that may potentially  yield higher rewards (Bellman 1957). As agents learn by receiving rewards for desirable  actions and penalties (negative rewards) for undesired actions, RL can automate learning  and decision-making without supervision or having complete models of the environment.",
+      "*\t Annie Wong  \t a.s.w.wong@liacs.leidenuniv.nl",
+      "1\t Leiden Institute of Advanced Computer Science, Leiden University, Leiden, The Netherlands",
+      "--- Page Break ---",
+      "5024 \t A. Wong et al.",
+      "1 3"
+    ]
+  },
+  {
+    "index": 9,
+    "filename": "s10462-025-11260-4.json",
+    "doi": "10.1007/s10462-025-11260-4",
+    "first_lines": [
+      "Accepted: 11 May 2025 / Published online: 9 June 2025 © The Author(s) 2025",
+      "Extended author information available on the last page of the article",
+      "HIAT: human-in-the-loop reinforcement learning with  auxiliary task",
+      "Bo Niu1 · Biao Luo1 · Yongzheng Cui1 · Xiaodong Xu1 · Yuqian Zhao1 · Yu Feng2",
+      "Artificial Intelligence Review (2025) 58:273 https://doi.org/10.1007/s10462-025-11260-4",
+      "Abstract Human-in-the-loop reinforcement learning (HIRL) tackles the challenges of inefficient  exploration and low sample efficiency by incorporating human feedback into the learn­ ing process to guide exploration and speed up learning. Nevertheless, most recent ap­ proaches overlook the problem of sample imbalance caused by varying behavioral policy  distributions in the early stages of training, which results in policy performance degrada­ tion due to biased learning toward dominant low-quality data. In this paper, we propose  a human-in-the-loop reinforcement learning method by constructing an auxiliary task,  namely Human-in-the-Loop Reinforcement Learning with Auxiliary Task (HIAT). Specifi­ cally, state-action pairs are utilized to create an auxiliary task that assesses the similarity  between different policies, forcing the model to focus on the differences in data sources.  The HIAT method guides the learning process of new policies during the policy evaluation  phase by implicitly influencing the assessment of different actions, thereby compensating  for sample imbalance. Subsequently, we introduce an adaptive weighting version, namely  adaptive weighting based HIAT (AWHIAT), which adjusts the impact of the auxiliary task  on the primary task based on their task-relevance and mitigates conflicts between different  tasks caused by cognitive load. Through empirical evaluations on six continuous control  benchmarks, the results demonstrate that AWHIAT significantly improves mean episode  reward and sample efficiency compared to four representative HIRL methods.",
+      "Keywords  Reinforcement learning · Human-in-the-loop · Deep learning · Auxiliary task",
+      "1  Introduction",
+      "Reinforcement learning (RL) uses exploration and trial-and-error mechanisms to learn  the optimal policy, solving sequential decision-making problems autonomously (Sutton  and Barto 1998; Hu et al. 2023). In recent years, deep reinforcement learning (DRL) has  emerged by combining RL’s credit assignment capabilities with the function approximation  potential of deep neural networks. This approach has achieved significant success in various  fields. For instance, it excels in industrial process control (Deng et al. 2023; Zheng et al.",
+      "1 3",
+      "--- Page Break ---",
+      "B. Niu et al.",
+      "2023), recommendation systems (Xin et al. 2020; Zhou et al. 2024), multi-agent systems  (Zhou et al. 2024; Luo et al. 2025) and playing Go and various video games (Silver et al.  2016; Van Hasselt et al. 2016). However, RL is often criticized for its low sample efficiency  due to the trial-and-error mechanism and excessive ineffective explorati"
+    ]
+  },
+  {
+    "index": 10,
+    "filename": "s10506-024-09401-1.json",
+    "doi": "10.1007/s10506-024-09401-1",
+    "first_lines": [
+      "Vol.:(0123456789)",
+      "Artificial Intelligence and Law (2025) 33:739–782 https://doi.org/10.1007/s10506-024-09401-1",
+      "ORIGINAL RESEARCH",
+      "InstructPatentGPT: training patent language models  to follow instructions with human feedback",
+      "Jieh‐Sheng Lee1",
+      "Accepted: 8 April 2024 / Published online: 8 May 2024  © The Author(s) 2024",
+      "Abstract In this research, patent prosecution is conceptualized as a system of reinforcement  learning from human feedback. The objective of the system is to increase the likeli- hood for a language model to generate patent claims that have a higher chance of  being granted. To showcase the controllability of the language model, the system  learns from granted patents and pre-grant applications with different rewards. The  status of “granted” and “pre-grant” are perceived as labeled human feedback implic- itly. In addition, specific to patent drafting, the experiments in this research dem- onstrate the model’s capability to learn from adjusting claim length and inclusion  of limiting terms for narrowing claim scope. As proof of concept, the experiments  focus on claim ones only and the training data originates from a patent dataset tai- lored specifically for artificial intelligence. Although the available human feedback  in patent prosecution are limited and the quality of generated patent text requires  improvement, the experiments following the 3-stage reinforcement learning from  human feedback have demonstrated that generative language models are capable of  reflecting the human feedback or intent in patent prosecution. To enhance the usabil- ity of language models, the implementation in this research utilizes modern tech- niques that enable execution on a single consumer-grade GPU. The demonstrated  proof of concept, which reduces hardware requirements, will prove valuable in the  future as more human feedback in patent prosecution become available for broader  use, either within patent offices or in the public domain.",
+      "Keywords  Patent · Natural language generation · Natural language processing ·  Reinforcement learning from human feedback",
+      "*\t Jieh‐Sheng Lee  \t jasonlee@nycu.edu.tw",
+      "1\t School of Law, National Yang Ming Chiao Tung University (NYCU), No. 1001, Daxue Rd.,  East District, Hsinchu 300093, Taiwan",
+      "--- Page Break ---",
+      "740 \t J.-S. Lee",
+      "1  Introduction",
+      "The codename “InstructPatentGPT” in this research refers to the development of  aligning language models in the patent domain with human feedback in patent pros- ecution. This research draws inspiration from InstructGPT (Ouyang 2022), which  has successfully shown the effectiveness of Reinforcement Learning from Human  Feedback (RLHF). In the patent domain, patent prosecution is the process of obtain- ing a patent for an invention, which includes tasks like drafting a patent applica- tion, issuing an office action, revising the patent application, and responding to the  office action, along with other associated tasks. An office action is a written notice  issued by a patent ex"
+    ]
+  },
+  {
+    "index": 11,
+    "filename": "s10791-022-09413-y.json",
+    "doi": "10.1007/s10791-022-09413-y",
+    "first_lines": [
+      "Vol:.(1234567890)",
+      "Information Retrieval Journal (2022) 25:386–413 https://doi.org/10.1007/s10791-022-09413-y",
+      "1 3",
+      "Reinforcement online learning to rank with unbiased reward  shaping",
+      "Shengyao Zhuang1 · Zhihao Qiao1 · Guido Zuccon1",
+      "Received: 16 June 2021 / Accepted: 30 May 2022 / Published online: 4 August 2022  © The Author(s) 2022",
+      "Abstract Online learning to rank (OLTR) aims to learn a ranker directly from implicit feedback  derived from users’ interactions, such as clicks. Clicks however are a biased signal: spe- cifically, top-ranked documents are likely to attract more clicks than documents down the  ranking (position bias). In this paper, we propose a novel learning algorithm for OLTR  that uses reinforcement learning to optimize rankers: Reinforcement Online Learning to  Rank (ROLTR). In ROLTR, the gradients of the ranker are estimated based on the rewards  assigned to clicked and unclicked documents. In order to de-bias the users’ position bias  contained in the reward signals, we introduce unbiased reward shaping functions that  exploit inverse propensity scoring for clicked and unclicked documents. The fact that our  method can also model unclicked documents provides a further advantage in that less users  interactions are required to effectively train a ranker, thus providing gains in efficiency.  Empirical evaluation on standard OLTR datasets shows that ROLTR achieves state-of- the-art performance, and provides significantly better user experience than other OLTR  approaches. To facilitate the reproducibility of our experiments, we make all experiment  code available at https://​github.​com/​ielab/​OLTR.",
+      "Keywords  Online learning to rank · Unbiased reward shaping · Reinforcement learning",
+      "1  Introduction",
+      "Learning to rank (LTR) is a supervised machine learning technique that has been widely  used in modern search engines to learn rankers. Explicit feedback, consisting of asses- sors manually judging the relevance of query-document pairs, is required for LTR (Liu,  2011; Li, 2011). This labelled dataset requirement poses obvious limitations: these  datasets take substantial effort and cost to compile (Qin et al., 2010; Qin & Liu, 2013;",
+      "*\t Guido Zuccon  \t g.zuccon@uq.edu.au",
+      "Shengyao Zhuang  \t s.zhuang@uq.edu.au",
+      "Zhihao Qiao  \t zhihao.qiao@uq.edu.au",
+      "1\t The University of Queensland, St Lucia, Australia",
+      "--- Page Break ---"
+    ]
+  },
+  {
+    "index": 12,
+    "filename": "s11036-025-02465-6.json",
+    "doi": "10.1007/s11036-025-02465-6",
+    "first_lines": [
+      "RESEARCH",
+      "Mobile Networks and Applications (2025) 30:395–413 https://doi.org/10.1007/s11036-025-02465-6",
+      "is used to reduce latency and congestion which occur on  mobile networks [1]. Workflow scheduling is a process that  produces sufficient maps to execute work within a process.  Workflow scheduling in MEC is a crucial task to perform",
+      "1  Introduction",
+      "Mobile edge computing (MEC) is a network architecture  that allows cloud capabilities for edge computing. MEC",
+      "Mohammad Kamrul Hasan",
+      "hasankamrul@ieee.org",
+      "Shayla Islam",
+      "shayla@ucsiuniversity.edu.my",
+      "Adeel Iqbal",
+      "adeeliqbal@yu.ac.kr",
+      "1\t Faculty of Computing and IT, Sohar University, Sohar, Oman",
+      "2\t Networks and Cybersecurity Department, Hourani Center for  Applied Scientific Research, Al-Ahliyya Amman University,  Amman, Jordan",
+      "3\t Center for Cyber Security, Faculty of Information Science  and Technology, Universiti Kebangsaan Malaysia (UKM),  43600, SelangorBangi, Malaysia",
+      "4\t Faculty of Information Science and Technology, Universiti  Kebangsaan Malaysia (UKM), Bangi 43600, Malaysia"
+    ]
+  },
+  {
+    "index": 13,
+    "filename": "s11047-025-10023-y.json",
+    "doi": "10.1007/s11047-025-10023-y",
+    "first_lines": [
+      "Energy-aware cooperative multi-fitness evolutionary algorithm for workflow scheduling in cloud computing",
+      "Pablo Barredo1 • Jorge Puente1",
+      "Accepted: 5 May 2025 / Published online: 11 June 2025 \u0002 The Author(s) 2025",
+      "Abstract The growing energy consumption of cloud infrastructure has attained levels that are no longer viable, necessitating the development of energy-aware scheduling algorithms. This work focuses on optimising the scheduling of scientific workflows, which requires extensive computation to achieve time-efficient results, often at the cost of excessive energy consumption. To address this challenge, a multi-fitness evolutionary algorithm that integrates multiple heuristic functions in a cooperative manner to minimise energy consumption is proposed. The approach not only facilitates the reuse of heuristics but also provides novel insights into the interplay between energy consumption and makespan, traditionally viewed as conflicting objectives. This flexible framework demonstrates its adaptability for optimising both total energy consumption and completion time, offering a robust tool for sustainable workflow scheduling.",
+      "Keywords Cooperative multi-fitness \u0002 Evolutionary algorithms \u0002 Scientific workflow \u0002 Cloud computing",
+      "1 Introduction",
+      "Cloud computing has emerged as a cornerstone technology for processing large volumes of data, offering unparalleled flexibility and scalability. Among its diverse service models, Infrastructure as a Service (IaaS) stands out by allowing users to rent virtual machines (VMs) with cus- tomizable capabilities. This model enables horizontal scalability, by increasing the number of VMs, and vertical scalability, by enhancing the capacity of individual servers. Users benefit from a pay-as-you-go pricing scheme, which charges for computational resources like CPU and mem- ory, as well as additional costs for network bandwidth and storage based on usage. Furthermore, IaaS provides sig- nificant control, letting users tailor their environment by selecting specific operating systems, processor configura- tions, and storage options, making platforms like Microsoft Azure, Google Compute Engine, and Amazon EC2 ideal",
+      "for researchers needing dynamic and cost-efficient infras- tructure for their experiments.",
+      "This research addresses the scheduling problem for scientific workflows, typically represented as Directed Acyclic Graphs (DAGs). These graphs model a collection of interdependent tasks, where the execution of one task may depend on the completion of others. Data exchange between tasks may range from a few bytes to several gigabytes, and the complexity of DAGs can vary signifi- cantly, from just a few dozen tasks to thousands. This variability results in execution times ranging from mere seconds to hours or even days [18, Sahni and Vidyarthi (2018)]. The execution time of each task depends not only on the specific virtual machine selected but also on factors such as storage systems and network connections between VMs, which"
+    ]
+  },
+  {
+    "index": 14,
+    "filename": "s11063-025-11819-w.json",
+    "doi": "10.1007/s11063-025-11819-w",
+    "first_lines": [
+      "Neural Processing Letters (2026) 58:5 https://doi.org/10.1007/s11063-025-11819-w",
+      "Optimized Task Scheduling in Fog-Cloud Computing Using Hybrid Deep Learning and Metaheuristic Algorithms",
+      "Amir Heirati1 · Mehdi Fartash1 · Mohammad Khalily-Dermany2",
+      "Received: 15 February 2025 / Accepted: 17 November 2025 / Published online: 1 December 2025 © The Author(s) 2025",
+      "Abstract Fog computing has emerged as an effective paradigm to address the latency issues inher- ent in cloud computing by enabling data processing closer to data sources, particularly for IoT applications in healthcare, smart transportation, and industrial automation. However, efficient task scheduling in fog environments remains challenging due to their dynamic, het- erogeneous nature. This paper presents an integrated solution for task scheduling in fog-cloud environments to reduce energy consumption and minimize task makespan, while maintaining high-quality service (QoS). The proposed model comprises three core components: work- load prediction, task offloading, and scheduling optimization. First, a Feedforward Neural Network (FNN) is used to predict workload, allowing for proactive resource allocation. Next, a reinforcement learning (RL) model dynamically manages task offloading decisions based on real-time performance metrics, determining whether tasks should be processed on local fog nodes or offloaded to the cloud. Finally, a hybrid optimization algorithm combining Harris Hawk Optimization (HHO) and Genetic Algorithm (GA) refines task scheduling by mapping tasks to available resources efficiently. Simulation results show that the proposed method achieves significant improvements in energy efficiency, reduces task completion times, and enhances QoS metrics compared to baseline scheduling algorithms. The novelty of this work lies in the synergistic integration of predictive deep learning, adaptive RL-based offloading with a multi-objective reward function, and a hybrid HHO-GA optimizer featuring a customizable four-objective fitness function, which collectively address dynamic workload fluctuations and multi-objective trade-offs unmet by existing hybrid methods.",
+      "Keywords Fog computing · Task scheduling · Deep learning · Harris Hawk optimization · Genetic algorithm · Reinforcement learning · Quality of service",
+      "B Mehdi Fartash",
+      "fartash@iau.ac.ir",
+      "1 Department of Computer Engineering, Ar.C, Islamic Azad University, Arak, Iran",
+      "2 Department of Computer Engineering, Khom.C, Islamic Azad University, Khomein, Iran",
+      "123",
+      "--- Page Break ---",
+      "5 Page 2 of 20 A. Heirati et al.",
+      "1 Introduction",
+      "Recently, the IoT has emerged as one of the most significant advancements in the field of information technology [1, 2]. The rapid proliferation of IoT devices and the emergence of data-intensive applications have led to an unprecedented surge in data volume and compu- tational demands [3]. This paradigm shift has exposed the limitations of traditional cloud computing in handling real-time applications due to the inhe"
+    ]
+  },
+  {
+    "index": 15,
+    "filename": "s11227-024-06341-0.json",
+    "doi": "10.1007/s11227-024-06341-0",
+    "first_lines": [
+      "Vol.:(0123456789)",
+      "The Journal of Supercomputing (2024) 80:24835–24870 https://doi.org/10.1007/s11227-024-06341-0",
+      "1 3",
+      "Cost‐aware workflow offloading in edge‐cloud computing  using a genetic algorithm",
+      "Somayeh Abdi1,2 · Mohammad Ashjaei2 · Saad Mubeen2",
+      "Accepted: 2 July 2024 / Published online: 10 July 2024  © The Author(s) 2024",
+      "Abstract The edge-cloud computing continuum effectively uses fog and cloud servers to  meet the quality of service (QoS) requirements of tasks when edge devices cannot  meet those requirements. This paper focuses on the workflow offloading problem  in edge-cloud computing and formulates this problem as a nonlinear mathematical  programming model. The objective function is to minimize the monetary cost of  executing a workflow while satisfying constraints related to data dependency  among tasks and QoS requirements, including security and deadlines. Additionally,  it presents a genetic algorithm for the workflow offloading problem to find near- optimal solutions with the cost minimization objective. The performance of the  proposed mathematical model and genetic algorithm is evaluated on several real- world workflows. Experimental results demonstrate that the proposed genetic  algorithm can find admissible solutions comparable to the mathematical model and  outperforms particle swarm optimization, bee life algorithm, and a hybrid heuristic- genetic algorithm in terms of workflow execution costs.",
+      "Keywords  Workflow offloading · Edge-cloud computing · Mathematical  programming · Genetic algorithm · Cost minimization · Security-aware",
+      "Mohammad Ashjaei and Saad Mubeen have contributed equally to this work.",
+      "*\t Somayeh Abdi  \t somayeh.abdi@mdu.se",
+      "Mohammad Ashjaei  \t Mohammad.ashjaei@mdu.se",
+      "Saad Mubeen  \t saad.mubeen@mdu.se",
+      "1\t Assistant Professor, Department of Computer Engineering, Eslam Abad-E-Gharb Branch,  Islamic Azad University, Eslam Abad‐E‐Gharb, Iran",
+      "2\t Department of Networked and Embedded Systems, Mälardalen University, Västerås, Sweden",
+      "--- Page Break ---"
+    ]
+  },
+  {
+    "index": 16,
+    "filename": "s13428-023-02062-z.json",
+    "doi": "10.3758/s13428-023-02062-z",
+    "first_lines": [
+      "https://doi.org/10.3758/s13428-023-02062-z",
+      "Automatic discovery and description of human planning strategies",
+      "Julian Skirzy ́nski1,2 · Yash Raj Jain1 · Falk Lieder1",
+      "Accepted: 6 January 2023 © The Author(s) 2023",
+      "Abstract Scientific discovery concerns finding patterns in data and creating insightful hypotheses that explain these patterns. Traditionally, each step of this process required human ingenuity. But the galloping development of computer chips and advances in artificial intelligence (AI) make it increasingly more feasible to automate some parts of scientific discovery. Understanding human planning is one of the fields in which AI has not yet been utilized. State-of-the-art methods for discovering new planning strategies still rely on manual data analysis. Data about the process of human planning is often used to group similar behaviors together. Researchers then use this data to formulate verbal descriptions of the strategies which might underlie those groups of behaviors. In this work, we leverage AI to automate these two steps of scientific discovery. We introduce a method for automatic discovery and description of human planning strategies from process-tracing data collected with the Mouselab-MDP paradigm. Our method utilizes a new algorithm, called Human-Interpret, that performs imitation learning to describe sequences of planning operations in terms of a procedural formula and then translates that formula to natural language. We test our method on a benchmark data set that researchers have previously scrutinized manually. We find that the descriptions of human planning strategies that we obtain automatically are about as understandable as human- generated descriptions. They also cover a substantial proportion of relevant types of human planning strategies that had been discovered manually. Our method saves scientists’ time and effort, as all the reasoning about human planning is done automatically. This might make it feasible to more rapidly scale up the search for yet undiscovered cognitive strategies that people use for planning and decision-making to many new decision environments, populations, tasks, and domains. Given these results, we believe that the presented work may accelerate scientific discovery in psychology, and due to its generality, extend to problems from other fields.",
+      "Keywords Automatic scientific discovery · Decision-making · Planning · Interpretable strategy discovery · Process-tracing",
+      "Introduction",
+      "Scientific discovery is a product of scientific inquiry that allows generating and corroborating new insightful hypotheses. In the early days, scientific discovery was seen as a prescriptive method for arriving at new knowledge, by gathering information and refining it with new experiments (see Bacon’s Novum Organum (Bacon, 1878) or Newton’s Philosophiae Naturalis Principia Mathematica (Newton, 1687)). The more established philosophical tradition argued",
+      "\u0002 Julian Skirzy ́nski",
+      "julian.skirzynski@tuebingen.mpg.de",
+      "1 Max Planck I"
+    ]
+  },
+  {
+    "index": 17,
+    "filename": "s13677-023-00504-9.json",
+    "doi": "10.1186/s13677-023-00504-9",
+    "first_lines": [
+      "Zhang et al. Journal of Cloud Computing          (2023) 12:125   https://doi.org/10.1186/s13677-023-00504-9",
+      "RESEARCH",
+      "Data‐intensive workflow scheduling  strategy based on deep reinforcement learning  in multi‐clouds",
+      "Shuo Zhang1,2, Zhuofeng Zhao1,2*, Chen Liu1,2 and Shenghui Qin1,2",
+      "Abstract  With the increase development of Internet of Things devices, the data-intensive workflow has emerged as a new  kinds of representation for IoT applications. Because most IoT systems are structured in multi-clouds environment  and the data-intensive workflow has the characteristics of scattered data sources and distributed execution require- ments at the cloud center and edge clouds, it brings many challenges to the scheduling of such workflow, such  as data flow control management, data transmission scheduling, etc. Aiming at the execution constraints of business  and technology and data transmission optimization of data-intensive workflow, a data-intensive workflow sched- uling method based on deep reinforcement learning in multi-clouds is proposed. First, the execution constraints,  edge node load and data transmission volume of IoT data workflow are modeled; then the data-intensive work- flow is segmented with the consideration of business constraints and the first optimization goal of data transmis- sion; besides, taking the workflow execution time and average load balancing as the secondary optimization goal,  the improved DQN algorithm is used to schedule the workflow. Based on the DQN algorithm, the model reward  function and action selection are redesigned and improved. The simulation results based on WorkflowSim show  that, compared with MOPSO, NSGA-II, GTBGA and DQN, the algorithm proposed in this paper can effectively reduce  the execution time of IoT data workflow under the condition of ensuring the execution constraints and load balanc- ing of multi-clouds. Keywords  Data-intensive workflow, Deep-Q-network, Multi-objective optimization, Intensive learning",
+      "Introduction With the rapid development of Internet of Things (IoT)  technology, the data that collected by various IoT devices  are constantly generated and accumulated. Then the  data-intensive applications are produced. However, the  IoT devices have difficulty processing data-intensive  applications locally due to the limited resources. It is",
+      "difficult to provide all resources and schedule services for  IoT users only by relying on a single cloud.",
+      "The IoT architecture composed of the center cloud  and the edge clouds can be seen as multi-clouds [1].  For the data generated by the edge devices of the Inter- net of Things, there are often corresponding storage  devices in the edge cloud to meet the rapid response  required by edge computing. However, due to the lim- ited computing resources of the edge cloud, the center  cloud is also needed as an important part to meet the  processing requirements of massive data. The multi- clouds are composed of the central cloud and the edge  clouds, which"
+    ]
+  },
+  {
+    "index": 18,
+    "filename": "s13677-023-00553-0.json",
+    "doi": "10.1186/s13677-023-00553-0",
+    "first_lines": [
+      "Wang et al. Journal of Cloud Computing          (2023) 12:174   https://doi.org/10.1186/s13677-023-00553-0",
+      "RESEARCH Open Access",
+      "© The Author(s) 2023. Open Access This article is licensed under a Creative Commons Attribution 4.0 International License, which  permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long as you give appropriate credit to the  original author(s) and the source, provide a link to the Creative Commons licence, and indicate if changes were made. The images or  other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line  to the material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory  regulation or exceeds the permitted use, you will need to obtain permission directly from the copyright holder. To view a copy of this  licence, visit http://creativecommons.org/licenses/by/4.0/.",
+      "Journal of Cloud Computing: Advances, Systems and Applications",
+      "Reinforcement learning based task  scheduling for environmentally sustainable  federated cloud computing",
+      "Zhibao Wang1,2, Shuaijun Chen1, Lu Bai3*, Juntao Gao1, Jinhua Tao4, Raymond R. Bond5 and  Maurice D. Mulvenna5",
+      "Abstract  The significant energy consumption within data centers is an essential contributor to global energy consumption  and carbon emissions. Therefore, reducing energy consumption and carbon emissions in data centers plays a crucial  role in sustainable development. Traditional cloud computing has reached a bottleneck, primarily due to high energy  consumption. The emerging federated cloud approach can reduce the energy consumption and carbon emissions  of cloud data centers by leveraging the geographical differences of multiple cloud data centers in a federated cloud.  In this paper, we propose Eco-friendly Reinforcement Learning in Federated Cloud (ERLFC), a framework that uses  reinforcement learning for task scheduling in a federated cloud environment. ERLFC aims to intelligently consider  the state of each data center and effectively harness the variations in energy and carbon emission ratios across geo- graphically distributed cloud data centers in the federated cloud. We build ERLFC using Actor-Critic algorithm, which  select the appropriate data center to assign a task based on various factors such as energy consumption, cooling  method, waiting time of the task, energy type, emission ratio, and total energy consumption of the current cloud  data center and the details of the next task. To demonstrate the effectiveness of ERLFC, we conducted simulations  based on real-world task execution data, and the results show that ERLFC can effectively reduce energy consump- tion and emissions during task execution. In comparison to Round Robin, Random, SO, and GJO algorithms, ERLFC  achieves respective reductions of 1.09, 1.08, 1.21, and 1.26 times in terms of energy saving and emiss"
+    ]
+  },
+  {
+    "index": 19,
+    "filename": "s13677-025-00828-8.json",
+    "doi": "10.1186/s13677-025-00828-8",
+    "first_lines": [
+      "RESEARCH Open Access",
+      "© The Author(s) 2025. Open Access  This article is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0  International License, which permits any non-commercial use, sharing, distribution and reproduction in any medium or format, as long as you  give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indicate if you modified the  licensed material. You do not have permission under this licence to share adapted material derived from this article or parts of it. The images or  other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the  material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory regulation or  exceeds the permitted use, you will need to obtain permission directly from the copyright holder. To view a copy of this licence, visit ​h​t​t​p​:​/​/​c​r​e​a​t​i​ v​e​c​o​m​m​o​n​s​.​o​r​g​/​l​i​c​e​n​s​e​s​/​b​y​-​n​c​-​n​d​/​4​.​0​/.",
+      "Subashree et al. Journal of Cloud Computing           (2025) 14:80  https://doi.org/10.1186/s13677-025-00828-8",
+      "Introduction The innovative cloud computing technology allows the  users to perform different operations with large amount  of data through the network of servers deployed in wide  remote areas. Large number of organizations and Gov­ ernment entities now rely on cloud computing and its  services. Cloud offers a wide range of solutions to every­ one’s needs in the present era. Cloud services for busi­ ness and scientific applications are mainly task oriented  and its workflows structure the business needs [1]. The  scientific workflows are mainly data dependent, and it  has highly intensive applications. These applications are  structured into scientific works and managed through",
+      "Journal of Cloud Computing",
+      "*Correspondence: S. Subashree drsubashree1989@gmail.com 1Department of Computer Science and Engineering, E.G.S. Pillay  Engineering College, Nagapattinam, Tamil Nadu 611002, India 2School of Computing, SASTRA Deemed University, Thanjavur,",
+      "Tamil Nadu 613401, India 3Department of Electronics and Communication Engineering, E.G.S. Pillay  Engineering College, Nagapattinam, Tamil Nadu 611002, India",
+      "Abstract In cloud computing, scheduling workflows for data-intensive tasks is challenging due to task dependencies,  heterogeneous resources, and high computational demands, all of which affect cost, execution time, and energy  usage. This research proposes a novel hybrid optimization algorithm called Dolphin Swarm Sparrow Search  Optimization (DSSSO) to address these challenges. The DSSSO model combines the broad search capability of  Dolphin Swarm Optimization with the precise tuning ability of Sparrow Search Algorithm, enabling effective  exploration and exploitation in the solution space. Unlike existing scheduling models that primarily opt"
+    ]
+  },
+  {
+    "index": 20,
+    "filename": "s40747-023-01071-x.json",
+    "doi": "10.1007/s40747-023-01071-x",
+    "first_lines": [
+      "Complex & Intelligent Systems (2023) 9:6211–6222 https://doi.org/10.1007/s40747-023-01071-x",
+      "ORIGINAL ARTICLE",
+      "Dynamic role discovery and assignment in multi-agent task decomposition",
+      "Yu Xia1 · Junwu Zhu1 · Liucun Zhu1,2",
+      "Received: 20 November 2022 / Accepted: 1 April 2023 / Published online: 26 April 2023 © The Author(s) 2023",
+      "Abstract Effective multi-agent teamwork can be facilitated by using personas to decompose goals into lower-level team subtasks through a shared understanding of multi-agent tasks. However, traditional methods for role discovery and assignment are not scalable and fail to adapt to dynamic changes in the environment. To solve this problem, we propose a new framework for learning dynamic role discovery and assignment. We first introduce an action encoder to construct a vector representation for each action based on its characteristics, and define and classify roles from a more comprehensive perspective based on both action differences and action contributions. To rationally assign roles to agents, we propose a representation-based role selection policy based on consideration of role differences and reward horizons, which enables agents to play roles dynamically by dynamically assigning agents with similar abilities to play the same role. Agents playing the same role share their learning of the role, and different roles correspond to different action spaces. We also introduce regularizers to increase the differences between roles and stabilize training by preventing agents from changing roles frequently. Role selection and role policy integrate action representations and role differences in a restricted action space, improving learning efficiency. We conducted experiments in the SMAC benchmark and showed that our method enables effective role discovery and assignment, outperforming the baseline on four of the six scenarios, with an average improvement in win rate of 20%, and is effective in hard and super hard maps. We also conduct ablation experiments to demonstrate the importance of each component in our approach.",
+      "Keywords Multi-agent · Task decomposition · Role discovery · Role assignment",
+      "Introduction",
+      "The current control strategies for multiple agents can be clas- sified into three main paradigms: Centralized learning [1], Independentlearning[2],andCentralizedtrainingdistributed execution (CTDE) [3–5]. Centralized learning treats the entire system as a whole and uses single-agent reinforcement learning algorithms for training. Although this approach solves the problem of environmental non-smoothness, it requires global information, is not scalable, and cannot",
+      "B Junwu Zhu",
+      "jwzhu@yzu.edu.cn B Liucun Zhu",
+      "lczhu@bbgu.edu.cn",
+      "1 School of Information Engineering, Yangzhou University, Yangzhou 225127, Jiangsu, China",
+      "2 Advanced Science and Technology Research Institute, Beibu Gulf University, Qinzhou 535011, Guangxi, China",
+      "address issues of no communication, large scale, and large action space. Independent learning allows each agent to tra"
+    ]
+  },
+  {
+    "index": 21,
+    "filename": "s40747-023-01137-w.json",
+    "doi": "10.1007/s40747-023-01137-w",
+    "first_lines": [
+      "Complex & Intelligent Systems (2023) 9:7337–7348 https://doi.org/10.1007/s40747-023-01137-w",
+      "ORIGINAL ARTICLE",
+      "Decision variable contribution based adaptive mechanism for evolutionary multi-objective cloud workflow scheduling",
+      "Jun Li1 · Lining Xing2 · Wen Zhong3 · Zhaoquan Cai4,5 · Feng Hou6",
+      "Received: 6 December 2022 / Accepted: 8 May 2023 / Published online: 29 June 2023 © The Author(s) 2023",
+      "Abstract Workflow scheduling is vital to simultaneously minimize execution cost and makespan for cloud platforms since data depen- dencies among large-scale workflow tasks and cloud workflow scheduling problem involve large-scale interactive decision variables. So far, the cooperative coevolution approach poses competitive superiority in resolving large-scale problems by transforming the original problems into a series of small-scale subproblems. However, the static transformation mechanisms cannot separate interactive decision variables, whereas the random transformation mechanisms encounter low efficiency. To tackle these issues, this paper suggests a decision-variable-contribution-based adaptive evolutionary cloud workflow schedul- ing approach (VCAES for short). To be specific, the VCAES includes a new estimation method to quantify the contribution of each decision variable to the population advancement in terms of both convergence and diversity, and dynamically classi- fies the decision variables according to their contributions during the previous iterations. Moreover, the VCAES includes a mechanism to adaptively allocate evolution opportunities to each constructed group of decision variables. Thus, the decision variables with a strong impact on population advancement are assigned more evolution opportunities to accelerate popula- tion to approximate the Pareto-optimal fronts. To verify the effectiveness of the proposed VCAES, we carry out extensive numerical experiments on real-world workflows and cloud platforms to compare it with four representative algorithms. The numerical results demonstrate the superiority of the VCAES in resolving cloud workflow scheduling problems.",
+      "Keywords Cloud computing · Workflow scheduling · Multi-objective · Evolutionary optimization · Large-scale",
+      "B Lining Xing",
+      "lnxing@xidian.edu.cn B Wen Zhong",
+      "zhongwen_nudt@163.com",
+      "1 School of Management, Hunan Institute of Engineering, Xiangtan 411104, Hunan, People’s Republic of China",
+      "2 School of Electronic Engineering, Xidian University, Xi’an 710071, Shaanxi, People’s Republic of China",
+      "3 Department of Traffic Management, Hunan Police Academy, Changsha 410138, Hunan, People’s Republic of China",
+      "4 Shanwei Institute of Technology, Shanwei 516600, Guangdong, People’s Republic of China",
+      "5 School of Computer Science and Engineering, Huizhou University, Huizhou 516007, Guangdong, People’s Republic of China"
+    ]
+  },
+  {
+    "index": 22,
+    "filename": "s40747-024-01415-1.json",
+    "doi": "10.1007/s40747-024-01415-1",
+    "first_lines": [
+      "Complex & Intelligent Systems (2024) 10:5261–5280 https://doi.org/10.1007/s40747-024-01415-1",
+      "ORIGINAL ARTICLE",
+      "GHQ: grouped hybrid Q-learning for cooperative heterogeneous multi-agent reinforcement learning",
+      "Xiaoyang Yu1,2 · Youfang Lin1,2 · Xiangsen Wang1,2 · Sheng Han1,2 · Kai Lv1,2",
+      "Received: 10 July 2023 / Accepted: 9 March 2024 / Published online: 23 April 2024 © The Author(s) 2024",
+      "Abstract Previous deep multi-agent reinforcement learning (MARL) algorithms have achieved impressive results, typically in sym- metric and homogeneous scenarios. However, asymmetric heterogeneous scenarios are prevalent and usually harder to solve. In this paper, the main discussion is about the cooperative heterogeneous MARL problem in asymmetric heterogeneous maps of the Starcraft Multi-Agent Challenges (SMAC) environment. Recent mainstream approaches use policy-based actor-critic algorithms to solve the heterogeneous MARL problem with various individual agent policies. However, these approaches lack formal definition and further analysis of the heterogeneity problem. Therefore, a formal definition of the Local Transition Het- erogeneity (LTH) problem is first given. Then, the LTH problem in SMAC environment can be studied. To comprehensively reveal and study the LTH problem, some new asymmetric heterogeneous maps in SMAC are designed. It has been observed that baseline algorithms fail to perform well in the new maps. Then, the authors propose the Grouped Individual-Global-Max (GIGM) consistency and a novel MARL algorithm, Grouped Hybrid Q-Learning (GHQ). GHQ separates agents into sev- eral groups and keeps individual parameters for each group. To enhance cooperation between groups, GHQ maximizes the mutual information between trajectories of different groups. A novel hybrid structure for value factorization in GHQ is also proposed. Finally, experiments on the original and the new maps show the fabulous performance of GHQ compared to other state-of-the-art algorithms.",
+      "Keywords Heterogeneous multi-agent reinforcement learning · Cooperative multi-agent reinforcement learning · Value function factorization · StarCraftII multi-agent challenge",
+      "Introduction",
+      "The multi-agent system (MAS) and multi-agent reinforce- ment learning (MARL) have drawn lots of attention [1] and have been applied to solve some optimization problems in the physical world, such as resource allocation problem [2–4], cooperative navigation problem [5–7], air traffic flow man- agement[8],andmassivetrafficlightcontrolproblem[9–11].",
+      "B Kai Lv",
+      "lvkai@bjtu.edu.cn",
+      "Xiaoyang Yu xiaoyang.yu@bjtu.edu.cn",
+      "Sheng Han shhan@bjtu.edu.cn",
+      "1 School of Computer and Information Technology, Beijing Jiaotong University, Beijing, China",
+      "2 Beijing Key Laboratory of Traffic Data Analysis and Mining, Beijing Jiaotong University, Beijing, China"
+    ]
+  },
+  {
+    "index": 23,
+    "filename": "s40747-024-01421-3.json",
+    "doi": "10.1007/s40747-024-01421-3",
+    "first_lines": [
+      "Complex & Intelligent Systems (2024) 10:4989–5004 https://doi.org/10.1007/s40747-024-01421-3",
+      "ORIGINAL ARTICLE",
+      "Decentralized multi-agent cooperation via adaptive partner modeling",
+      "Chenhang Xu1 · Jia Wang2 · Xiaohui Zhu1 · Yong Yue1 · Weifeng Zhou3 · Zhixuan Liang4 · Dominik Wojtczak5",
+      "Received: 9 May 2023 / Accepted: 12 March 2024 / Published online: 15 April 2024 © The Author(s) 2024",
+      "Abstract Multi-agent reinforcement learning encounters a non-stationary challenge, where agents concurrently update their policies, leading to changes in the environment. Existing approaches have tackled this challenge through communication among agents to obtain their partners’ actions, but this introduces computational complexity known as partner sample complexity. An alternative approach is to develop partner models that generate samples instead of direct communication to mitigate this complexity. However, a discrepancy arises between the real policies distribution and the policy of partner models, termed as model bias, which can significantly impact performance when heavily relying on partner models. In order to achieve a trade-off between sample complexity and performance, a novel multi-agent model-based reinforcement learning algorithm called decentralized adaptive partner modeling (DAPM) is proposed, which utilizes fictitious self play (FSP) to construct partner models and update policies. Model bias is addressed by establishing an upper bound to restrict the usage of partner models. Coupled with that, an adaptive rollout approach is introduced, enabling real agents to dynamically communicate with partner models based on their quality, ensuring that agent performance can progressively improve with partner model samples. The effectiveness of DAPM is exhibited in two multi-agent tasks, showing that DAPM outperforms existing model- free algorithms in terms of partner sample complexity and training stability. Specifically, DAPM requires 28.5% fewer communications compared to the best baseline and exhibits reduced fluctuations in the learning curve, indicating superior performance.",
+      "Keywords Multi-agent reinforcement learning · Fictitious self play · Partner modeling · Partner sample complexity",
+      "B Xiaohui Zhu",
+      "Xiaohui.Zhu@xjtlu.edu.cn",
+      "Chenhang Xu chenhang.xu21@student.xjtlu.edu.cn",
+      "Jia Wang Jia.Wang02@xjtlu.edu.cn",
+      "Yong Yue Yong.Yue@xjtlu.edu.cn",
+      "Weifeng Zhou chandler.zhou@cpce-polyu.edu.hk",
+      "Zhixuan Liang 18094409g@connect.polyu.hk",
+      "Dominik Wojtczak D.Wojtczak@liverpool.ac.uk"
+    ]
+  },
+  {
+    "index": 24,
+    "filename": "s43681-022-00154-8.json",
+    "doi": "10.1007/s43681-022-00154-8",
+    "first_lines": [
+      "Vol.:(0123456789) 1 3",
+      "AI and Ethics (2023) 3:175–197  https://doi.org/10.1007/s43681-022-00154-8",
+      "ORIGINAL RESEARCH",
+      "A responsible AI framework: pipeline contextualisation",
+      "Eduardo Vyhmeister1   · Gabriel Castane1 · P.‐O. Östberg2 · Simon Thevenin3",
+      "Received: 17 December 2021 / Accepted: 10 March 2022 / Published online: 19 April 2022  © The Author(s) 2022",
+      "Abstract Incorporating ethics and values within the life cycle of an AI asset means securing its development, deployment, use, and  decommission under these perspectives. These approaches depend on the market domain where AI is operational – consider- ing the interaction and the impact on humans if any process does not perform as expected – and the legal compliance, both  required to ensure adequate fulfilment of ethics and values. Specifically, in the manufacturing sector, standards were devel- oped since the 1990’s to guarantee, among others, the correct use of mechanical machinery, systems robustness, low product  variability, workers safety, system security, and adequate implementation of system constraints. However, it is challenging  to blend the existing practices with the needs associated with deployments of AI in a trustworthy manner. This document  provides an extended framework for AI Management within the Manufacturing sector. The framework is based on different  perspectives related to responsible AI that handle trustworthy issues as risk. The approach is based on the idea that ethical  considerations can and should be handled as hazards. If these requirements or constraints are not adequately fulfilled and  managed, it is expected severe negative impact on different sustainable pillars. We are proposing a well-structured approach  based on risk management that would allow implementing ethical concerns in any life cycle stages of AI components in the  manufacturing sector. The framework follows a pipeline structure, with the possibility of being extended and connected with  other industrial Risk Management Processes, facilitating its implementation in the manufacturing domain. Furthermore,  given the dynamic condition of the regulatory state of AI, the framework allows extension and considerations that could be  developed in the future.",
+      "Keywords  Responsible AI · Manufacturing · AI · Ethics · Framework",
+      "1  Introduction",
+      "The industry is becoming more automated in the Digital Era.  The main focus has been acquiring, collecting, and manag- ing all data produced intelligently and efficiently during the  last decade. Current factories, and trends, blend the need for",
+      "massive production with extensive customisation, increasing  their product assortments [1]. Many of these advances have  been supported by incorporating AI tools and techniques in  manufacturing, reducing the number of lost sales, improving  maintenance processes, and improving product and process  quality (30%, 29%, and 27%, respectively [2]).",
+      "Generally speaking, the AI has been implemented in dif- ferent industrial processes, in"
+    ]
+  },
+  {
+    "index": 25,
+    "filename": "s43681-022-00167-3.json",
+    "doi": "10.1007/s43681-022-00167-3",
+    "first_lines": [
+      "Vol.:(0123456789) 1 3",
+      "AI and Ethics (2023) 3:241–255  https://doi.org/10.1007/s43681-022-00167-3",
+      "ORIGINAL RESEARCH",
+      "Meaningful human control: actionable properties for AI system  development",
+      "Luciano Cavalcante Siebert1,2   · Maria Luce Lupetti1,3 · Evgeni Aizenberg1,2 · Niek Beckers1,4 · Arkady Zgonnikov1,4 ·  Herman Veluwenkamp1,5 · David Abbink1,4 · Elisa Giaccardi1,3 · Geert‐Jan Houben1,2 · Catholijn M. Jonker1,2 ·  Jeroen van den Hoven1,5 · Deborah Forster1 · Reginald L. Lagendijk1,2",
+      "Received: 7 January 2022 / Accepted: 15 April 2022 / Published online: 18 May 2022  © The Author(s) 2022",
+      "Abstract How can humans remain in control of artificial intelligence (AI)-based systems designed to perform tasks autonomously?  Such systems are increasingly ubiquitous, creating benefits - but also undesirable situations where moral responsibility for  their actions cannot be properly attributed to any particular person or group. The concept of meaningful human control has  been proposed to address responsibility gaps and mitigate them by establishing conditions that enable a proper attribution of  responsibility for humans; however, clear requirements for researchers, designers, and engineers are yet inexistent, making  the development of AI-based systems that remain under meaningful human control challenging. In this paper, we address  the gap between philosophical theory and engineering practice by identifying, through an iterative process of abductive  thinking, four actionable properties for AI-based systems under meaningful human control, which we discuss making use  of two applications scenarios: automated vehicles and AI-based hiring. First, a system in which humans and AI algorithms  interact should have an explicitly defined domain of morally loaded situations within which the system ought to operate.  Second, humans and AI agents within the system should have appropriate and mutually compatible representations. Third,  responsibility attributed to a human should be commensurate with that human’s ability and authority to control the system.  Fourth, there should be explicit links between the actions of the AI agents and actions of humans who are aware of their  moral responsibility. We argue that these four properties will support practically minded professionals to take concrete steps  toward designing and engineering for AI systems that facilitate meaningful human control.",
+      "Keywords  Artificial intelligence · AI ethics · Meaningful human control · Moral responsibility · Socio-technical systems",
+      "1  Introduction",
+      "Deploying AI algorithms in human-inhabited environments  comes with the risk of inappropriate, undesirable, or unpre- dictable consequences [1, 2]. The misinterpreted skills of  AI systems, combined with their rapid impact in public and  private spheres of life, can lead to situations with a clear  misalignment between human moral values and societal  norms [3–6], and where moral responsibility for such unde- sired impacts can often not be pro"
+    ]
+  }
+]

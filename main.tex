@@ -217,35 +217,67 @@ The remainder of this report is organized as follows:
 %==============================================================================
 \chapter{Literature Review}
 
-The development of intelligent developer workspaces and multi-agent systems integrates discoveries across artificial intelligence, distributed systems, human-computer interaction, and software engineering. This chapter critically surveys relevant literature across five primary dimensions: autonomous multi-agent execution models, tool orchestration protocols, LLM routing strategies, preference optimization techniques, and local-first data architectures.
+The engineering of an autonomous developer operating environment and multi-agent orchestration platform sits at the convergence of multi-agent reinforcement learning (MARL), distributed workflow scheduling, standardized tool communication protocols, preference-guided language modeling, and local-first data systems. This chapter critically examines the theoretical foundations, algorithmic advancements, and empirical benchmarks established across recent literature, categorizing related works into eight principal dimensions.
 
-\section{Autonomous Multi-Agent Systems and ReAct Paradigms}
-The foundational paradigm for language agent decision-making was established by Yao et al. \cite{ref_react} with the \textbf{ReAct} (Reasoning and Acting) framework. In contrast to pure chain-of-thought prompting or reflexive action execution, ReAct synergistically interleaves reasoning traces (thoughts) with environment actions and domain observations. By generating verbal reasoning steps, ReAct enables agents to dynamically adjust execution trajectories, perform exception handling, and interface with external information sources.
+\section{Multi-Agent Reinforcement Learning and Cooperative Intelligence}
+Coordinating decentralized autonomous agents in dynamic and shared environments presents fundamental challenges, including environmental non-stationarity, exponential state-action state space growth, and coordination dilemmas. Wong et~al.~\cite{ref_wong2023_marlsurvey} provide a comprehensive survey of deep multi-agent reinforcement learning, categorizing modern paradigms into centralized training with decentralized execution (CTDE), opponent modeling, explicit inter-agent communication, and reward shaping. They demonstrate that without structured communication channels or behavioral abstractions, uncoordinated agent fleets suffer severely from the curse of dimensionality and non-stationarity.
 
-Building upon ReAct, multi-agent collaboration frameworks such as AutoGen (Wu et al. \cite{ref_autogen}) and MetaGPT (Hong et al. \cite{ref_metagpt}) demonstrated that decomposing complex software engineering objectives into specialized agent roles (e.g., Architect, Engineer, QA Tester) substantially improves code quality and reduces hallucinations through Standardized Operating Procedures (SOPs). However, existing frameworks often suffer from excessive communication overhead, unbounded execution loops, and a lack of protocol-standardized tool invocations, limiting their deployment in local developer desktop environments.
+To facilitate coordination without burdensome network synchronization, Aina and Ha~\cite{ref_aina2026_smadrl} introduce a stigmergic multi-agent deep reinforcement learning (S-MADRL) framework. Drawing inspiration from biological insect swarms, their model uses environmental traces (virtual pheromones) coupled with curriculum learning, enabling decentralized agents to self-organize into asymmetric workload distributions under severe communication constraints.
 
-\section{Model Context Protocol (MCP) and Standardized Tool Ecosystems}
-Historically, connecting LLMs to external developer tools required brittle proprietary API bindings, such as OpenAI Function Calling or LangChain Tool wrappers. In late 2024, Anthropic open-sourced the \textbf{Model Context Protocol (MCP)} \cite{ref_mcp_spec}, establishing an open JSON-RPC 2.0 standard for connecting AI assistants to local and remote data sources, developer tools, and prompt repositories.
+In open environments where team size and collaborator objectives vary dynamically, Rother et~al.~\cite{ref_rother2025_openended} propose open-ended coordination via modular open policies. By combining online partner-goal inference with maximum-entropy posterior policy blending, their system adapts dynamically without requiring joint retraining. Similarly, Liu et~al.~\cite{ref_liu2026_humanknowledge} address the scalability bottleneck of large-population multi-agent teams by integrating suboptimal human knowledge formatted in natural language into the action-selection policy.
 
-Recent research benchmarks have systematically examined tool orchestration efficiency. Hu et al. \cite{ref_toolcua} introduced \textbf{ToolCUA}, demonstrating that hybrid path orchestration between graphical user interfaces (GUIs) and API tool calls yields significantly higher task success rates and reduced latency for Computer Use Agents (CUAs). Furthermore, benchmarks including \textbf{LiveMCPBench} \cite{ref_livemcpbench} and \textbf{Open-M3-Bench} \cite{ref_openm3} established standardized evaluation suites for schema validation, tool invocation fidelity, and sandboxed error recovery across multi-tool environments.
+Addressing heterogeneity across agent capability profiles, Yu et~al.~\cite{ref_yu2024_ghq} propose Grouped Hybrid Q-Learning (GHQ). By establishing Grouped Individual-Global-Max (GIGM) consistency and maximizing mutual information across group trajectories, GHQ overcomes local transition heterogeneity in asymmetric cooperative environments. Complementarily, Xu et~al.~\cite{ref_xu2024_dapm} formulate Decentralized Adaptive Partner Modeling (DAPM) using fictitious self-play (FSP) to construct predictive partner models, mitigating partner sample complexity by up to 28.5\% while maintaining robust convergence.
 
-\section{Dynamic Intent Classification and Multi-Provider LLM Routing}
-As the frontier LLM ecosystem expanded across diverse providers—ranging from proprietary reasoning engines (OpenAI o1, GPT-4o) and safety-aligned models (Claude 3.5 Sonnet) to ultra-fast inference LPUs (Groq Llama 3) and private microservices (NVIDIA NIM)—intelligent runtime model routing has become imperative.
+\section{Dynamic Role Discovery and Human Planning Strategies}
+Decomposing complex, multi-stage engineering goals into discrete sub-tasks necessitates dynamic persona and role assignment. Xia et~al.~\cite{ref_xia2023_dynamic_roles} present a framework for dynamic role discovery and assignment in multi-agent task decomposition. By introducing action encoders to map behavioral vectors and regularizing policy drift to prevent excessive role switching, agents dynamically assume specialized roles aligned with task requirements, achieving significant performance gains over static baselines.
 
-RoutingBench (Chen et al. \cite{ref_routerbench}) and xRouteBench (Li et al. \cite{ref_xroutebench}) demonstrated that no single model dominates across all query categories, latency constraints, and cost boundaries. Lightweight tasks (e.g., regex lookup, JSON formatting) can be resolved by ultra-fast models at nominal expense, whereas intricate architectural reasoning demands high-capacity frontier models. By deploying a lightweight intent classifier trained on multi-model benchmark arenas (such as the LMSYS Chatbot Arena \cite{ref_lmsys}), developer systems achieve near-frontier performance while reducing operational expenses by over 70\%.
+From a cognitive planning perspective, Skirzy\'nski et~al.~\cite{ref_skirzynski2024_humanplanning} introduce the Human-Interpret framework to automatically discover and verbalize planning heuristics from human process-tracing data. By converting sequential search operations into procedural formulas and generating natural language descriptions, their method elucidates how human problem solvers prioritize sub-goals under cognitive constraints.
 
-\section{Safety Gating and Human-in-the-Loop Verification}
-Empowering autonomous agents with arbitrary shell access and filesystem privileges introduces severe security vulnerabilities, including prompt injection, unintentional data deletion, and secret exfiltration. Recent frameworks such as \textbf{WildGuard} (Han et al. \cite{ref_wildguard}) developed curated multi-task safety classifiers capable of detecting prompt harms, tool execution risks, and adversarial jailbreaks. Integrating calibrated safety gating into the execution pipeline ensures that whenever an agent proposes an action with high predicted harm or ambiguity, the system transitions to a paused checkpoint requiring explicit human authorization.
+These insights directly inform modern language agent architectures. The foundational paradigm for language model reasoning was established through the \textbf{ReAct} (Reasoning and Acting) framework, which interleaves textual reasoning traces with tool execution steps. Multi-agent collaborative frameworks such as AutoGen and MetaGPT further demonstrated that decomposing complex software engineering objectives into specialized agent roles (e.g., Architect, Coder, Reviewer) substantially improves code quality and reduces hallucinations through Standardized Operating Procedures (SOPs).
 
-\section{Preference Optimization and Alignment: ORPO vs. RLHF}
-Aligning language models with human preferences has traditionally relied on Reinforcement Learning from Human Feedback (RLHF) \cite{ref_rlhf} using PPO, which requires training a separate reward model and complex policy networks. Rafailov et al. \cite{ref_dpo} simplified this via Direct Preference Optimization (DPO). More recently, Hong et al. \cite{ref_orpo} introduced \textbf{Odds Ratio Preference Optimization (ORPO)}, eliminating the reference model by augmenting the Supervised Fine-Tuning (SFT) loss with an odds ratio preference penalty:
+\section{Workflow Scheduling, Multi-Cloud Offloading, and Resource Allocation}
+Orchestrating agent workflows and computational jobs across distributed cloud and edge nodes mirrors the multi-objective workflow scheduling literature. Yue et~al.~\cite{ref_yue2026_cpnhrl} formulate CPN-HRL, a hierarchical deep reinforcement learning approach for Computing Power Networks (CPNs) spanning cloud-edge-end environments. Their architecture decomposes scheduling into a high-level LSTM-PPO priority-weight generator and a low-level GAT-PPO topology-aware node selector, augmented with a dual-queue mechanism for latency-critical tasks.
+
+In mobile edge computing (MEC) environments, Ghazal et~al.~\cite{ref_ghazal2025_mecworkflow} develop a knowledge-learning workflow scheduling algorithm that incorporates real-time trust evaluation, security normalization, and adaptive allocation to prevent malicious nodes from executing mission-critical tasks. Addressing infrastructure energy overhead, Barredo and Puente~\cite{ref_barredo2025_multifitness} formulate an energy-aware cooperative multi-fitness evolutionary algorithm for Directed Acyclic Graph (DAG) scientific workflow scheduling in cloud environments, revealing vital Pareto trade-offs between completion makespan and power expenditure.
+
+Hybrid metaheuristic optimization has also demonstrated strong utility for task offloading. Heirati et~al.~\cite{ref_heirati2026_fogcloud} combine feedforward neural network workload prediction, reinforcement learning offloading policies, and hybrid Harris Hawk Optimization with Genetic Algorithms (HHO-GA) for fog-cloud environments. Abdi et~al.~\cite{ref_abdi2024_edgecloud} formulate non-linear mathematical models and genetic algorithms for cost-aware workflow offloading across the edge-cloud continuum under strict QoS and deadline bounds.
+
+For data-intensive workflows, Zhang et~al.~\cite{ref_zhang2023_dataintensive} propose a deep reinforcement learning workflow scheduler using an enhanced Deep Q-Network (DQN) with multi-objective reward shaping to optimize data transmission volume, execution time, and cluster load balancing. Wang et~al.~\cite{ref_wang2023_ecofriendly} introduce the Eco-friendly Reinforcement Learning in Federated Cloud (ERLFC) framework, employing an Actor-Critic architecture to dispatch jobs across geographically distributed data centers based on regional carbon emission factors and cooling efficiency.
+
+Furthermore, Subashree et~al.~\cite{ref_subashree2025_dssso} propose Dolphin Swarm Sparrow Search Optimization (DSSSO), balancing global space exploration with localized tuning to optimize makespan, monetary cost, and hardware utilization. To handle large-scale interactive decision variables in cloud DAGs, Li et~al.~\cite{ref_li2023_vcaes} develop the Variable Contribution Adaptive Evolutionary Scheduling (VCAES) algorithm, dynamically allocating evolutionary optimization resources to the most impactful decision variable clusters.
+
+\section{Standardized Tool Protocols and Multi-Provider LLM Routing}
+Historically, connecting LLMs to external developer tools required brittle proprietary API bindings, such as OpenAI Function Calling or custom wrappers. In late 2024, Anthropic open-sourced the \textbf{Model Context Protocol (MCP)}, establishing an open JSON-RPC 2.0 standard for connecting AI assistants to local and remote data sources, developer tools, and prompt repositories.
+
+Recent research benchmarks have systematically examined tool orchestration efficiency. benchmarks such as \textbf{ToolCUA}, demonstrating that hybrid path orchestration between graphical user interfaces (GUIs) and API tool calls yields significantly higher task success rates and reduced latency for Computer Use Agents (CUAs). Furthermore, benchmarks including \textbf{LiveMCPBench} and \textbf{Open-M3-Bench} established standardized evaluation suites for schema validation, tool invocation fidelity, and sandboxed error recovery across multi-tool environments.
+
+As the frontier LLM ecosystem expanded across diverse providers---ranging from proprietary reasoning engines (OpenAI o1, GPT-4o) and safety-aligned models (Claude 3.5 Sonnet) to ultra-fast inference LPUs (Groq Llama 3) and private microservices (NVIDIA NIM)---intelligent runtime model routing has become imperative. Empirical benchmarks such as RoutingBench and xRouteBench demonstrated that no single model dominates across all query categories, latency constraints, and cost boundaries. By deploying lightweight intent classifiers trained on multi-model benchmark arenas (such as LMSYS Chatbot Arena), developer operating environments can achieve frontier-grade code generation while curbing inference costs by over 70\%.
+
+\section{Advanced Reinforcement Learning and Reward Formulations}
+Formulating robust learning objectives in multi-agent and financial environments requires nuanced reward engineering. Cornalba et~al.~\cite{ref_cornalba2024_multiobj} investigate multi-objective reward generalization in deep reinforcement learning, demonstrating that algorithms incorporating generalized reward functions and discount factors during training exhibit superior predictive stability and handle sparse feedback significantly better than single-objective strategies.
+
+In operational scenarios where step returns are predominantly positive or profit-derived, standard discounted RL algorithms fail due to Laurent series expansion dominance by average reward terms. To resolve this, Schneckenreither and Moser~\cite{ref_schneckenreither2025_aral} formulate Average Reward Adjusted Discounted Reinforcement Learning (ARAL), proving that adjusting state value targets by the average reward preserves discriminative policy convergence across complex operations research benchmarks.
+
+When enforcing behavioral constraints, Marzari et~al.~\cite{ref_marzari2026_epsretrain} propose $\varepsilon$-retraining reinforcement learning. By identifying state-space regions where agents violated safety or behavioral preferences and mixing these into restart distributions via an $\varepsilon$-decay mechanism, $\varepsilon$-retrain guarantees monotonic policy improvements without distorting underlying convergence properties. In information retrieval and ranking settings, Zhuang et~al.~\cite{ref_zhuang2022_roltr} develop Reinforcement Online Learning to Rank (ROLTR) with unbiased reward shaping, utilizing inverse propensity scoring on both clicked and unclicked items to eliminate position bias.
+
+\section{Human-in-the-Loop Alignment and Instruction Optimization}
+Incorporating human guidance is crucial for constraining autonomous exploration and aligning model policies with complex user expectations. Niu et~al.~\cite{ref_niu2025_hiat} propose Human-in-the-Loop Reinforcement Learning with Auxiliary Task (HIAT) and its adaptive weighting variant (AWHIAT). By employing an auxiliary task that evaluates policy similarity to compensate for early-stage sample imbalance, HIAT significantly elevates mean episode rewards and sample efficiency.
+
+In the domain of language model fine-tuning, Lee~\cite{ref_lee2025_instructpatentgpt} presents InstructPatentGPT, showcasing how three-stage Reinforcement Learning from Human Feedback (RLHF) can be executed on consumer-grade GPU hardware to steer complex generative tasks (e.g., patent claim drafting) according to implicit human feedback and granular constraints.
+
+While traditional RLHF and Direct Preference Optimization (DPO) require separate reward modeling or reference networks, Odds Ratio Preference Optimization (ORPO) was introduced, \textbf{Odds Ratio Preference Optimization (ORPO)}, penalizing undesirable generation trajectories directly during Supervised Fine-Tuning:
 \begin{equation}
     \mathcal{L}_{\mathrm{ORPO}} = \mathcal{L}_{\mathrm{SFT}} + \beta \cdot \mathcal{L}_{\mathrm{OR}}
 \end{equation}
-This formulation penalizes undesirable trajectories directly during supervised training, making it exceptionally parameter-efficient when fine-tuning lightweight LoRA adapters for specialized agent roles.
+When paired with Low-Rank Adaptation (LoRA) and curated preference datasets like UltraFeedback and CMU Agent Trajectories, ORPO enables rapid, memory-efficient adaptation of specialized agent personas on local workstations.
 
-\section{Local-First Architecture and Reactive In-Browser Databases}
-The local-first software paradigm (Kleppmann et al. \cite{ref_local_first}) prioritizes client-side storage on user hardware, treating network connectivity as an opportunistic enhancement. In modern web environments, the HTML5 IndexedDB API provides persistent client object storage but lacks native reactivity. The emergence of \textbf{Dexie.js} \cite{ref_dexie} provides an ACID-compliant abstraction layer over IndexedDB featuring compound B-tree indexing, transactional guarantees, and the \texttt{useLiveQuery} observable hook. Integrating Dexie with React 19 enables automatic UI re-renders upon database mutations, ensuring sub-50ms reactive state propagation without redundant server roundtrips.
+\section{Responsible AI Governance and Meaningful Human Control}
+Deploying autonomous agents with local system execution privileges necessitates stringent ethical governance and safety guarantees. Vyhmeister et~al.~\cite{ref_vyhmeister2023_responsibleai} propose a comprehensive Responsible AI framework structured around pipeline contextualization, treating ethical and trustworthiness considerations as formal engineering hazards across all lifecycle stages.
+
+To prevent responsibility gaps when autonomous agents execute critical workflows, Siebert et~al.~\cite{ref_siebert2023_humancontrol} establish four actionable properties for \textbf{Meaningful Human Control (MHC)}: (1) defining explicit boundaries for morally loaded situations, (2) ensuring mutually compatible representations between human and AI agents, (3) calibrating human authority and capability, and (4) maintaining explicit causal tracing between agent actions and human awareness. These principles directly underpin calibrated safety checkpoints and runtime guardrails, which evaluate prompt harms, execution risks, and adversarial jailbreaks prior to tool invocation.
+
+\section{Local-First Data Architectures and Reactive In-Browser Databases}
+The local-first software paradigm (such as local-first software principles) prioritizes client-side storage on user hardware, treating cloud connectivity as an opportunistic enhancement. In browser environments, the HTML5 IndexedDB API provides persistent client object storage but lacks native reactivity. The emergence of \textbf{Dexie.js} provides an ACID-compliant abstraction layer over IndexedDB featuring compound B-tree indexing, transactional guarantees, and the \texttt{useLiveQuery} observable hook. Integrating Dexie with modern frontend frameworks enables automatic UI re-renders upon database mutations, ensuring sub-50ms reactive state propagation without server latency. For backend microservices, asynchronous architectures built on FastAPI, combined with high-performance ML libraries such as XGBoost and Scikit-learn, deliver low-latency intent classification and agent orchestration.
 
 \section{Summary of Identified Research Gaps}
 Table~\ref{tab:lit_comparison} synthesizes the comparative analysis of existing developer environments and agent platforms against the contributions of PrismSpace.
@@ -261,20 +293,16 @@ Table~\ref{tab:lit_comparison} synthesizes the comparative analysis of existing 
 \toprule
 \textbf{Framework} & \textbf{Tool Protocol} & \textbf{Model Routing} & \textbf{Safety Gate} & \textbf{Local DB} & \textbf{Primary Focus / Limitations} \\
 \midrule
-AutoGen \cite{ref_autogen} & Custom API & No & Manual Flag & In-Memory & Python agent framework; lacks native UI and local DB. \\
-MetaGPT \cite{ref_metagpt} & Custom SOP & No & No & File-Based & High token consumption; rigid waterfall lifecycle. \\
+AutoGen & Custom API & No & Manual Flag & In-Memory & Python agent framework; lacks native UI and local DB. \\
+MetaGPT & Custom SOP & No & No & File-Based & High token consumption; rigid waterfall lifecycle. \\
 Cursor / Copilot & Proprietary & Limited & Prompt-Level & Cloud Synced & Closed source; single-vendor dependency; opaque execution. \\
-ToolCUA \cite{ref_toolcua} & Custom RPC & No & No & None & Research benchmark for GUI/API navigation paths. \\
+ToolCUA & Custom RPC & No & No & None & Research benchmark for GUI/API navigation paths. \\
 \textbf{PrismSpace} & \textbf{Open MCP} & \textbf{Yes (5 Tiers)} & \textbf{Yes (Tuned)} & \textbf{Dexie IDB} & \textbf{Unified developer OS, observable swarm, and ML routing.} \\
 \bottomrule
 \end{tabularx}
 \end{singlespace}
 \end{table}
 
-
-%==============================================================================
-% CHAPTER 3: SYSTEM REQUIREMENTS AND ARCHITECTURE SPECIFICATION
-%==============================================================================
 \chapter{System Requirements and Architecture Specification}
 
 A robust software engineering project necessitates rigorous requirements modeling, formal environmental constraints, and a principled architectural topology. This chapter presents the System Requirements Specification (SRS), hardware/software constraints, the formal 6-tier architecture, and mathematical problem formulations.
@@ -369,7 +397,7 @@ The comprehensive operational framework of PrismSpace is depicted in Figure~\ref
     \label{fig:framework}
 \end{figure}
 
-During offline training, multi-source benchmark datasets (LMSYS Chatbot Arena \cite{ref_lmsys}, RouterBench \cite{ref_routerbench}, WildGuardMix \cite{ref_wildguard}, UltraFeedback \cite{ref_ultrafeedback}, and Agent Trajectories \cite{ref_agent_trajectories}) undergo rigorous lexical extraction, z-score standardization, and isolation forest anomaly filtering. The resulting feature representations train the multi-head intelligence pipeline, including the intent classifier, provider router, safety gate, and ORPO alignment adapters.
+During offline training, multi-source benchmark datasets (LMSYS Chatbot Arena, RouterBench, WildGuardMix, UltraFeedback, and Agent Trajectories) undergo rigorous lexical extraction, z-score standardization, and isolation forest anomaly filtering. The resulting feature representations train the multi-head intelligence pipeline, including the intent classifier, provider router, safety gate, and ORPO alignment adapters.
 
 At runtime, user natural language queries are ingested via the presentation shell. The feature vector $\mathbf{x}_{\text{query}}$ is propagated through the 4-Head Multi-Head Attention architecture:
 \begin{equation}
@@ -481,7 +509,7 @@ The PrismSpace multi-agent swarm algorithm is structured into sequential operati
 1.4 & Establish FastAPI Hive Bridge with SSE streaming endpoint and configure CORS policy for local-first operation. \\
 \end{tabular}
 
-\vspace{8pt}
+\clearpage
 \noindent\textbf{Step 2: Task Input and Feature Extraction}
 \vspace{4pt}
 
@@ -517,7 +545,7 @@ The PrismSpace multi-agent swarm algorithm is structured into sequential operati
     \mathbf{h}_i' = \Bigl\Vert_{k=1}^K \sigma\Bigl(\textstyle\sum_{j \in \mathcal{N}(i)} \alpha_{ij}^k \mathbf{W}^k \mathbf{h}_j\Bigr)
 \end{equation}
 
-\vspace{4pt}
+\clearpage
 \noindent\textbf{Step 5: Multi-Agent ReAct Execution Loop}
 \vspace{4pt}
 
@@ -656,11 +684,11 @@ This chapter presents the experimental methodology, benchmark datasets, quantita
 \section{Experimental Setup and Benchmark Datasets}
 To evaluate the machine learning routing, planning, and safety models under rigorous conditions, experiments were conducted across four recognized benchmark datasets:
 \begin{enumerate}
-    \item \textbf{LMSYS Chatbot Arena Conversations \cite{ref_lmsys}:} 50,000+ real-world user conversations evaluating multi-provider model routing, affinity, and domain suitability across OpenAI, Anthropic, Google, and Groq endpoints.
-    \item \textbf{RouterBench \cite{ref_routerbench}:} Standardized query candidate benchmarks mapping task difficulty against cost-accuracy trade-offs.
-    \item \textbf{WildGuardMix \cite{ref_wildguard}:} Curated dataset of prompt-safety labels used to train and calibrate the Human-in-the-Loop Safety Gate.
-    \item \textbf{UltraFeedback Binarized \cite{ref_ultrafeedback}:} High-quality preference pairs ($\langle \text{prompt}, y_{\text{chosen}}, y_{\text{rejected}} \rangle$) utilized for single-stage ORPO alignment fine-tuning.
-    \item \textbf{CMU Agent Trajectories \cite{ref_agent_trajectories}:} Multi-step agent trajectories with binary success outcomes used to train workflow completion prediction models.
+    \item \textbf{LMSYS Chatbot Arena Conversations:} 50,000+ real-world user conversations evaluating multi-provider model routing, affinity, and domain suitability across OpenAI, Anthropic, Google, and Groq endpoints.
+    \item \textbf{RouterBench:} Standardized query candidate benchmarks mapping task difficulty against cost-accuracy trade-offs.
+    \item \textbf{WildGuardMix:} Curated dataset of prompt-safety labels used to train and calibrate the Human-in-the-Loop Safety Gate.
+    \item \textbf{UltraFeedback Binarized:} High-quality preference pairs ($\langle \text{prompt}, y_{\text{chosen}}, y_{\text{rejected}} \rangle$) utilized for single-stage ORPO alignment fine-tuning.
+    \item \textbf{CMU Agent Trajectories:} Multi-step agent trajectories with binary success outcomes used to train workflow completion prediction models.
 \end{enumerate}
 
 \section{Quantitative Model Evaluation Results}
@@ -795,71 +823,80 @@ Future enhancements to expand and advance PrismSpace include:
 %==============================================================================
 \begin{thebibliography}{99}
 
-\bibitem{ref_react}
-S.~Yao, J.~Zhao, D.~Yu, N.~Du, I.~Shafran, K.~Narasimhan, and Y.~Cao, ``ReAct: Synergizing reasoning and acting in language models,'' in \emph{International Conference on Learning Representations (ICLR)}, 2023.
+\bibitem{ref_yue2026_cpnhrl}
+Q.~Yue, L.~Tian, X.~Feng, Z.~Yuan, S.~Wei, J.~Xia, B.~Chen, X.~Song, Y.~Yao, and Y.~Liu, ``CPN-HRL: A hierarchical deep reinforcement learning approach for priority-aware task scheduling in CPN enabled by cloud-edge-end environments,'' \emph{Journal of King Saud University -- Computer and Information Sciences}, vol.~38, art. 290, 2026. [Online]. Available: \url{https://doi.org/10.1007/s44443-026-00690-x}
 
-\bibitem{ref_autogen}
-Q.~Wu, G.~Bansal, J.~Zhang, Y.~Wu, B.~Li, E.~Zhu, L.~Jiang, X.~Zhang, S.~Zhang, J.~Liu, A.~H. Awadallah, R.~W. White, D.~Burger, and H.~Wang, ``AutoGen: Enabling next-gen LLM applications via multi-agent conversation,'' \emph{arXiv preprint arXiv:2308.08155}, 2023.
+\bibitem{ref_cornalba2024_multiobj}
+F.~Cornalba, C.~Disselkamp, D.~Scassola, and C.~Helf, ``Multi-objective reward generalization: Improving performance of deep reinforcement learning for applications in single-asset trading,'' \emph{Neural Computing and Applications}, vol.~36, no.~2, pp.~619--637, 2024. [Online]. Available: \url{https://doi.org/10.1007/s00521-023-09033-7}
 
-\bibitem{ref_metagpt}
-S.~Hong, M.~Zhuge, J.~Chen, X.~Zheng, Y.~Cheng, C.~Zhang, J.~Wang, Z.~Wang, S.~K.~S. Yau, Z.~Lin, L.~Zhou, C.~Ran, L.~Xiao, C.~Wu, and J.~Qin, ``MetaGPT: Meta programming for a multi-agent collaborative framework,'' in \emph{International Conference on Learning Representations (ICLR)}, 2024.
+\bibitem{ref_schneckenreither2025_aral}
+M.~Schneckenreither and G.~Moser, ``Average reward adjusted discounted reinforcement learning,'' \emph{Neural Computing and Applications}, vol.~37, no.~35, pp.~25663--25694, 2025. [Online]. Available: \url{https://doi.org/10.1007/s00521-024-10620-5}
 
-\bibitem{ref_mcp_spec}
-Anthropic, ``Model Context Protocol (MCP) Specification,'' 2024. [Online]. Available: \url{https://modelcontextprotocol.io/}
+\bibitem{ref_aina2026_smadrl}
+K.~O. Aina and S.~Ha, ``Deep reinforcement learning for multi-agent coordination,'' \emph{Artificial Life and Robotics}, vol.~31, no.~2, pp.~484--494, 2026. [Online]. Available: \url{https://doi.org/10.1007/s10015-025-01089-z}
 
-\bibitem{ref_toolcua}
-X.~Hu, X.~Zhang, H.~Xu, K.~Qiao, J.~Yang, X.~Huang, J.~Shao, M.~Yan, and J.~Ye, ``ToolCUA: Towards optimal GUI-tool path orchestration for computer use agents,'' \emph{arXiv preprint arXiv:2605.12481}, 2026.
+\bibitem{ref_rother2025_openended}
+D.~Rother, J.~Pajarinen, J.~Peters, and T.~H. Weisswange, ``Open-ended coordination for multi-agent systems using modular open policies,'' \emph{Autonomous Agents and Multi-Agent Systems}, vol.~39, no.~2, art. 40, 2025. [Online]. Available: \url{https://doi.org/10.1007/s10458-025-09723-7}
 
-\bibitem{ref_livemcpbench}
-ICIP, ``LiveMCPBench: A dynamic evaluation benchmark for Model Context Protocol agents,'' 2025. [Online]. Available: \url{https://huggingface.co/datasets/ICIP/LiveMCPBench}
+\bibitem{ref_liu2026_humanknowledge}
+D.~Liu, F.~Ren, J.~Yan, G.~Su, W.~Gu, and S.~Kato, ``Improving scalability of multi-agent deep reinforcement learning with suboptimal human knowledge,'' \emph{Autonomous Agents and Multi-Agent Systems}, vol.~40, no.~1, art. 2, 2026. [Online]. Available: \url{https://doi.org/10.1007/s10458-025-09729-1}
 
-\bibitem{ref_openm3}
-E.~Yang, J.~Zhou, and W.~Zhao, ``Open-M3-Bench: Benchmarking multi-modal, multi-tool agent environments,'' \emph{arXiv preprint arXiv:2512.22047}, 2025.
+\bibitem{ref_marzari2026_epsretrain}
+L.~Marzari, C.~Liu, P.~L. Donti, and E.~Marchesini, ``$\varepsilon$-retraining reinforcement learning algorithms,'' \emph{Autonomous Agents and Multi-Agent Systems}, vol.~40, no.~1, art. 24, 2026. [Online]. Available: \url{https://doi.org/10.1007/s10458-026-09748-6}
 
-\bibitem{ref_routerbench}
-Q.~Chen, B.~Zheng, Y.~Shen, M.~Li, and C.~Zhang, ``RouterBench: A benchmark for multi-model LLM routing algorithms,'' \emph{arXiv preprint arXiv:2403.12031}, 2024.
+\bibitem{ref_wong2023_marlsurvey}
+A.~Wong, T.~B{\"a}ck, A.~V. Kononova, and A.~Plaat, ``Deep multiagent reinforcement learning: Challenges and directions,'' \emph{Artificial Intelligence Review}, vol.~56, no.~6, pp.~5023--5056, 2023. [Online]. Available: \url{https://doi.org/10.1007/s10462-022-10299-x}
 
-\bibitem{ref_xroutebench}
-X.~Li, Z.~Wang, Y.~Tian, and D.~Roth, ``xRouteBench: Evaluating cross-provider model routing for cost-latency Pareto frontiers,'' \emph{arXiv preprint arXiv:2410.08922}, 2024.
+\bibitem{ref_niu2025_hiat}
+B.~Niu, B.~Luo, Y.~Cui, X.~Xu, Y.~Zhao, and Y.~Feng, ``HIAT: Human-in-the-loop reinforcement learning with auxiliary task,'' \emph{Artificial Intelligence Review}, vol.~58, no.~10, art. 273, 2025. [Online]. Available: \url{https://doi.org/10.1007/s10462-025-11260-4}
 
-\bibitem{ref_lmsys}
-L.~Zheng, W.-L. Chiang, Y.~Sheng, S.~Tian, H.~Shen, Z.~Hao, H.~Zhang, B.~Li, X.~Peng, Y.~Zhu, S.~Luo, E.~P. Xing, and I.~Stoica, ``Judging LLM-as-a-judge with MT-Bench and Chatbot Arena,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~36, 2023.
+\bibitem{ref_lee2025_instructpatentgpt}
+J.-S. Lee, ``InstructPatentGPT: Training patent language models to follow instructions with human feedback,'' \emph{Artificial Intelligence and Law}, vol.~33, no.~3, pp.~739--782, 2025. [Online]. Available: \url{https://doi.org/10.1007/s10506-024-09401-1}
 
-\bibitem{ref_wildguard}
-S.~Han, J.~Rao, A.~Bhardwaj, S.~Prabhumoye, Y.~Choi, and D.~Roth, ``WildGuard: Open one-stop moderation tools for safety risks, jailbreaks, and refusals of LLMs,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2024.
+\bibitem{ref_zhuang2022_roltr}
+S.~Zhuang, Z.~Qiao, and G.~Zuccon, ``Reinforcement online learning to rank with unbiased reward shaping,'' \emph{Information Retrieval Journal}, vol.~25, no.~4, pp.~386--413, 2022. [Online]. Available: \url{https://doi.org/10.1007/s10791-022-09413-y}
 
-\bibitem{ref_ultrafeedback}
-G.~Cui, L.~Yuan, N.~Ding, G.~Yao, B.~Zhu, Y.~Ni, Z.~Xie, Z.~Liu, and M.~Sun, ``UltraFeedback: Boosting language models with high-quality feedback,'' in \emph{International Conference on Machine Learning (ICML)}, 2024.
+\bibitem{ref_ghazal2025_mecworkflow}
+T.~M. Ghazal, A.~E. Awouda, M.~K. Hasan, A.~H.~A. Rahman, S.~Islam, R.~A. Saeed, H.~Elshafie, A.~Iqbal, and A.~H. Hussein, ``Knowledge learning for securing workflow scheduling algorithm in mobile edge computing,'' \emph{Mobile Networks and Applications}, vol.~30, no.~2, pp.~395--413, 2025. [Online]. Available: \url{https://doi.org/10.1007/s11036-025-02465-6}
 
-\bibitem{ref_agent_trajectories}
-C.~Xiao, Y.~Wu, Y.~Shen, and G.~Neubig, ``Agent trajectories: Benchmarking multi-turn interactive agent task execution,'' \emph{Carnegie Mellon University Technical Report}, 2024.
+\bibitem{ref_barredo2025_multifitness}
+P.~Barredo and J.~Puente, ``Energy-aware cooperative multi-fitness evolutionary algorithm for workflow scheduling in cloud computing,'' \emph{Natural Computing}, vol.~24, no.~3, pp.~557--570, 2025. [Online]. Available: \url{https://doi.org/10.1007/s11047-025-10023-y}
 
-\bibitem{ref_rlhf}
-P.~F. Christiano, J.~Leike, T.~Brown, M.~Martic, S.~Legg, and D.~Amodei, ``Deep reinforcement learning from human preferences,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~30, 2017.
+\bibitem{ref_heirati2026_fogcloud}
+A.~Heirati, M.~Fartash, and M.~Khalily-Dermany, ``Optimized task scheduling in fog-cloud computing using hybrid deep learning and metaheuristic algorithms,'' \emph{Neural Processing Letters}, vol.~58, no.~1, art. 5, 2026. [Online]. Available: \url{https://doi.org/10.1007/s11063-025-11819-w}
 
-\bibitem{ref_dpo}
-R.~Rafailov, A.~Sharma, E.~Mitchell, C.~D. Manning, S.~Ermon, and C.~Finn, ``Direct preference optimization: Your language model is secretly a reward model,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~36, 2023.
+\bibitem{ref_abdi2024_edgecloud}
+S.~Abdi, M.~Ashjaei, and S.~Mubeen, ``Cost-aware workflow offloading in edge-cloud computing using a genetic algorithm,'' \emph{The Journal of Supercomputing}, vol.~80, no.~16, pp.~24835--24870, 2024. [Online]. Available: \url{https://doi.org/10.1007/s11227-024-06341-0}
 
-\bibitem{ref_orpo}
-J.~Hong, N.~Lee, and J.~Thorne, ``ORPO: Monolithic preference optimization without reference model,'' in \emph{Empirical Methods in Natural Language Processing (EMNLP)}, 2024.
+\bibitem{ref_skirzynski2024_humanplanning}
+J.~Skirzy{\'n}ski, Y.~R. Jain, and F.~Lieder, ``Automatic discovery and description of human planning strategies,'' \emph{Behavior Research Methods}, vol.~56, no.~3, pp.~1049--1076, 2024. [Online]. Available: \url{https://doi.org/10.3758/s13428-023-02062-z}
 
-\bibitem{ref_lora}
-E.~J. Hu, Y.~Shen, P.~Wallis, Z.~Allen-Zhu, Y.~Li, S.~Wang, L.~Wang, and W.~Chen, ``LoRA: Low-rank adaptation of large language models,'' in \emph{International Conference on Learning Representations (ICLR)}, 2022.
+\bibitem{ref_zhang2023_dataintensive}
+S.~Zhang, Z.~Zhao, C.~Liu, and S.~Qin, ``Data-intensive workflow scheduling strategy based on deep reinforcement learning in multi-clouds,'' \emph{Journal of Cloud Computing}, vol.~12, no.~1, art. 125, 2023. [Online]. Available: \url{https://doi.org/10.1186/s13677-023-00504-9}
 
-\bibitem{ref_local_first}
-M.~Kleppmann, A.~Wiggins, P.~van~Hardenberg, and M.~McGranaghan, ``Local-first software: You own your data, in spite of the cloud,'' in \emph{ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software (Onward!)}, 2019, pp. 154--178.
+\bibitem{ref_wang2023_ecofriendly}
+Z.~Wang, S.~Chen, L.~Bai, J.~Gao, J.~Tao, R.~R. Bond, and M.~D. Mulvenna, ``Reinforcement learning based task scheduling for environmentally sustainable federated cloud computing,'' \emph{Journal of Cloud Computing}, vol.~12, no.~1, art. 174, 2023. [Online]. Available: \url{https://doi.org/10.1186/s13677-023-00553-0}
 
-\bibitem{ref_dexie}
-D.~Fahlander, ``Dexie.js: A minimalist wrapper for IndexedDB,'' 2024. [Online]. Available: \url{https://dexie.org/}
+\bibitem{ref_subashree2025_dssso}
+S.~Subashree, M.~Rajakumaran, G.~Pushpa, and S.~Senthilkumar, ``Hybrid dolphin swarm sparrow search optimization based multi-objective cloud workflow scheduling,'' \emph{Journal of Cloud Computing}, vol.~14, no.~1, art. 80, 2025. [Online]. Available: \url{https://doi.org/10.1186/s13677-025-00828-8}
 
-\bibitem{ref_fastapi}
-S.~Ram\'irez, ``FastAPI: Modern, fast (high-performance), web framework for building APIs with Python,'' 2024. [Online]. Available: \url{https://fastapi.tiangolo.com/}
+\bibitem{ref_xia2023_dynamic_roles}
+Y.~Xia, J.~Zhu, and L.~Zhu, ``Dynamic role discovery and assignment in multi-agent task decomposition,'' \emph{Complex \& Intelligent Systems}, vol.~9, no.~6, pp.~6211--6222, 2023. [Online]. Available: \url{https://doi.org/10.1007/s40747-023-01071-x}
 
-\bibitem{ref_xgboost}
-T.~Chen and C.~Guestrin, ``XGBoost: A scalable tree boosting system,'' in \emph{ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)}, 2016, pp. 785--794.
+\bibitem{ref_li2023_vcaes}
+J.~Li, L.~Xing, W.~Zhong, Z.~Cai, and F.~Hou, ``Decision variable contribution based adaptive mechanism for evolutionary multi-objective cloud workflow scheduling,'' \emph{Complex \& Intelligent Systems}, vol.~9, no.~6, pp.~7337--7348, 2023. [Online]. Available: \url{https://doi.org/10.1007/s40747-023-01137-w}
 
-\bibitem{ref_scikit}
-F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel, M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos, D.~Cournapeau, M.~Brucher, M.~Perrot, and E.~Duchesnay, ``Scikit-learn: Machine learning in Python,'' \emph{Journal of Machine Learning Research}, vol.~12, pp. 2825--2830, 2011.
+\bibitem{ref_yu2024_ghq}
+X.~Yu, Y.~Lin, X.~Wang, S.~Han, and K.~Lv, ``GHQ: Grouped hybrid Q-learning for cooperative heterogeneous multi-agent reinforcement learning,'' \emph{Complex \& Intelligent Systems}, vol.~10, no.~4, pp.~5261--5280, 2024. [Online]. Available: \url{https://doi.org/10.1007/s40747-024-01415-1}
+
+\bibitem{ref_xu2024_dapm}
+C.~Xu, J.~Wang, X.~Zhu, Y.~Yue, W.~Zhou, Z.~Liang, and D.~Wojtczak, ``Decentralized multi-agent cooperation via adaptive partner modeling,'' \emph{Complex \& Intelligent Systems}, vol.~10, no.~4, pp.~4989--5004, 2024. [Online]. Available: \url{https://doi.org/10.1007/s40747-024-01421-3}
+
+\bibitem{ref_vyhmeister2023_responsibleai}
+E.~Vyhmeister, G.~Castane, P.-O. {\"O}stberg, and S.~Thevenin, ``A responsible AI framework: Pipeline contextualisation,'' \emph{AI and Ethics}, vol.~3, no.~1, pp.~175--197, 2023. [Online]. Available: \url{https://doi.org/10.1007/s43681-022-00154-8}
+
+\bibitem{ref_siebert2023_humancontrol}
+L.~C. Siebert, M.~L. Lupetti, E.~Aizenberg, N.~Beckers, A.~Zgonnikov, H.~Veluwenkamp, D.~Abbink, E.~Giaccardi, G.-J. Houben, C.~M. Jonker, J.~van~den Hoven, D.~Forster, and R.~L. Lagendijk, ``Meaningful human control: Actionable properties for AI system development,'' \emph{AI and Ethics}, vol.~3, no.~1, pp.~241--255, 2023. [Online]. Available: \url{https://doi.org/10.1007/s43681-022-00167-3}
 
 \end{thebibliography}
 
