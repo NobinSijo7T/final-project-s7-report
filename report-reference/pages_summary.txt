@@ -1,0 +1,183 @@
+=== PAGE 1 ===
+FedASA: A Personalized Federated Learning With
+Adaptive Model Aggregation for Heterogeneous
+Mobile Edge Computing
+Dongshang Deng, Xuangou Wu, Member, IEEE, Tao Zhang, Member, IEEE, Xiangyun Tang, Hongyang
+Du, Jiawen Kang , Senior Member, IEEE, Jiqiang Liu, Senior Member, IEEE,
+and Dusit Niyato, Fellow, IEEE
+Abstract—Federated learning (FL) opens a new promising paradigm for the Industrial Internet of Thing
+Manuscript received 16 October 2023; revised 8 August 2024; accepted 15 August 2024. Date of publica
+Dongshang Deng and Xuangou Wu are with the School of Computer Sci- ence and Technology, Anhui Univer
+Tao Zhang is with the School of Cyberspace Science and Technology, Beijing Jiaotong University, Beij
+
+=== PAGE 2 ===
+However, in practical IoT scenarios, the following challenges should be considered to achieve an eff
+Existing works in the literature that address statistical hetero- geneity in FL have fallen into the
+TABLE I THE COMPARISON OF THE PREVIOUS WORKS AND OURS
+FedPer [30] reduces communication overhead by uploading only the base layer, while achieving model p
+In this paper, we aim to address two problems: (i) What are the main statistical heterogeneity facto
+The contributions of our work are summarized as follows: r To the best of our knowledge, this is the
+siders the cross-location issues in resource-constrained IoT scenarios. Our empirical results show t
+called FedASA, which can address the challenge of statisti- cal heterogeneity in resource-constraine
+bound, which provides the theoretical guarantee for the fairness of FedASA. At the same time, we pro
+sive simulation and experiments. We demonstrate that FedASA outperforms the state-of-the-art approac
+
+=== PAGE 3 ===
+13.27% with better fairness and faster convergence, and communication requirement has been reduced b
+II. MOTIVATION AND PROBLEM FORMULATION
+A. Motivation
+According to FL [11], we consider that there exists a pa- rameter server andψK local devices coopera
+i=1, Dk←∈Dk to complete a subtask←Tk =←⟨Dk,←Fk⟩, whereψNk is the number of samples. For deviceψk, th
+1 Nk
+Nk
+i=1[l(fk(xi;ψwk),ψyi)] is often used as an estimate of the loss. Therefore, the optimization objecti
+w∗= arg min
+w L(w) = arg min
+
+=== PAGE 4 ===
+Fig. 3. Illustration of three sharing schemes in federated learning.
+Fig. 4. Performance comparison of different shared layers.
+including limited computing and communication resources [20]. Note that the limitation of communicat
+To further exam our idea, we conducted a simple experiment in CWRU dataset. As shown in the Fig. 4,ψ
+layers required by devices decreases. In more complex hetero- geneous scenarios, reducing the requir
+In general, (2) can be solved by gradient descent algo- rithms [11], such as mini-batch gradient des
+k =ψwt
+k←−η∇Lk(wt) (η is the learning rate) to the server for aggregation.
+Note that the communication overhead of FL is determined by the size of transmitted model parameters
+k can be formulated by
+
+=== PAGE 5 ===
+Fig. 5. Overview of FedASA. The training procedure consists of the following steps: 1⃝. Data preproc
+TABLE II A SUMMARY OF IMPORTANT NOTATIONS
+Assuming that for deviceψk, the total communication resource budget is←Ck. Accordingly, we formulate
+min θk,φk
+K 
+k=1
+pkLk(θk←◦φk),
+s.t.
+⎧ ⎪ ⎪ ⎪ ⎨
+⎪ ⎪ ⎪ ⎩
+
+=== PAGE 6 ===
+Fig. 6. The original time domain signal and frequency domain signal compar- ison.
+Fig. 7. Architectures of different models.
+device, the private dataset contains all types of signals to build a multi-classification task and e
+Since the raw vibration signals only represent the time domain (referred to Fig. 6(a)) and their pha
+Xd =
+S−1 
+s=0
+xse−i2πds/S, d = 0,ψ.ψ.ψ.ψ,ψS←−1, (7)
+whereψei2π/S is a primitiveψS-th root of 1.
+B. Cell-Wised Alignment
+
+=== PAGE 7 ===
+Algorithm 1: The FedASA Algorithm. Input: Communication resources budget for each device←Ck,
+training roundψT, auxiliary datasetψDaux, auxiliary model gaux, alignment roundsψt0 Output:ψθT
+k ,ψφT
+k 1: Initialize the devices’ model parametersψθ0 k,ψφ0
+k, hyper-model parametersψθ0
+hp(·) 2: At Parameter Server: 3: forψt = 1, 2,ψ.ψ.ψ.ψ,ψT do 4: ifψt←≤t0 then 5: Receiveψwt
+k for allψk←∈[K] 6: m∗
+k = arg minm∈[M] E∥gl
+aux(x;ψθaux)←− gm
+k (x;ψθk)∥2 //Refer to (8) 7: Collect the alignment vectorψm∗
+
+=== PAGE 8 ===
+parameter server. For the server, the algorithm for each round of updates is: (i) Receive all update
+k. (ii) Ifψt = 1 perform to determine the optimalψm∗by cell-wised alignment otherwise skip this step
+hp (·) through cell- based aggregation. (iv) Sample updated shared modelsψθt+1
+k byψm∗. (v) Sendψθt+1
+k to all devices. Follow this loop for multiple rounds of training until the model converges or reac
+k,ψφ0
+k and hyper-model parametersψθ0
+hp(·). At the parameter server, lines 4-8 are used to perform cell-wised alignment and to collect th
+k , φt+1
+k . Line 24 is used to sendψθt+1
+
+=== PAGE 9 ===
+hyper-modelψg. Let the global optimal modelψg∗satisfy  ̃L(g∗) = K
+k=1ψpkLk(g∗
+k), and then we have the following theorem: Theorem 1: Let the VC-dimension of the function space←G 
+Li(gi)←≤ ̃L(g) + 1
+2
+K
+k=1ψpk ˆdGΔG(Dk,←Di)    Disparity Difference
++ 4
+
+2d log(2Km) + log 2 δ Km + λ∗
+
+=== PAGE 10 ===
++ψL
+2←∥wt+1←−wt∥2
+=←L(wt)←−η∇L(wt)T←∇ˆL(wt)
++ψLη2
+2←∥∇ˆL(wt)∥2 (28)
+Take expectation of both sides,
+E[L(wt+1)]←≤E[L(wt)]←−η∇L(wt)T E[∇ˆL(wt)]
++ψLη2
+2 E∥∇ˆL(wt)∥2
+≤E[L(wt)]←−ηa∥∇L(wt)∥2
+
+=== PAGE 11 ===
+TABLE V DEVICE TASKS SETTINGS
+r FedPer [30] is a typical G-sharing method that addresses
+statistical heterogeneity through personalized layers. r Ditto [23] employsψl2 regularization to pre
+sociation between the global architecture and the local architectures. For Ditto, we set the hyperpa
+B. Performance Evaluation
+Firstly, we compared the performance of different baseline methods in cross-location scenarios (refe
+Among baseline methods, the accuracy of local-only remains below 60% with a larger standard deviatio
+Fig. 9. Accuracy comparison in cross-location scenarios.
+FedProx,Ditto,andFedPerdeclined.TheaccuraciesofDittoand FedPer drop by 8.75% and 4.83%, respectively
+Fig. 10 shows the performance comparison of different meth- ods in three monitoring locations. It ca
+
+=== PAGE 12 ===
+TABLE VI COMPARISON WITH STATE-OF-THE-ART METHODS ON THE CWRU DATASET
+Fig. 10. Performance comparison in three monitoring locations.
+Fig. 11(a) shows that at locations A & B, the optimal archi- tecture,ψα1, achieved an accuracy of 96
+Fig. 11. Accuracy comparison of different shared architectures.
+requires a customized sharing architecture. Therefore, in cross- position scenarios, fixed-sharing s
+D. Hyperparameter Analysis
+Table VI and Fig. 12 show the performance comparison of different architectures of the auxiliary mod
+
+=== PAGE 13 ===
+Fig. 12. Accuracy comparison for different hyperparameters.
+is found in locations A & B, with only 1.04%. The reason is that the shared architecture of FedASA c
+E. Visualization Display
+In this subsection, the global features extracted from the shared architectures of different devices
+VI. RELATED WORK
+Federated learning in IoT: With the rise of network band- width burden, deploying centralized learni
+Fig. 13. Feature visualization by the t-SNE method.
+that enables joint model training without sharing local data. Mothukuri et al. [43] proposed an FL-b
+Federated learning with communication constrains: FL is widely deployed on mobile and IoT devices to
+Federated learning with heterogenous devices: Considering heterogeneous edge devices, FL with hetero
+
+=== PAGE 14 ===
+strategies have been proposed to address the straggler issue [51], [53], [54], [55]. To address stat
+VII. CONCLUSION
+In this paper, we investigated the essential challenges of deploying FL frameworks in real IoT scena
+REFERENCES
+[1] T. Qiu, J. Chi, X. Zhou, Z. Ning, M. Atiquzzaman, and D. O. Wu, “Edge
+computing in industrial Internet of Things: Architecture, advances and challenges,” IEEE Commun. Sur
+in digital twins: A convolutional and hierarchical reinforcement learning approach,” IEEE J. Sel. Ar
+network reconnaissance: A moving target defense approach based on deep reinforcement learning,” IEEE
+enabled industry intelligence: State of the art, challenges and prospects,” IEEE Trans. Ind. Informa
+ical guarantees,” in Proc. IEEE Conf. Comput. Commun., 2021, pp. 1–10. [6] W. Y. B. Lim et al., “Fed
+
+=== PAGE 15 ===
+[32] J. Zhang et al., “Fedala: Adaptive local aggregation for personal-
+ized federated learning,” in Proc. AAAI Conf. Artif. Intell., 2023, pp. 11237–11244. [33] J. Xu, X. 
+ing with feature alignment and classifier collaboration,” 2023, arXiv:2306.11867. [34] J. R. Regatti
+alignment for improved generalization in federated learning,” in Proc. Int. Conf. Neural Inf. Proces
+and global representations,” 2020, arXiv: 2001.01523. [36] X. Ma, J. Zhang, S. Guo, and W. Xu, “Laye
+for personalized federated learning,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit., 2022, pp. 
+in federated learning,” in Proc. Int. Conf. Learn. Representations, 2020, pp. 1–13. [38] Z. Du, J. L
+minimization for unsupervised domain adaptation,” in Proc. Proc. IEEE Conf. Comput. Vis. Pattern Rec
+rithm for domain adaptation,” in Proc. Int. Conf. Mach. Learn., 2019, pp. 7404–7413. [40] S. Ben-Dav
+Vaughan, “A theory of learning from different domains,” Mach. Learn., vol. 79, pp. 151–175, 2010. [4
+
+=== PAGE 16 ===
+Hongyang Du received the BEng degree from the School of Electronic and Information Engineering, Beij
+Jiawen Kang (Senior Member, IEEE) received the PhD degree from the Guangdong University of Tech- nol
+Jiqiang Liu (Senior Member, IEEE) received the PhD degree from Beijing Normal University in 1999. He
+Dusit Niyato (Fellow, IEEE) received the BEng de- gree from the King Mongkuts Institute of Technol- 
+

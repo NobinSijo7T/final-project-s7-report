@@ -1,0 +1,2258 @@
+{
+  "source_file": "content.pdf",
+  "num_pages": 16,
+  "full_text": "FedASA: A Personalized Federated Learning With\nAdaptive Model Aggregation for Heterogeneous\nMobile Edge Computing\nDongshang Deng, Xuangou Wu, Member, IEEE, Tao Zhang, Member, IEEE, Xiangyun Tang, Hongyang\nDu, Jiawen Kang , Senior Member, IEEE, Jiqiang Liu, Senior Member, IEEE,\nand Dusit Niyato, Fellow, IEEE\nAbstract—Federated learning (FL) opens a new promising paradigm for the Industrial Internet of Things (IoT) since it can collaboratively train machine learning models without sharing private data. However, deploying FL frameworks in real IoT scenarios faces three critical challenges, i.e., statistical hetero- geneity, resource constraint, and fairness. To address these chal- lenges, we design a fair and efficient FL method, termed FedASA, which can address the challenge of statistical heterogeneity in resource-constrained scenarios by determining the shared archi- tecture adaptively. In FedASA, we first present a cell-wised shared architecture selection strategy, which can adaptively construct the shared architecture for each device. We then design a cell-based aggregation algorithm for aggregating heterogeneous shared ar- chitectures. In addition, we provide a theoretical analysis of the\nManuscript received 16 October 2023; revised 8 August 2024; accepted 15 August 2024. Date of publication 20 August 2024; date of current version 5 November 2024. This work was supported in part by the National Nature Science Foundation of China under Grant 62172003, Grant 92167204, Grant 62072030, and Grant 62302539, in part by the University Synergy Innovation Program of Anhui Province under Grant GXXT-2022-051, in part by the Open Fund of Anhui Engineering Research Center for Intelligent Applications and Security of Industrial Internet under Grant IASII24-01, in part by the China Postdoctoral ScienceFoundationunderGrant2024T170047,GrantGZC20230223,andGrant 2024M750165, in part by the National Research Foundation, Singapore, in part by the Infocomm Media Development Authority under its Future Communi- cations Research & Development Programme, Defence Science Organisation (DSO) National Laboratories under the AI Singapore Programme under Grant FCP-NTU RG-2022-010 and Grant FCP-ASTAR-TG-2022-003, in part by Singapore Ministry of Education (MOE) Tier 1 under Grant RG87/22, and in part by the NTU Centre for Computational Technologies in Finance (NTU-CCTF). Recommended for acceptance by N. Zhang. (Corresponding authors: Xuangou Wu; Tao Zhang.)\nDongshang Deng and Xuangou Wu are with the School of Computer Sci- ence and Technology, Anhui University of Technology, Ma’anshan 243002, China, and also with Anhui Province Key Laboratory of Digital Twin Tech- nology in Metallurgical Industry, Ma’anshan 243002, China (e-mail: dsdeng@ ahut.edu.cn; wuxgou@ahut.edu.cn).\nTao Zhang is with the School of Cyberspace Science and Technology, Beijing Jiaotong University, Beijing 100044, China, and also with Anhui Engineering Research Center for Intelligent Applications and Security of Industrial Internet, Beijing 100044, China (e-mail: taozh@bjtu.edu).\nXiangyun Tang is with the School of Information Engineering, Minzu Uni- versity of China, Beijing 100081, China (e-mail: xiangyunt@muc.edu.cn).\nHongyang Du is with the Department of Electrical and Electronic Engineer- ing, University of Hong Kong, Hong Kong (e-mail: duhy@eee.hku.hk).\nJiawen Kang is with the School of Automation, Guangdong University of Technology, Guangzhou 510006, China (e-mail: kavinkang@gdut.edu.cn).\nJiqiang Liu is with the School of Cyberspace Science and Technology, Beijing Jiaotong University, Beijing 100044, China (e-mail: jqliu@bjtu.edu.cn).\nDusit Niyato is with the College of Computing and Data Science, Nanyang Technological University, Singapore 639798 (e-mail: dniyato@ntu.edu.sg).\nfederated error bound, which provides a theoretical guarantee for the fairness. At the same time, we prove the convergence of FedASA at the first-order stationary point. We evaluate the perfor- mance of FedASA through extensive simulation and experiments. Experimental results in cross-location scenarios show that FedASA outperformed the state-of-the-art approaches, improving accuracy by up to 13.27% with better fairness and faster convergence and communication requirement has been reduced by 81.49%.\nIndex Terms—Internet of Things, mobile edge computing, personalized federated learning, resource constraint, statistical heterogeneity.\nI. INTRODUCTION W\nITH the advancement of mobile computing technology and the Internet of Things (IoT), industrial digitization and intelligence are rapidly progressing [1], [2], [3]. Intelligent applications in mobile edge computing (MEC) systems are supported by widely deployed edge devices (e.g., sensors) [4], [5]. As the number of sensors deployed increases, the data collected grows exponentially, resulting in a larger accumulation of data at the network edge (e.g., gateways and switches) [6], [7]. However, the network bandwidth burden is an obstacle to uploading data to the cloud for centralized learning [8], [9], [10]. Federated learning (FL) [11] emerges as a solution, allowing edge devices to train machine learning models collaboratively without transmitting private data to the parameter server. As such, FL has many promising applications in IoT, such as human activity recognition [12], [13], fault diagnosis [14], [15], [16], [17], and augmented reality [18].\nIn MEC, the conventional FL framework consists of two main steps, including training on the local device and model parameter aggregation on the parameter server. Specifically, each device (i.e., the FL worker) uses the gradient descent algorithm to update the model locally and then sends the updated model parameters to the parameter server. The parameter server aggregates the received model parameters by FedAvg [11] and sends the aggregated model to each device for a new round of training. After multiple rounds of training, a trained global model is obtained. This framework demonstrates exemplary performance in ideal settings that include sufficient computing and communication resources on the local device, independent and identically distributed data across devices.\n\n--- Page Break ---\n\nHowever, in practical IoT scenarios, the following challenges should be considered to achieve an effective and efficient FL framework. Statistical heterogeneity. In IoT scenarios, sta- tistical heterogeneity can be categorized into cross-domain and cross-location. In [14], the data collected from a specific environment is referred to as a device domain, and all de- vices together constitute cross-domain. Cross-domain hetero- geneity is caused by the monitored devices (e.g., production machines) [14], [15], where devices with varying demands operate at different environments. Similarly, cross-location het- erogeneity is due to the location of monitoring devices (e.g., sensors) [19], such as the differences in the locating of sensors on devices. Resource constraint. Different from datacenters with ample communication resources, in IoT, the communication resources of edge devices are limited [20]. The training process of FL usually requires frequent pushing and pulling of model parameters. Furthermore, as model architectures scale up (e.g., transformers [21]), transmitting the entire model architecture between parameter server and local devices leads to heavy com- munication requirements (e.g., network bandwidth). Fairness. Duetothestatistical heterogeneity, therearesignificant accuracy differences among edge devices [22]. In [23], fairness is used to measure these differences, and a lower standard deviation of accuracy indicates higher fairness. To achieve an effective FL framework,itisnecessarytoensurefairnessacrossdevices.Note that improving average accuracy while also enhancing fairness is a challenging task, as it requires boosting the performance of all edge devices.\nExisting works in the literature that address statistical hetero- geneity in FL have fallen into the data-based and the model- based categories. Data-based methods focus on constructing independent and identically distributed datasets to reduce the heterogeneity. In contrast, model-based methods aim to adapt statistical heterogeneity from model architecture or parameter optimization. For data-based methods, Zhao et al. [24] proposes to share a small portion of the global data with each device. FedGen [25] learns a global generator to generate pseudo data and then sends it to each device to manage local updates. FedFTG [26] learns a generator that generates pseudo data with thesamedistributionasthatofeachdevicetooptimizetheupdate of the global model. However, transferring data between param- eter server and local devices causes additional communication overhead and privacy risks. There are two types of model-based methods based on their purpose: single-model methods and multi-model methods. Single-model methods focus on training a better global model, while multi-model methods look at pro- ducing customized models for each local device. Single-model methods care more about the convergence and performance of the global model, e.g., FedProx [27], SCAFFOLD [28], which align the local model with the global model. Conversely, multi-model methods pay more attention to the performance of the model in each device and try to train personalized models. FedFomo [29] computes the first-order approximations of the optimal model weighted combination for each device. Ditto [23] proposes to add a global regularization factor when training personalized models. However, the above methods do not con- sider the communication resource limitation of the local device.\nTABLE I THE COMPARISON OF THE PREVIOUS WORKS AND OURS\nFedPer [30] reduces communication overhead by uploading only the base layer, while achieving model personalization by retaining a local personalized layer. Table I presents a com- parison of the previous works and ours. In short, none of the aforementioned works have addressed these challenges in real IoT scenarios.\nIn this paper, we aim to address two problems: (i) What are the main statistical heterogeneity factors among edge devices in IoT scenarios? (ii) How do we address statistical heterogeneity while considering resource constraints and fairness in IoT scenarios? For problem (i), our empirical results reveal that cross-location issues can lead to more severe statistical heterogeneity than the widely studied cross-domain issues. The existing methods that can alleviate statistical heterogeneity have different performance degradation when facing cross-location issues in IoT scenarios. These phenomena motivate us to explore new solutions. For problem (ii), to address the cross-location issues in resource- constrained IoT scenarios, we propose FedASA, a fair and efficient personalized federated learning scheme with adaptive shared architecture. On the one hand, shared architectures learn shared features between local devices, which reduces feature drift across devices. On the other hand, reducing the uploading of unnecessary model architectures can significantly reduce the communication overhead. In addition, we perform a theoretical analysis that provides guarantees for the fairness of FedASA.\nThe contributions of our work are summarized as follows: r To the best of our knowledge, this is the first work that con-\nsiders the cross-location issues in resource-constrained IoT scenarios. Our empirical results show that the similarity among data in the cross-location scenario is significantly lower than that in the cross-domain scenario, and the ex- isting federated learning methods suffer from performance degradation in the cross-location scenario. r We design a fair and efficient personalized FL method\ncalled FedASA, which can address the challenge of statisti- cal heterogeneity in resource-constrained IoT scenarios by determining the shared architecture adaptively according to the heterogeneity of devices. r We provide a theoretical analysis of the federated error\nbound, which provides the theoretical guarantee for the fairness of FedASA. At the same time, we prove the convergence of FedASA at the first-order stationary point. r We evaluate the performance of FedASA through exten-\nsive simulation and experiments. We demonstrate that FedASA outperforms the state-of-the-art approaches in cross-location scenarios, improving accuracy by up to\n\n--- Page Break ---\n\n13.27% with better fairness and faster convergence, and communication requirement has been reduced by 81.49%. The rest of this paper is organized as follows. Section II pro- vides motivation and problem formulation. FedASA is proposed in Section III. The theoretical analysis is given in Section IV. Evaluation is presented in Section V. Related works are re- viewed in Section VI, followed by the concluding remarks in Section VII.\nII. MOTIVATION AND PROBLEM FORMULATION\nA. Motivation\nAccording to FL [11], we consider that there exists a pa- rameter server andψK local devices cooperating to complete a classification task←T ≜⟨D,←F⟩, where←D is the distribution on X←×←Y←⊂Rd←× RandF representsasetofmappingsfrominput space←X to output space←Y. Each device ownsψDk =←⊓xi,ψyi⊒Nk\ni=1, Dk←∈Dk to complete a subtask←Tk =←⟨Dk,←Fk⟩, whereψNk is the number of samples. For deviceψk, the actual loss is Lk(wk) ≜E(x,y)∼Dk[l(fk(x;ψwk),ψy)] whereψfk←∈Fk andψl(·) is a loss function. In practice, the empirical loss ˆLk(wk) =\n1 Nk\n\u0002Nk\ni=1[l(fk(xi;ψwk),ψyi)] is often used as an estimate of the loss. Therefore, the optimization objectiveψw∗of FL satisfies\nw∗= arg min\nw L(w) = arg min\nw\nK \u0003\nk=1\npkLk(w), (1)\nwhereψwk←∈Wk is the model parameter ofψfk andψpk is the weighting factor,ψpk←≥0, \u0002K\nk=1ψpk = 1, such asψpk =ψNk\nN , whereψN = \u0002K\nk=1ψNk. Statistical heterogeneity across IoT devices is generated by various factors, including work conditions (e.g., rotating speeds and loads) and monitoring locations. Statistical heterogeneity caused by diverse working conditions across devices has been extensively studied, named the cross-domain issues [14], [15]. In this paper, we refer to the statistical heterogeneity caused by various monitoring locations across devices as the cross-location issues. Note that cross-domain issues are caused by monitored devices (e.g., production machines), and cross-location issues are caused by monitoring devices (e.g., sensors).\nWe investigate 12 different industrial data from three mon- itoring locations, including A, B, and C, and four levels of loads, including 0, 1, 2, and 3, in the CWRU dataset [31] as detailed in Section V (numbered from A0 to C3). Similar to [16], in the CWRU dataset, we first convert the raw signal into frequency domain data by fast Fourier transform (FFT) (refered to Section III-A). We then roughly evaluate the similarities among 12 different data (referred to Fig. 1) by computing the cosine similarity of the transformed frequency domain data. It is observed that at the same location, the similarities of the data are more than 87.5%, whereas the similarities of the data among different monitoring locations are less than 85%. Among them, locations A and C are the most dissimilar pair, and locations B and C are the most similar pair, but the similarity is still less than 85%. The cross-location issues are demonstrated to bring more severe statistical heterogeneity than cross-domain.\nFig. 1. The cosine similarities among 12 devices with various working con- ditions and monitoring locations.\nFig. 2. Performance comparison between same-location and cross-location.\nMoreover, Fig. 2 shows the cross-device model accuracy in thesamemonitoringlocation(same-location)anddifferentmon- itoring locations (cross-location). We compared six approaches, including local-only, FedAvg [11], FedProx [27], DiagNet [14]), Ditto [23], FedPer [30]. Experimental results show that these ap- proaches exhibit good performance in cross-domain situations. However, their diagnostic accuracy is reduced in cross-location scenarios. Among them, FedProx shows the largest variation in accuracy, with a drop of 17.75% and FedPer, with the least drop in accuracy of 4.83%. Clearly, it is necessary to solve the cross-location issues.\nFor statistical heterogeneity, the trained global modelψw∗\ncannot meet the personalized requirements of the local de- vice [32], [33]. Therefore, the optimization objective of per- sonalized model←⊓w∗\nk⊒K\nk=1 [34] is\n(w∗\n1,ψw∗ 2,ψ.ψ.ψ.ψ,ψw∗ K) = arg min\n⊓wk⊒K\nk=1\nK \u0003\nk=1\npkLk(wk). (2)\nNote that during the training process of personalized FL, the model parameters of the local device are still uploaded to the server for federated aggregation. Yet, the global optimization is changed to the personalized optimization of each device.\nB. Communication Overhead\nTo deploy an effective and efficient FL framework in real IoT scenarios, we face the problem of resource constrained devices,\n\n--- Page Break ---\n\nFig. 3. Illustration of three sharing schemes in federated learning.\nFig. 4. Performance comparison of different shared layers.\nincluding limited computing and communication resources [20]. Note that the limitation of communication resources is the pri- ority in this paper. Fig. 3 shows three different sharing schemes of the local model in FL. The all-sharing scheme (referred to Fig. 3(a)) shares all layers of the local model, which is used in most FL approaches [11], [14], [23], [27]. Customized model parameters allow these solutions to cater to the specific requirements of different devices and minimize the impact of statistical heterogeneity. Nevertheless, according to the experi- mental results of Section II-A, they are unsuitable for addressing thecross-locationissuesinIoTscenarios.Inaddition,asthelocal model becomes larger and larger, the communication overhead brought by the all-sharing scheme cannot be ignored. TheψG- sharing scheme (as shown in Fig. 3(b)) shares only the lowest G layers of the local model. Typically,ψG is predetermined and fixed in the training process. This baseline is similar to several existing personalized FL approaches [30], [35]. TheψG-sharing scheme is indeed able to reduce the communication overhead, even that introduced by a fully connected layer. According to the experimental results of Section II-A,ψG-sharing has the prospect of adapting to the cross-location issues. However,ψG is crucial for the local device, and determining the optimalψG brings additional computation and communication overhead. On the other hand, due to the effects of statistical heterogeneity, especially for cross-location issues, a fixed upload architecture for all devices may be a suboptimal solution.\nTo further exam our idea, we conducted a simple experiment in CWRU dataset. As shown in the Fig. 4,ψα0 toψα4 indicates that the number of shared layers is increasing. Experimental results show that when the data only comes from location C, the optimal shared layers isψα3, which means more shared layers, and as monitoring locations increase, the number of shared\nlayers required by devices decreases. In more complex hetero- geneous scenarios, reducing the requirement for shared layers may be possible. Therefore, heterogeneous shared architectures are required, and it is necessary to design shared architectures adaptively according to the heterogeneity of devices. As shown in Fig. 3(c), our goal is to propose an adaptive-sharing scheme, which adaptively determines the shared architecture for each device according to the dataset of the local device.\nIn general, (2) can be solved by gradient descent algo- rithms [11], such as mini-batch gradient descent (mini-batch SGD). For the mini-batch SGD, an iteration represents that the local device performs gradient descent on a mini-batch of data. One round of local updates consists of multiple iterations. After a round of local updates, the local device pushes the local model wt+1\nk =ψwt\nk←−η∇Lk(wt) (η is the learning rate) to the server for aggregation.\nNote that the communication overhead of FL is determined by the size of transmitted model parameters [36]. Assuming that in roundψt, for deviceψk, the bandwidth requirement←Ct\nk can be formulated by\nCt\nk =←CO(wt\nk), (3)\nwhere the size of the model parametersψwt\nk is directly propor- tional to←CO(·). FedASA reduces the communication overhead by reducing the size of the transmitted model parameters.\nC. Problem Formulation\nStatistical heterogeneity can lead to significant variation in model performance across devices. From the perspective of profit, the local device cares more about the performance of the private model than the average performance of all devices or the best. Therefore, more attention should be paid to fairness among devices while improving the average performance. Fol- lowing [23], [37], the fairness of the model can be defined as follows\nDefinition 1 (Fairness): When comparing the fairness of the two models, we consider that the fairer one has more uniform performance across devices, i.e., forψw1 andψw2, if std(⊓Lk(w1)⊒K\nk=1)ψ♯ψstd(⊓Lk(w2)⊒K\nk=1), whereψstd(·) is the standard deviation, thenψw1 is fairer thanψw2.\nFedASAensuresthatdeviceshavesimilarperformancelevels, reducing the impact of fairness barriers. To realize personaliza- tion, FedASA divides the local model into shared and personal- ized architecture. Letψfk =ψgk←◦hk, whereψgk←∈Gk represents the shared architecture,ψhk←∈Hk is the personalized architec- ture, and the parameters ofψgk isψθk←∈Θk, and the parameters ofψhk isψφk←∈Φk. Therefore, our optimization objective is\n(θ∗,ψφ∗) = arg min\n⊓θk,φk⊒K\nk=1\nK \u0003\nk=1\npkLk(θk←◦φk), (4)\nwhereψθ∗= (θ∗\n1,ψθ∗ 2,ψ.ψ.ψ.ψ,ψθ∗ K),ψφ∗= (φ∗\n1,ψφ∗ 2,ψ.ψ.ψ.ψ,ψφ∗ K). Simi- larly, (3) is rewritten as\nCt\nk =←CO(θt\nk). (5)\n\n--- Page Break ---\n\nFig. 5. Overview of FedASA. The training procedure consists of the following steps: 1⃝. Data preprocessing. 2⃝. Local training on private data. 3⃝. Each device uploads the trained model parameters to the parameter server. 4⃝. The parameter server adaptively determines the global shared architectures by cell-wised alignment. 5⃝. The parameter server updates the hyper-model by cell-based aggregation and sample the trained local model parameters. 6⃝. Each device downloads the updated model parameters. Repeat 2⃝- 6⃝until the model converges or meets the accuracy requirements.\nTABLE II A SUMMARY OF IMPORTANT NOTATIONS\nAssuming that for deviceψk, the total communication resource budget is←Ck. Accordingly, we formulate the problem as follows:\nmin θk,φk\nK \u0003\nk=1\npkLk(θk←◦φk),\ns.t.\n⎧ ⎪ ⎪ ⎪ ⎨\n⎪ ⎪ ⎪ ⎩\nLk(θT\nk←◦φT\nk )←−Lk(θ∗\nk←◦φ∗\nk)ψ♯ψε1, Ct\nk←≤Ck, std(⊓Lk(θT\nk←◦φT\nk )⊒)ψ♯ψε2, ∀k←∈[K],\n(6)\nwhereψε1,ψε2ψ⌢ 0 are the predefined threshold (close to zero) and we useψk←∈[K] representψk←∈⊓0, 1,ψ.ψ.ψ.ψ,ψK⊒. Some important notations in this paper are listed in Table II.\nIII. PERSONALIZED FEDERATED LEARNING WITH ADAPTIVE\nSHARED ARCHITECTURE\nAs illustrated in Fig. 5, we present an overview of FedASA. It consists of two main steps: data preprocessing and model training. Specifically, the workflow of FedASA is as follows: (i) The server initializes the global model parameters and local device training epochsψE, which are broadcast to all devices. Each device performs data preprocessing. (ii) After local train- ing, each device sends the trained model parameters to the pa- rameter server. (iii) The server uses cell-wised alignment to iden- tify the shared architectures and then updates the hyper-model through cell-based aggregation. (iv) The server broadcasts the sampled local device parameters to each device. (v) Repeat ii-iv until the model converges or meets the accuracy requirements. In the following, we first give the data preprocessing of FedASA.\nA. Data Preprocessing\nIn IoT scenarios, it is common practice to train a model directly using sensor signals to reduce the dependence on expert knowledge [16], [17]. Note that we analyze the case where local labels are uniformly distributed. We exclude the case where the local labels are non-uniformly distributed from our considerations. Statistical heterogeneity across devices only comes from cross-domain and cross-location issues. For each\n\n--- Page Break ---\n\nFig. 6. The original time domain signal and frequency domain signal compar- ison.\nFig. 7. Architectures of different models.\ndevice, the private dataset contains all types of signals to build a multi-classification task and each signal is divided into samples of length 1024.\nSince the raw vibration signals only represent the time domain (referred to Fig. 6(a)) and their phases are different, the cosine similarities among the devices are very low, less than 3% in CWRU dataset. In Section II-A, the FFT is used to convert raw signals to obtain frequency domain signals (referred to Fig. 6(b)). The FFT algorithm is used for calculating the discrete Fourier transform (DFT) of a sequence. The DFT is obtained by decomposing a series of values into components of different frequencies. Letψx = (x0,ψ.ψ.ψ.ψ,ψxS−1) be a signal. The DFT is defined by (7),\nXd =\nS−1 \u0003\ns=0\nxse−i2πds/S, d = 0,ψ.ψ.ψ.ψ,ψS←−1, (7)\nwhereψei2π/S is a primitiveψS-th root of 1.\nB. Cell-Wised Alignment\nTo facilitate training, FedASA simplifies the model archi- tecture to a cell-based architecture. As shown in Fig. 7, the residual-based cell comprises a convolutional layer followed by a pooling layer, with equal input and output feature dimensions. Each local model contains two convolutional layers,ψM cells andFClayers,identicaltothehyper-modelarchitectureshownin\nFig. 7. This design has two advantages. Firstly, it ensures that the feature dimension of the output of each cell is the same, which makes it simpler to divide heterogeneous architectures. Sec- ondly, due to the residual structure, it prevents the degradation of deep network models. In order to determine the adaptive model architecture, the auxiliary model trained from the parameter server’s auxiliary dataset is essential. In IoT scenarios, collecting anauxiliarydatasetisasimpletaskbecauseeachbatchofdevices is tested before being sold. In our experience, the auxiliary data can come from only one monitoring location and the trained auxiliary model can perform poorly with only 78.12%. Note that the auxiliary model and hyper-model have similar architectures. The auxiliary model containsψL cells, whereas the hyper-model containsψM cells (L←≤M). Since the shared architectures across devices are heterogeneous, we introduce a hyper-model to assist aggregation. Specific details for aggregation can be found in the cell-basedaggregationalgorithm.Fig.7displaysthearchitecture of these models.\nNote that FedASA adaptively determines the shared archi- tectureψgk based on the private dataset in each device. In the real-world FL scenarios, achieving this goal is challenging. Fortunately, the auxiliary datasetψDaux and auxiliary modelψgaux of the parameter server are available. To address this challenge, we propose a cell-wised alignment algorithm, which takes the output features of the cells as the criterion. After uploading all local models, they are processed by the auxiliary dataset to capture output features from each cell. The auxiliary model’s output features are aligned with the client model’s. Note that the optimal sharing architecture must satisfy both accuracy and communication resource requirements. Directly selecting the minimum alignment distance may be biased, which may cause additional communication overhead for the local device. Let the auxiliary modelψgl\naux containψlcells, and the local modelψgm\nk containψm cells, then the optimal alignment cellψm∗\nk is\nm∗\nk = arg min\nm∈[M]\nEx∈Daux∥gl\naux(x;ψθaux)←−gm\nk (x;ψθk)∥2,\ns.t.ψl∈[L],←Ct\nk←≤Ck, (8)\nwhereψlis a hyperparameter. Furthermore,ψm∗= (m∗\n1,ψm∗ 2, .ψ.ψ.ψ,ψm∗\nK) is referred to as the alignment vector, which is used to record the shared architecture in the next round.\nC. Cell-Based Aggregation\nStatistical heterogeneity can cause shared architectures to have varying numbers of cells, which are stochastically exposed to the datasets of devices. As such, naively using FedAvg [11] for aggregation is not feasible since it is designed to aggregate the same architecture. For this reason, we propose a cell-based ag- gregation algorithm, where the update experience of the cell de- termines the weight of the update. Let←O =←⊓o0,ψo1,ψo2,ψ.ψ.ψ.ψ,ψoM⊒ be the set of operators involved in aggregation, e.g. the convo- lutional layer and cell. Letψθ(o0) be the parameters of the two convolutional layers andψθ(om) be the parameters of theψm-th\n\n--- Page Break ---\n\nAlgorithm 1: The FedASA Algorithm. Input: Communication resources budget for each device←Ck,\ntraining roundψT, auxiliary datasetψDaux, auxiliary model gaux, alignment roundsψt0 Output:ψθT\nk ,ψφT\nk 1: Initialize the devices’ model parametersψθ0 k,ψφ0\nk, hyper-model parametersψθ0\nhp(·) 2: At Parameter Server: 3: forψt = 1, 2,ψ.ψ.ψ.ψ,ψT do 4: ifψt←≤t0 then 5: Receiveψwt\nk for allψk←∈[K] 6: m∗\nk = arg minm∈[M] E∥gl\naux(x;ψθaux)←− gm\nk (x;ψθk)∥2 //Refer to (8) 7: Collect the alignment vectorψm∗\n8: else 9: Receiveψθt\nk for allψk←∈[K] 10: end if 11: ifψS(o)0 then\n12: θt+1\nhp (o) = \u0002K\nk=1\nNψt\nk,o \u0002K\ni=1ψNψt\ni,oψθt\nk(o) //Refer to (9)\n13: else 14: θt+1\nhp (o) =ψθt\nhp(o) //Refer to (9) 15: end if 16: Sample updated shared modelsψθt+1\n17: Broadcastψθt+1 to all devices 18: end for 19: At Deviceψk: 20: forψt = 1, 2,ψ.ψ.ψ.ψ,ψT do 21: Receiveψθt\nk from the Parameter Server 22: θt+1\nk =ψθt\nk←−ηg∇ˆLk(θk←◦φk) //Refer to (13) 23: φt+1\nk =ψφt\nk←−ηh∇ˆLk(θk←◦φk) //Refer to (13) 24: Sendψθt+1\nk to the Parameter Server 25: end for\ncell. For allψo←∈O,\nθt+1\nhp (o) =\n\b\u0002K\nk=1\nNψt\nk,o \u0002K\ni=1ψNψt\ni,oψθt\nk(o), S(o)ψ⌢ 0,\nθt\nhp(o), otherwise,\n(9)\nwhereψθt\nhp(·) are the parameters of hyper-model in roundψt, θt\nk(·) are parameters of deviceψk in roundψt,ψNψt\nk,o is the number of samples using operatorψo in roundψt, andψS(o) denotes the frequency of using the operatorψo during a round of updates. An operator in the hyper-model is updated only if it has been used more than once. Finally, if an operator (such as operator o0) is used in all devices, then (9) degenerates into FedAvg. Specifically, FedASA is a generalization of FedAvg, where the average is performed independently for each operator rather than for the full architecture.\nSampling: After the hypermodel update, the parameter server has completed one round of updates. Delivering the hyper-model directly is inappropriate as each device only needs the same model parameters as the shared architecture, which incurs ad- ditional communication overhead. We can sample the updated shared architectures of devices by using an alignment vector m∗= (m∗\n1,ψm∗ 2,ψ.ψ.ψ.ψ,ψm∗ K).\nTABLE III TWO EXAMPLES\nD. Algorithm Description\nAlthough classification tasks with cross-entropy would in- tuitively bring improvement, unfortunately, we cannot directly access supervision information of the target tasks [12]. For a given sampleψxk\ni from deviceψk, we have\nsk\ni = softmax(h(g(xk\ni ))), (10)\nwhereψsk\ni is a soft label ofψxk\ni . Meanwhile, a hard label forψxk\ni is generated by one-hot encoder\nhk\ni = one_hot(max(sk\ni )). (11)\nIf the model prediction vectors with high confidence, soft labels may be more useful for model updating. If the prediction is not confident enough, the hard labels can be used to optimize the model update. High and low confidence examples are shown in Table III. Replacing with the hard label at the proper time can improve the model [38]. To balance the soft label and hard label, we define the following loss function:\nˆLk(θk←◦φk)\n=←−1\nNk\nC \u0003\nc=1\n1⊓yi =ψc⊒\n\nlog esk\ni,c \u0002C\nj=1ψesk\nj,c←−eE\n\n, (12)\nwhere←E =←−\u0002C\ni=1ψsk\ni,c logψsk\ni,c is the entropy ofψsk\ni,c andψC is the number of categories.\nDuring local training,ψφk andψθk of the model are merged to wk. Assuming that the gradient descent algorithm is used for model optimization, then for deviceψk,\n\b\nθt+1\nk =ψθt\nk←−ηg∇ˆLk(θk←◦φk),\nφt+1\nk =ψφt\nk←−ηh∇ˆLk(θk←◦φk),\n(13)\nwhereψηg is the learning rate ofψθk andψηh is the learning rate of φk.\nTo sum up, for deviceψk, the algorithm for each round of updates is: (i) Initialize the devices’ model parametersψθ0\nk,ψφ0\nk or receive the updatedψφt\nk. (ii)ψφt\nk andψθt\nk are trained locally forψE epochs regarding (13). (iii) Send the trainedψθt+1\nk to the\n\n--- Page Break ---\n\nparameter server. For the server, the algorithm for each round of updates is: (i) Receive all updatedψθt\nk. (ii) Ifψt = 1 perform to determine the optimalψm∗by cell-wised alignment otherwise skip this step. (iii) Update hyper-modelψθt+1\nhp (·) through cell- based aggregation. (iv) Sample updated shared modelsψθt+1\nk byψm∗. (v) Sendψθt+1\nk to all devices. Follow this loop for multiple rounds of training until the model converges or reaches the accuracy requirements. The detailed algorithm is referred to as Algorithm 1. Algorithm 1 begins with estimating the communication resources budget for each device←Ck, the setting of training roundψT, and the collection of auxiliary datasetψDaux and auxiliary modelψgaux. Line 1 is the initialization of the local model parametersψθ0\nk,ψφ0\nk and hyper-model parametersψθ0\nhp(·). At the parameter server, lines 4-8 are used to perform cell-wised alignment and to collect the alignment vectorsψm∗. Lines 11-16 are used to perform cell-based aggregation and sample updated shared modelsψθt+1. Line 17 is used to broadcastψθt+1 to all devices. At deviceψk, line 21 is used to receive the updatedψθt. Lines 22-23 are used to update the local model parametersψθt+1\nk , φt+1\nk . Line 24 is used to sendψθt+1\nk to the parameter server.\nIV. THEORETICAL ANALYSIS\nFedASA divides local model architectures into shared and personalized architectures, which is similar to domain adap- tation. According to the theory of federated domain adapta- tion [34], [39], we performed a theoretical analysis of FedASA. In this section, we first analyze the federal error bound of FedASA, and then provide the convergence analysis. Note that error is a statistical object, and we use loss to quantify the negative effect of error.\nA. Federated Error Bound\nIn supervised learning, given a set of training samples, the goal is to find the optimal functionψf←∗∈F by minimizing the error on the test set. However, this relies on the assumption that the training and test sets are independent and identically distributed. In actual production, this assumption requires a lot of cost for data preprocessing. Domain adaptation aims to solve the problem of inconsistent data distribution.\nIn typical domain adaptation, we are referring to a labeled source domain←D1 and an unlabeled target domain←D2. The objective is to find a functionψf←∈F that minimizes the gen- eralization error←L2 = E(x,y)∼D2[l(f(x;ψw),ψy)] of the target domain. In [40], with a probability of at least 1←−δ, we get the following error upper bound\nL2(f)←≤L1(f) + 1\n2 ˆdFΔF(D1,←D2) \u000b \f\r \u000e Ideal Joint Error\n+ 4\n\u000f\n2d log(2m) + log 2 δ m + λ \u000b \f\r \u000e Disparity Difference\n, (14)\nwhereψδ←∈(0, 1), λ =←L1(f←∗) +←L2(f←∗) is a constant, and for f,ψf←′←∈F,←⊕is the XOR function, then←FΔF is equivalent to\nf(x)←⊕f←′(x). (14) shows that the target domain error is related not only to the source domain error but also to the ideal joint error and disparity difference. Subsequent domain adaptation theorems, such as [34], [39], are based on (14).\nFL involves a series of independent and identically dis- tributed devices, which differs from classical domain adaptation. Multi-source domain adaptation faces the following challenges: (i) There are multiple devices, and data sharing is limited among each other. (ii) The adaptation effects can vary among devices due to statistical heterogeneity. Fortunately, in FL, a powerful parameter server is available. In FL,ψK devices work together to train a generalization model that can adapt to deviceψi. Similarly, ensemble learning (EL) aims to create a generalization model that can adapt to the new device, e.g., a weighted ensemble. But which one is better? In this brief analysis, we will com- pare them in terms of error bounds. According to the above analysis, the target domain error is related not only to the source domain error but also to ideal joint error and disparity difference. Obviously, FL and EL are similar in the latter two parts, so their source domain errors are considered. In FL, the source domain error is←LFψL =←L(\u0002K\nk=1ψpkfk), while in EL, it is←LEL = \u0002K\nk=1ψpkL(fk). If the loss function is convex, then it is obvious←LFψL←≤LEL. However, the loss function←L(·) often satisfies L-smooth (referred to Definition 2). For L-smooth functions, the lower bound of←L(·) is a hyperplane, and its upper bound is a quadratic function. Its upper bound is convex, and its lower bound also satisfies←LFψL←≤LEL. So, we can get LFψL←≤LEL, which means FL achieves a minor error bound when obtaining the objective functionψf←∗.\nNext, we provide various federated error bounds. According to Theorem 2 of [41], let  ̃D = \u0002K\nk=1ψpkDk be the mixture distribution of all devices, and the corresponding mixture error is  ̃L(·). With a probability of at least 1←−δ, the following error upper bound can be obtained:\nLi(f)←≤ ̃L\nψK \u0003\nk=1\npkfk\n\n+\nK \u0003\nk=1\npk\n\u00101\n2 ˆdFΔF(Dk,←Di) + λk\n\u0011\n+ 4\n\u000f\n2d log(2Km) + log 2 δ Km , (15)\nwhere λk =←Lk(f←∗) +←Li(f←∗).\nThe loss upper bound (15) is only suitable for all-sharing scenarios. In [34], Regatti et al. divided the local model into the base layerψuk and the top layerψvk. The globally optimalψvk is defined as ˆv = arg minv←L  ̃D(·). The local optimalψvk is defined asψv∗\nk = arg minv←LDk(·). With a probability of at least 1←−δ, the following loss upper bound can be obtained:\nLk(ˆv)←−Lk(v∗\nk)←≤1\n2\nK \u0003\ni=1\npik ˆdFΔF(Di,←Dk) +←⊑ˆλv←−λ∗\nv⊑\n(16)\nwhere ˆλv and λ∗\nv represent the error constants whenψvk is global optimal and local optimal, respectively. The loss upper bound (16) focuses on the top layerψvk, but we focus more on the shared architectureψgk. For deviceψk,ψgk is sampled from the\n\n--- Page Break ---\n\nhyper-modelψg. Let the global optimal modelψg∗satisfy  ̃L(g∗) = \u0002K\nk=1ψpkLk(g∗\nk), and then we have the following theorem: Theorem 1: Let the VC-dimension of the function space←G beψd and the number of local samples beψm. The estimate of the disparity difference between the two devices is ˆdGΔG(Di,←Dj). For anyψδ←∈(0, 1) andψgk←∈G, with a probability of at least 1←−δ, we have\nLi(gi)←≤ ̃L(g) + 1\n2\n\u0003K\nk=1ψpk ˆdGΔG(Dk,←Di) \u000b \f\r \u000e Disparity Difference\n+ 4\n\u000f\n2d log(2Km) + log 2 δ Km + λ∗\n\u000e Ideal Joint Error\n, (17)\nwhere λ∗=←L(g∗) +←Li(g∗).\nProof: According to (15), we can get\nLi(gi)←≤ ̃L\nψK \u0003\nk=1\npkgk\n\n+\nK \u0003\nk=1\npk\n\u00101\n2 ˆdGΔG(Dk,←Di) + λk\n\u0011\n+ 4\n\u000f\n2d log(2Km) + log 2 δ Km\n=  ̃L(g) + 1\n2\nK \u0003\nk=1\npk ˆdGΔG(Dk,←Di)\n+ 4\n\u000f\n2d log(2Km) + log 2 δ Km +\nK \u0003\nk=1\npkλk (18)\nMoreover, if the global optimal modelψg∗satisfies←L(g∗) = \u0002K\nk=1ψpkLk(g∗\nk), and also define λ∗=←L(g∗) +←Li(g∗), then (18) can be rewritten as:\nLi(gi)←≤ ̃L(g) + 1\n2\n\u0003K\nk=1ψpk ˆdGΔG(Dk,←Di) \u000b \f\r \u000e Disparity Difference\n+ 4\n\u000f\n2d log(2Km) + log 2 δ Km + λ∗\n\u000e Ideal Joint Error\n(19)\n■ Note that the error bound presented in Theorem 1 is a gener- alized version of (15). In FedASA, the cell-wised alignment scheme makes the extracted features amongψgk exhibit high similarity. Clearly, compared with (15), the error bound of FedASA is minor, which means that the standard deviation of loss across devices is minor. According to Definition 1, FedASA offers better fairness.\nB. Convergence Analysis\nLetψw denote the concatenation of (θ,ψφ). First, we introduce related definitions and assumptions.\nDefinition 2: A differentiable functionψf(x) is called L- smooth, iff it has a Lipschitz continuous gradient, i.e., iff\n∃Lψ♯←∞such that\n∥∇f(x1)←−∇f(x2)∥≤L∥x1←−x2∥,←∀x1,ψx2←∈Rd. (20)\nAssumption 1: The global loss function←L(·) satisfies L- smooth, i.e.,←∀w1,ψw2←∈Rd,\nL(w1)←−L(w2)←≤⟨∇L(w2),ψw1←−w2⟩+ψL\n2←∥w1←−w2∥2.\n(21)\nAssumption 2: The expected squared norm of stochastic gra- dients is uniformly bounded, i.e.,←∀k←∈[K],←∀t←∈[T],←∃G, such that\nE∥∇ˆLk(wt)∥2←≤G2. (22)\nAssumption 3: The gradient←∇ˆL(wt) = \u0002K\nk=1ψpk∇ˆLk(wt) is bounded, i.e.,←∃a0 such that\n∇L(wt)T E(∇ˆL(wt))←≥a∥∇L(wt)∥2. (23)\nAssumption 1 is commonly present in multiple federated learning approaches, including FedProx [27] and FedCMA [34]. Assumption 2 restricts the gradient’s scope during the update. Assumption 3 ensures that←∇ˆL(wt) is an estimate of←∇L(wt). If and only ifψa = 1, we have←∇ˆL(wt) as the unbiased estimation of←∇L(wt).\nWe then introduce several useful lemmas to enhance our comprehension of the theory.\nLemma 1: With Assumption 2, for aggregated model ˆL(wt), we have,\nE∥∇ˆL(wt)∥2←≤K2G2 (24)\nProof: Using←∇ˆL(w) = \u0002K\nk=1ψpk∇ˆLDk(wk) and Assump- tion 3, we can get\n∥∇ˆL(wt)∥2 =\n\u0012\u0012\u0012\u0012\u0012\nK \u0003\nk=1\npk∇ˆLk(wt)\n\u0012\u0012\u0012\u0012\u0012\n2\n≤∥∇ˆL1(wt) +←∇ˆL2(wt) +←·←·←· +←∇ˆLk(wt)∥2\n≤K2∥∇ˆLk∗(wt)∥2\n\u0010\nk∗= arg max\nk\n∇ˆLk(wt)\n\u0011\n(25)\nTake expectation of both sides,\nE∥∇ˆL(wt)∥2←≤K2E∥∇ˆLk∗(wt)∥2\n≤K2G2 (26)\n■ Lemma 2: If←L(·) is L-smooth, then with Assumptions 1 and 3, we have,\nE[L(wt+1)]←≤E[L(wt)]←−ηa∥∇L(wt)∥2 + 1\n2Lη2K2G2\n(27)\nProof: Using the smoothness property of←L(·) from Assump- tion 1, we can get\nL(wt+1)←≤L(wt) +\n\u0013\n∇L(wt),ψwt+1←−wt\u0014\n\n--- Page Break ---\n\n+ψL\n2←∥wt+1←−wt∥2\n=←L(wt)←−η∇L(wt)T←∇ˆL(wt)\n+ψLη2\n2←∥∇ˆL(wt)∥2 (28)\nTake expectation of both sides,\nE[L(wt+1)]←≤E[L(wt)]←−η∇L(wt)T E[∇ˆL(wt)]\n+ψLη2\n2 E∥∇ˆL(wt)∥2\n≤E[L(wt)]←−ηa∥∇L(wt)∥2\n+ψLη2\n2 E∥∇ˆL(wt)∥2\n≤E[L(wt)]←−ηa∥∇L(wt)∥2\n+ 1\n2Lη2K2G2 (29)\n■ Theorem2: LetAssumptions1,2and3holdandafterrunning the algorithm withψT rounds, we have\nT←−1 \u0003\nt=0\n∥∇L(wt)∥2\nT ≤E[L(w0)]←−L(w∗)\nηaT + 1\n2aLηK2G2.\n(30)\nProof: Take the expectation of both sides of (29),\nE[L(wt+1)]←≤E[L(wt)]←−ηaE∥∇L(wt)∥2 + 1\n2Lη2K2G2\n(31)\nAdjust the inequality sign of (31),\nηaE∥∇L(wt)∥2←≤E[L(wt)]←−E[L(wt+1)] + 1\n2Lη2K2G2\n(32)\nApplyψt = 0, 1,ψ.ψ.ψ.ψ,ψT←−1 into (32), and add both sides of these inequalities,\nηa\nT←−1 \u0003\nt=0\nE∥∇L(wt)∥2←≤E[L(w0)]−E[L(wT )]\n+ 1\n2LTη2K2G2\n≤E[L(w0)]−L(w∗) + 1\n2LTη2K2G2\n(33)\nLet us divide both sides of this inequality byψηaT,\nT←−1 \u0003\nt=0\n∥∇L(wt)∥2\nT ≤E[L(w0)]←−L(w∗)\nηaT + 1\n2aLηK2G2\n(34)\n■ Note that if E[L(w0)]←−L(w∗) =ψM, FedASA converges to\na first-order stationary point whenψη =\n\u0015\n2M LTψK2G2 .\nFig. 8. Network prototype system.\nTABLE IV DESCRIPTIONS OF CWRU DATASET\nV. EVALUATION\nA. Experimental Settings\nWe carried out our experiments on a prototype system to sim- ulate a real industrial scenario. The prototype system comprises a parameter server and four edge servers. Each edge server has three virtual environments simulating a total of 12 local devices (referred to Fig. 8). The dataset of each device is collected beforehand. The server has an Intel(R) Xeon(R) Silver 4210R CPU and NVIDIA GeForce RTX 3090. The operating system is Ubuntu 20.04. The deep learning models are trained with Pytorch at version 1.12.0.\nDataset: The rolling element bearing dataset from the Case Western Reserve University (CWRU) is collected by sensors deployed at the edge [31]. Sensors are placed on mechanical de- vices to collect vibration signals in real time. The CWRU dataset includes drive-end (named as location A), fan-end (named as location B), and basic acceleration (named as location C) data which are from three monitoring locations. Four bearing health states are considered, including normal state (N), inner race fault (IR), ball fault (BR), and outer race fault (OR). Each fault type has three fault diameters of 7, 14, and 21 mils. The specific dataset descriptions are shown in Table IV.\nMethods for comparison: Several methods have been imple- mented to evaluate the superiority of FedASA. In particular, we focus on the comparison of the following methods: r Local-only is a baseline method. In this method, each edge\ndevice performs model training solely using local dataset. r FedAvg [11] is one of the most famous algorithms in FL,\nwith edge devices sharing the same model architecture. r FedProx [27] utilizesψl2 regularization to constrain the up-\ndates of edge devices to mitigate statistical heterogeneity. For FedProx, we set the hyperparameterψμ to 0.01.\n\n--- Page Break ---\n\nTABLE V DEVICE TASKS SETTINGS\nr FedPer [30] is a typical G-sharing method that addresses\nstatistical heterogeneity through personalized layers. r Ditto [23] employsψl2 regularization to preserve the as-\nsociation between the global architecture and the local architectures. For Ditto, we set the hyperparameter λ to 0.01. Tasks & hyperparameters: We evaluate these methods in resource-constrained scenarios with 12 devices on various learn- ing tasks. Table V provides a summary of the configuration of the local dataset. The CWRU dataset encompasses 12 tasks (each device completes one task), each corresponding to four levelsofrotatingspeedsandload,multipliedbythreemonitoring locations. In the experimental setting, we utilize locations A & B to denote that the dataset is sourced from location A and location B. Similar configurations include locations A & C, locations B & C, and locations A & B & C. As the default configuration, we set the local batch size to 32, the local training epochs to 5, and the global training rounds to 200. Each device is given 1,000 samples, which is split into 80% trainset and 20% testset. The model architecture used by the compared methods is consistent with that of the hyper-model. AI models are updated by the Adam optimizer with a learning rate of 2←× 10−4. In FedASA, the number of cells for the auxiliary model and hyper-model is L =ψM = 4 . The auxiliary data on the parameter server comes from location A, and the accuracy of the auxiliary model is only 78.12%.\nB. Performance Evaluation\nFirstly, we compared the performance of different baseline methods in cross-location scenarios (referred to Table VI). Fig. 9 illustrates the accuracy of six FL tasks across the four cross- location scenarios. FedASA outperforms other baseline meth- ods, regardless of their monitoring locations, with an average accuracy of greater than 96% and better fairness (the standard deviation is less than 2.5%).\nAmong baseline methods, the accuracy of local-only remains below 60% with a larger standard deviation. The reason is that the dataset of each device cannot train a high-performing model. In addition, FedAvg and FedProx have demonstrated effective diagnostic performance at locations B & C due to the more extensive similarity between B and C (referred to Fig. 1). The accuracy of FedProx is 86.67% from location B. Yet, this accuracy reduces to 81.13% (referred to Fig. 9)(a) from two locations and further drops to 68.92% (referred to Fig. 9(b)) from three locations. This is because constraint of the update of devices cannot achieve personalized performance. With the increase in monitoring locations, the performance of FedAvg,\nFig. 9. Accuracy comparison in cross-location scenarios.\nFedProx,Ditto,andFedPerdeclined.TheaccuraciesofDittoand FedPer drop by 8.75% and 4.83%, respectively, from location B to locations A & B & C. It is demonstrated that all-sharing and G-sharing schemes cannot solve the cross-location issues. As shown in Table VI, the model memory usage of FedASA is limited to only 10.46K to 59.87K, significantly lower than that of all-sharing and G-sharing schemes. FedASA can reduce the bandwidth requirement by 81.49% compared to the all-sharing scheme.\nFig. 10 shows the performance comparison of different meth- ods in three monitoring locations. It can be observed that FedASA outperforms other methods in both accuracy and con- vergence speed. FedASA achieves an average test accuracy of 97.44% and converges with only 80 rounds of global training. Local-only achieves an accuracy of 51.78% with slow conver- gence (referred to Fig. 10(a)). Compared with local-only, the accuracies of FedAvg and FedProx are 70.22% and 68.92%, respectively, proving that the FL schemes can improve diagnos- tic performance. However, their performance is still affected by the cross-location issues. Ditto achieves 84.17% test accuracy, and FedPer achieves 91.42% test accuracy, but they require 200 global training rounds. For them, the cross-location issues not only reduce the diagnostic accuracy but also slow down the model convergence.\nC. Fixed Shared Architectures\nInspired by theψG-sharing scheme, Table VI and Fig. 11 show the accuracy comparison of different fixed shared architectures. α0 toψα4 represent the number of cells in the shared architecture from 0 to 4. Table VI shows that the fixed shared architecture is a good choice for one monitoring location since the accuracies are similar fromψα0 toψα4, with an accuracy greater than 93%.\n\n--- Page Break ---\n\nTABLE VI COMPARISON WITH STATE-OF-THE-ART METHODS ON THE CWRU DATASET\nFig. 10. Performance comparison in three monitoring locations.\nFig. 11(a) shows that at locations A & B, the optimal archi- tecture,ψα1, achieved an accuracy of 96.33%, while the worst architecture,ψα4, is 90.88%. The difference between the two is 5.45%. At locations A & C, this discrepancy is 3.08% (as depicted in Fig. 11(b)), at locations B & C, it is 2.08% (as shown in Fig. 11(c)), and at locations A & B & C, it is 2.64% (in Fig. 11(c)). We have observed that the optimal architecture varies across different scenarios, with discrepancies reaching up to 5.45%. The reason is that each heterogeneous environment\nFig. 11. Accuracy comparison of different shared architectures.\nrequires a customized sharing architecture. Therefore, in cross- position scenarios, fixed-sharing schemes require additional training to search for the optimal number of cells.\nD. Hyperparameter Analysis\nTable VI and Fig. 12 show the performance comparison of different architectures of the auxiliary model.ψl0 toψl4 represent the number of cells in the auxiliary model from 0 to 4. At locations A & B, locations A & C, and locations A & B & C, the optimal hyperparameter isψl2 (referred to Fig. 12(a), (b), and (d)). As shown in Fig. 12(c), at locations B & C, the optimal hyperparameter isψl1. Note that FedASA is not sensitive to the hyperparameterψl, and the accuracy is similar among different values. The largest discrepancy is observed in locations A & C, amounting to 1.29%. And the smallest variation\n\n--- Page Break ---\n\nFig. 12. Accuracy comparison for different hyperparameters.\nis found in locations A & B, with only 1.04%. The reason is that the shared architecture of FedASA can adaptively learn global shared features, reducing differences among devices.\nE. Visualization Display\nIn this subsection, the global features extracted from the shared architectures of different devices are visualized. In par- ticular, the t-SNE method [42] is used to visualize different features. Each label is assigned a specific numerical reference as shown in Table V. Models with good classification performance exhibit characteristics of small intro-group variance and large inter-group variance, meaning that the same numbers are closer together while different numbers are placed farther apart. At locations A, B, or C, different digital colors are used to indicate various working conditions. At locations A & B & C, different colors represent separate monitoring locations. As shown in Fig. 13, FedASA demonstrates exceptional classification per- formance, with the visualization results showing clear demar- cations of the ten categories. We have observed that FedASA exhibits a relatively more considerable intro-group variance when processing samples of healthy status (labeled as 0). This is primarily due to the impact of cross-domain heterogeneity on the healthy samples. Although this effect is less significant compared to cross-location, a certain degree of heterogeneity exists among the samples. As illustrated in Fig. 13(a), FedASA achieves superior classification performance at location A com- pared to others, which can be attributed to the fact that the auxiliary dataset originates from location A.\nVI. RELATED WORK\nFederated learning in IoT: With the rise of network band- width burden, deploying centralized learning frameworks in IoT scenarios faces several challenges. FL is emerging as a solution\nFig. 13. Feature visualization by the t-SNE method.\nthat enables joint model training without sharing local data. Mothukuri et al. [43] proposed an FL-based anomaly detection approach to recognize intrusion in IoT networks by decentral- ized on-device data. Cui et al. [44] introduced a blockchain- empowered decentralized and asynchronous FL framework for anomaly detection in IoT systems. Wang et al. [45] proposed a regional federated learning framework to measure the reliability of vehicles. Cheng et al. [13] proposed a prototype-guided FL framework for human activity recognition. Yao et al. [14] proposed a federated transfer learning framework to address the low data regimes in machine fault diagnosis. Zhang et al. [16] proposed dynamic validation and self-supervision to improve the performance of federated fault diagnosis. However, FL de- ployment on edge devices faces challenges such as communica- tion constrains, heterogeneous devices, etc.\nFederated learning with communication constrains: FL is widely deployed on mobile and IoT devices to achieve in- telligence. The limitations of communication on these edge devices are often experienced as a bottleneck. Existing meth- ods for saving communication resources include two cate- gories: training multiple local iterations before global aggre- gation and model compression [20], [46]. The first category reduces the communication overhead by allowing devices to perform multiple epochs of local updates instead of commu- nicating frequently [5], [8], [47], [48]. The second category is to reduce the communication overhead of each round by model compression, so as to reduce the total communication overhead [10], [49], [50]. Different from them, FedASA aims to adaptively determine the shared architecture for uploading according to the heterogeneity of devices, reducing communi- cation overhead by avoiding unnecessary uploading of model architectures.\nFederated learning with heterogenous devices: Considering heterogeneous edge devices, FL with heterogeneous devices has beenextensivelystudiedinrecentstudies[51],[52].Heterogene- ity across devices includes resource and statistical heterogeneity. Resource heterogeneity is a straggler issue caused by differ- ent computing resources of devices, and several asynchronous\n\n--- Page Break ---\n\nstrategies have been proposed to address the straggler issue [51], [53], [54], [55]. To address statistical heterogeneity, existing works are divided into data-based methods and model-based methods. Data-based methods focus on constructing indepen- dent and identically distributed datasets among devices to re- duce the heterogeneity among local datasets [24], [25], [26]. Model-based methods aim to improve the performance of global or personalized models [27], [28], [52], [56], [57]. Different from them, FedASA aims to address the challenges (e.g. statis- tical heterogeneity, resource constraint, fairness) in a real IoT scenario.\nVII. CONCLUSION\nIn this paper, we investigated the essential challenges of deploying FL frameworks in real IoT scenarios, i.e., statistical heterogeneity, resource limitations, and fairness. Specifically, the cross-location issues have been demonstrated to introduce more statistical heterogeneity than the cross-domain issues. To address these challenges, we proposed FedASA, a fair and effi- cient FL method, which can address the challenge of statistical heterogeneity in resource-constrained scenarios by determining the shared architecture adaptively. In FedASA, we first pro- posed a cell-wised alignment algorithm, which can adaptively determine the shared architecture according to the degree of heterogeneity of each device. We then proposed a cell-based aggregation scheme that aggregates heterogeneous shared archi- tectures. In addition, we provided a theoretical analysis of the federated error bound, which provides a theoretical guarantee for the fairness of FedASA. At the same time, the convergence of FedASA at the first-order stationary point has been proved. Finally, we evaluated the performance of FedASA through ex- tensive simulation and experiments, and experimental results demonstrated that FedASA outperformed the state-of-the-art approaches with better fairness, faster convergence, and less communication requirement.\nREFERENCES\n[1] T. Qiu, J. Chi, X. Zhou, Z. Ning, M. Atiquzzaman, and D. O. Wu, “Edge\ncomputing in industrial Internet of Things: Architecture, advances and challenges,” IEEE Commun. Surv. Tut., vol. 22, no. 4, pp. 2462–2488, Fourth Quarter, 2020. [2] T. Zhang et al., “When moving target defense meets attack prediction\nin digital twins: A convolutional and hierarchical reinforcement learning approach,” IEEE J. Sel. Areas Commun., vol. 41, no. 10, pp. 3293–3305, Oct. 2023. [3] T. Zhang, C. Xu, J. Shen, X. Kuang, and L. A. Grieco, “How to disturb\nnetwork reconnaissance: A moving target defense approach based on deep reinforcement learning,” IEEE Trans. Inf. Forensics Security, vol. 18, pp. 5735–5748, 2023. [4] J. Yang, C. Wang, B. Jiang, H. Song, and Q. Meng, “Visual perception\nenabled industry intelligence: State of the art, challenges and prospects,” IEEE Trans. Ind. Informat., vol. 17, no. 3, pp. 2204–2219, Mar., 2021. [5] Z. Zhong et al., “P-FedAvg: Parallelizing federated learning with theoret-\nical guarantees,” in Proc. IEEE Conf. Comput. Commun., 2021, pp. 1–10. [6] W. Y. B. Lim et al., “Federated learning in mobile edge networks:\nA comprehensive survey,” IEEE Commun. Surv. Tut., vol. 22, no. 3, pp. 2031–2063, Third Quarter, 2020. [7] T. Zhang et al., “How to mitigate DDoS intelligently in SD-IoV: A moving\ntarget defense approach,” IEEE Trans. Ind. Informat., vol. 19, no. 1, pp. 1097–1106, Jan. 2023.\n[8] J. Perazzone, S. Wang, M. Ji, and K. S. Chan, “Communication-efficient\ndevice scheduling for federated learning using stochastic optimization,” in Proc. IEEE Conf. Comput. Commun., 2022, pp. 1449–1458. [9] J. Wang, S. Guo, X. Xie, and H. Qi, “Protect privacy from gradient leakage\nattack in federated learning,” in Proc. IEEE Conf. Comput. Commun., 2022, pp. 580–589. [10] H. Liu, F. He, and G. Cao, “Communication-efficient federated learning\nfor heterogeneous edge devices based on adaptive gradient quantization,” 2022, arXiv:2212.08272. [11] B. McMahan, E. Moore, D. Ramage, S. Hampson, and B. A. y Ar-\ncas, “Communication-efficient learning of deep networks from de- centralized data,” in Proc. Int. Conf. Artif. Intell. Statist., 2017, pp. 1273–1282. [12] Z. Zhou, F. Wang, J. Yu, J. Ren, Z. Wang, and W. Gong, “Target-oriented\nsemi-supervised domain adaptation for WiFi-based HAR,” in Proc. IEEE Conf. Comput. Commun., 2022, pp. 420–429. [13] D. Cheng, L. Zhang, C. Bu, X. Wang, H. Wu, and A. Song, “ProtoHAR:\nPrototypeguidedpersonalizedfederatedlearningforhumanactivityrecog- nition,” IEEE J. Biomed. Health Informat., vol. 28, no. 8, pp. 3900–3911, Aug. 2023. [14] Z. Yao, C. Jin, M. Ragab, K. M. M. Aung, and X. Li, “DiagNet: Machine\nfault diagnosis using federated transfer learning in low data regimes,” in Proc. AAAI Conf. Artif. Intell. Workshop, 2022. [15] M. Mehta, S. Chen, H. Tang, and C. Shao, “A federated learning approach\nto mixed fault diagnosis in rotating machinery,” J. Manuf. Syst., vol. 68, pp. 687–694, 2023. [16] W. Zhang, X. Li, H. Ma, Z. Luo, and X. Li, “Federated learning for\nmachinery fault diagnosis with dynamic validation and self-supervision,” Knowl.-Based Syst., vol. 213, 2021, Art. no. 106679. [17] C. Li, S. Li, A. Zhang, Q. He, Z. Liao, and J. Hu, “Meta-learning for\nfew-shot bearing fault diagnosis under complex working conditions,” Neurocomputing, vol. 439, pp. 197–211, 2021. [18] J. Um, J. min Park, S. yeon Park, and G. Yilmaz, “Low-cost mobile\naugmented reality service for building information modeling,” Automat. Construction, vol. 146, 2023, Art. no. 104662. [19] D. Deng et al., “DecFFD: A personalized federated learning framework\nfor cross-location fault diagnosis,” IEEE Trans. Ind. Informat., vol. 20, no. 5, pp. 7082–7091, May 2024. [20] Y. Xu, Y. Liao, H. Xu, Z. Ma, L. Wang, and J. Liu, “Adaptive control\nof local updating and model compression for efficient federated learn- ing,” IEEE Trans. Mobile Comput., vol. 22, no. 10, pp. 5675–5689, Oct. 2023. [21] A. Vaswani et al., “Attention is all you need,” in Proc. Int. Conf. Neural\nInf. Process. Syst., 2017, pp. 998–6008. [22] T. Hashimoto, M. Srivastava, H. Namkoong, and P. Liang, “Fairness\nwithout demographics in repeated loss minimization,” in Proc. Int. Conf. Mach. Learn., 2018, pp. 1929–1938. [23] T. Li, S. Hu, A. Beirami, and V. Smith, “DITTO: Fair and robust federated\nlearning through personalization,” in Proc. Int. Conf. Mach. Learn., 2021, pp. 6357–6368. [24] Y. Zhao, M. Li, L. Lai, N. Suda, D. Civin, and V. Chandra, “Federated\nlearning with non-iid data,” 2018, arXiv: 1806.00582. [25] Z. Zhu, J. Hong, and J. Zhou, “Data-free knowledge distillation for\nheterogeneous federated learning,” in Proc. Int. Conf. Mach. Learn., 2021, pp. 12878–12889. [26] L. Zhang, L. Shen, L. Ding, D. Tao, and L.-Y. Duan, “Fine-tuning\nglobal model via data-free knowledge distillation for non-iid federated learning,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit., 2022, pp. 10174–10183. [27] T. Li, A. K. Sahu, M. Zaheer, M. Sanjabi, A. Talwalkar, and V. Smith,\n“Federated optimization in heterogeneous networks,” in Proc. MLSys Conf., 2020, pp. 429–450. [28] S. P. Karimireddy, S. Kale, M. Mohri, S. Reddi, S. Stich, and A. T. Suresh,\n“Scaffold: Stochastic controlled averaging for federated learning,” in Proc. Int. Conf. Mach. Learn., 2020, pp. 5132–5143. [29] M. Zhang, K. Sapra, S. Fidler, S. Yeung, and J. M. Alvarez, “Personalized\nfederated learning with first order model optimization,” 2021, arXiv: 2012.08565. [30] M. G. Arivazhagan, V. Aggarwal, A. K. Singh, and S. Choudhary,\n“Federated learning with personalization layers,” 2019, arXiv: 1912. 00818. [31] W. A. Smith and R. B. Randall, “Rolling element bearing diagnostics using\nthe case western reserve university data: A benchmark study,” Mech. Syst. Signal Process., vol. 64, pp. 100–131, 2015.\n\n--- Page Break ---\n\n[32] J. Zhang et al., “Fedala: Adaptive local aggregation for personal-\nized federated learning,” in Proc. AAAI Conf. Artif. Intell., 2023, pp. 11237–11244. [33] J. Xu, X. Tong, and S.-L. Huang, “Personalized federated learn-\ning with feature alignment and classifier collaboration,” 2023, arXiv:2306.11867. [34] J. R. Regatti, S. Lu, A. Gupta, and N. Shroff, “Conditional moment\nalignment for improved generalization in federated learning,” in Proc. Int. Conf. Neural Inf. Process. Syst. Workshop, 2022, pp. 1–13. [35] P. P. Liang et al., “Think locally, act globally: Federated learning with local\nand global representations,” 2020, arXiv: 2001.01523. [36] X. Ma, J. Zhang, S. Guo, and W. Xu, “Layer-wised model aggregation\nfor personalized federated learning,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit., 2022, pp. 10092–10101. [37] T. Li, M. Sanjabi, A. Beirami, and V. Smith, “Fair resource allocation\nin federated learning,” in Proc. Int. Conf. Learn. Representations, 2020, pp. 1–13. [38] Z. Du, J. Li, H. Su, L. Zhu, and K. Lu, “Cross-domain gradient discrepancy\nminimization for unsupervised domain adaptation,” in Proc. Proc. IEEE Conf. Comput. Vis. Pattern Recognit., 2021, pp. 3937–3946. [39] Y. Zhang, T. Liu, M. Long, and M. Jordan, “Bridging theory and algo-\nrithm for domain adaptation,” in Proc. Int. Conf. Mach. Learn., 2019, pp. 7404–7413. [40] S. Ben-David, J. Blitzer, K. Crammer, A. Kulesza, F. Pereira, and J. W.\nVaughan, “A theory of learning from different domains,” Mach. Learn., vol. 79, pp. 151–175, 2010. [41] X. Peng, Z. Huang, Y. Zhu, and K. Saenko, “Federated adversarial domain\nadaptation,” 2019, arXiv: 1911.02054. [42] L. Van der Maaten and G. Hinton, “Visualizing data using t-SNE,” J. Mach.\nLearn. Res., vol. 9, no. 86, pp. 2579–2605, 2008. [43] V. Mothukuri, P. Khare, R. M. Parizi, S. Pouriyeh, A. Dehghantanha,\nand G. Srivastava, “Federated-learning-based anomaly detection for iot security attacks,” IEEE Internet Things J., vol. 9, no. 4, pp. 2545–2554, Feb. 2022. [44] L. Cui et al., “Security and privacy-enhanced federated learning for\nanomaly detection in IoT infrastructures,” IEEE Trans. Ind. Informat., vol. 18, no. 5, pp. 3492–3500, May 2022. [45] S. Wang, F. Liu, and H. Xia, “Content-based vehicle selection and resource\nallocation for federated learning in IoV,” in Proc. IEEE Wireless Commun. Netw. Conf. Workshops, 2021, pp. 1–7. [46] H. Liu, F. He, and G. Cao, “Communication-efficient federated learning\nfor heterogeneous edge devices based on adaptive gradient quantization,” in Proc. IEEE Conf. Comput. Commun., 2023, pp. 1–10. [47] F.Haddadpour,M.M.Kamani,M.Mahdavi,andV.Cadambe,“LocalSGD\nwith periodic averaging: Tighter analysis and adaptive synchronization,” in Proc. Int. Conf. Neural Inf. Process. Syst., 2019, pp. 1–13. [48] X. Zhao, A. An, J. Liu, and B. X. Chen, “Dynamic stale synchronous\nparallel distributed training for deep learning,” in Proc. IEEE Int. Conf. Distrib. Comput. Syst., 2019, pp. 1507–1517. [49] E. Ozfatura, K. Ozfatura, and D. Gündüz, “Time-correlated sparsification\nfor communication-efficient federated learning,” in Proc. IEEE Int. Symp. Inf. Theory, 2021, pp. 461–466. [50] Y. Mao et al., “Communication-efficient federated learning with adaptive\nquantization,” ACM Trans. Intell. Syst. Technol., vol. 13, no. 4, pp. 1–26, 2022. [51] Z. Wang et al., “Asynchronous federated learning over wireless com-\nmunication networks,” IEEE Trans. Wireless Commun., vol. 21, no. 9, pp. 6961–6978, Sep. 2022. [52] C. T. Dinh, N. Tran, and J. Nguyen, “Personalized federated learning\nwith moreau envelopes,” in Proc. Adv. Neural Inf. Process. Syst., 2020, pp. 21394–21405. [53] Q. Ma, Y. Xu, H. Xu, Z. Jiang, L. Huang, and H. Huang, “FedSA: A\nsemi-asynchronous federated learning mechanism in heterogeneous edge computing,” IEEE J. Sel. Areas Commun., vol. 39, no. 12, pp. 3654–3672, Dec. 2021. [54] J. Liu et al., “Adaptive asynchronous federated learning in resource-\nconstrained edge computing,” IEEE Trans. Mobile Comput., vol. 22, no. 2, pp. 674–690, Feb. 2023. [55] C.-H. Hu, Z. Chen, and E. G. Larsson, “Scheduling and aggregation design\nfor asynchronous federated learning over wireless networks,” IEEE J. Sel. Areas Commun., vol. 41, no. 4, pp. 874–886, Apr. 2023. [56] M. Asad, A. Moustafa, and T. Ito, “FedOpt: Towards communication\nefficiency and privacy preservation in federated learning,” Appl. Sci., vol. 10, no. 8, 2020, Art. no. 2864.\n[57] A. Fallah, A. Mokhtari, and A. Ozdaglar, “Personalized federated learning:\nA meta-learning approach,” 2020, arXiv: 2002.07948.\nDongshang Deng received the BS degree from the Nanjing Agricultural University, Nanjing, China, in 2019. He is currently working toward a master’s de- gree with the Anhui University of Technology, Maan- shan, China. His research interests include Internet of Things and federated learning.\nXuangou Wu (Member, IEEE) received the PhD degree in computer software and theory from the Uni- versity of Science and Technology of China, Hefei, China, in 2013. From 2018 to 2019, he was a visiting scholarwiththeDepartmentofComputerScienceand Engineering, Hong Kong University of Science and Technology. He is currently a full professor with the School of Computer Science and Technology, Anhui University of Technology, Maanshan, China. His re- search interests include Internet of Things, network security, and privacy protection.\nTao Zhang (Member, IEEE) received the BS degree in Internet of Things engineering from the Beijing University of Posts and Telecommunications (BUPT) and the Queen Mary University of London in 2018, and the PhD degree in computer science and technol- ogy from BUPT in 2023. He is currently an assistant professor (lecturer) with the School of Cyberspace Science and Technology, Beijing Jiaotong University. His publications include ESI highly cited paper and well-archived international journals and proceedings, such as IEEE Communications Surveys and Tutorials, IEEE Journal on Selected Areas in Communications, IEEE Transactions on Information Forensics and Security, IEEE Transactions on Dependable and Secure Computing, IEEE Transactions on Intelligent Transportation Systems, IEEE Transactions on Industrial Informatics, etc. His research interests include network security, moving target defense, and federated learning. He has served as the guest editor for Electronics and Chinese Journal of Network and Information Security, and the TPC chair and a PC member for some international conferences and workshops. He was a recipient of the Best Paper Award from NaNA 2018 and IWCMC 2021, and a recipient of Outstanding Paper Award from IEEE iThings 2023. His Ph.D. thesis was awarded the Outstanding Doctoral Dissertation by BUPT in 2023.\nXiangyun Tang received the BEng degree in com- puter science from the Minzu University of China, Beijing, China in 2016, and the PhD degree in cy- berspace security from the Beijing Institute of Tech- nology, Beijing, China, in 2022. She is an associate professor with the School of Information Engineer- ing, Minzu University of China. She has served as the guest editor for multiple Journals, and the TPC chair and the PC member for international conferences and workshops. She was a recipient of the Best Paper Award from IEEE ICBCTIS 2023, and a recipient of Outstanding Paper Award from IEEE iThings 2023. Her research interests include secure multi-party computation and machine learning security.\n\n--- Page Break ---\n\nHongyang Du received the BEng degree from the School of Electronic and Information Engineering, Beijing Jiaotong University, Beijing, in 2021, and the PhD degree from the Interdisciplinary Graduate Program from the College of Computing and Data Science, Energy Research Institute @ NTU, Nanyang Technological University, Singapore, in 2024. He is an assistant professor with the Department of Electri- cal and Electronic Engineering, University of Hong Kong. He serves as the editor-in-chief assistant of IEEE Communications Surveys & Tutorials (2022- 2024), and the guest editor for IEEE VTM. He is the recipient of the IEEE Daniel E. Noble Fellowship Award from the IEEE Vehicular Technology Society in 2022, the IEEE Signal Processing Society Scholarship from the IEEE Signal Processing Society in 2023, the Chinese Government Award for Outstanding Students Abroad in 2023, the Singapore Data Science Consortium (SDSC) Dis- sertation Research Fellowshipin 2023, and NTU Graduate College’s Research Excellence Award in 2024. As the team leader, he won the Honorary Mention award in the ComSoc Student Competition from IEEE Communications Society in 2023, and the First and Second Prizes in the 2024 ComSoc Social Network Technical Committee (SNTC) Student Competition. He was recognizedas an exemplary reviewer of the IEEE Transactions on Communications and IEEE Communications Letters in 2021. His research interests include edge intelli- gence, generative AI, semantic communications, and network management.\nJiawen Kang (Senior Member, IEEE) received the PhD degree from the Guangdong University of Tech- nology, China, in 2018. He was a postdoc with Nanyang Technological University, Singapore, from 2018 to 2021. He currently is a professor with the Guangdong University of Technology, China. His re- search interests mainly include focus on blockchain, security, and privacy protection in wireless commu- nications, and networking.\nJiqiang Liu (Senior Member, IEEE) received the PhD degree from Beijing Normal University in 1999. He is currently a full professor and the dean with the School of Cyberspace Science and Technology, Beijing Jiaotong University. He has authored or coau- thored more than 200 publications. In recent years, he has been mainly engaged in research on trusted computing, privacy protection, and cloud computing security.\nDusit Niyato (Fellow, IEEE) received the BEng de- gree from the King Mongkuts Institute of Technol- ogy Ladkrabang (KMITL), Thailand, and the PhD degree in electrical and computer engineering from the University of Manitoba, Canada. He is a professor with the College of Computing and Data Science, Nanyang Technological University, Singapore. His research interests include the areas of mobile gen- erative AI, edge intelligence, decentralized machine learning, and incentive mechanism design.",
+  "equations": [
+    {
+      "page": 2,
+      "raw_extracted": "The contributions of our work are summarized as follows: r To the best of our knowledge, this is the first work that con-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "siders the cross-location issues in resource-constrained IoT scenarios. Our empirical results show that the similarity among data in the cross-location scenario is significantly lower than that in the cross-domain scenario, and the ex- isting federated learning methods suffer from performance degradation in the cross-location scenario. r We design a fair and efficient personalized FL method",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "called FedASA, which can address the challenge of statisti- cal heterogeneity in resource-constrained IoT scenarios by determining the shared architecture adaptively according to the heterogeneity of devices. r We provide a theoretical analysis of the federated error",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "bound, which provides the theoretical guarantee for the fairness of FedASA. At the same time, we prove the convergence of FedASA at the first-order stationary point. r We evaluate the performance of FedASA through exten-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "According to FL [11], we consider that there exists a pa- rameter server andψK local devices cooperating to complete a classification task←T ≜⟨D,←F⟩, where←D is the distribution on X←×←Y←⊂Rd←× RandF representsasetofmappingsfrominput space←X to output space←Y. Each device ownsψDk =←⊓xi,ψyi⊒Nk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "i=1, Dk←∈Dk to complete a subtask←Tk =←⟨Dk,←Fk⟩, whereψNk is the number of samples. For deviceψk, the actual loss is Lk(wk) ≜E(x,y)∼Dk[l(fk(x;ψwk),ψy)] whereψfk←∈Fk andψl(·) is a loss function. In practice, the empirical loss ˆLk(wk) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "1 Nk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0002Nk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "i=1[l(fk(xi;ψwk),ψyi)] is often used as an estimate of the loss. Therefore, the optimization objectiveψw∗of FL satisfies",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "w∗= arg min",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "w L(w) = arg min",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "w",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "pkLk(w), (1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "whereψwk←∈Wk is the model parameter ofψfk andψpk is the weighting factor,ψpk←≥0, \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k=1ψpk = 1, such asψpk =ψNk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "N , whereψN = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k=1ψNk. Statistical heterogeneity across IoT devices is generated by various factors, including work conditions (e.g., rotating speeds and loads) and monitoring locations. Statistical heterogeneity caused by diverse working conditions across devices has been extensively studied, named the cross-domain issues [14], [15]. In this paper, we refer to the statistical heterogeneity caused by various monitoring locations across devices as the cross-location issues. Note that cross-domain issues are caused by monitored devices (e.g., production machines), and cross-location issues are caused by monitoring devices (e.g., sensors).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "For statistical heterogeneity, the trained global modelψw∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "cannot meet the personalized requirements of the local de- vice [32], [33]. Therefore, the optimization objective of per- sonalized model←⊓w∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k⊒K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k=1 [34] is",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "(w∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "1,ψw∗ 2,ψ.ψ.ψ.ψ,ψw∗ K) = arg min",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "⊓wk⊒K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "pkLk(wk). (2)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "including limited computing and communication resources [20]. Note that the limitation of communication resources is the pri- ority in this paper. Fig. 3 shows three different sharing schemes of the local model in FL. The all-sharing scheme (referred to Fig. 3(a)) shares all layers of the local model, which is used in most FL approaches [11], [14], [23], [27]. Customized model parameters allow these solutions to cater to the specific requirements of different devices and minimize the impact of statistical heterogeneity. Nevertheless, according to the experi- mental results of Section II-A, they are unsuitable for addressing thecross-locationissuesinIoTscenarios.Inaddition,asthelocal model becomes larger and larger, the communication overhead brought by the all-sharing scheme cannot be ignored. TheψG- sharing scheme (as shown in Fig. 3(b)) shares only the lowest G layers of the local model. Typically,ψG is predetermined and fixed in the training process. This baseline is similar to several existing personalized FL approaches [30], [35]. TheψG-sharing scheme is indeed able to reduce the communication overhead, even that introduced by a fully connected layer. According to the experimental results of Section II-A,ψG-sharing has the prospect of adapting to the cross-location issues. However,ψG is crucial for the local device, and determining the optimalψG brings additional computation and communication overhead. On the other hand, due to the effects of statistical heterogeneity, especially for cross-location issues, a fixed upload architecture for all devices may be a suboptimal solution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "To further exam our idea, we conducted a simple experiment in CWRU dataset. As shown in the Fig. 4,ψα0 toψα4 indicates that the number of shared layers is increasing. Experimental results show that when the data only comes from location C, the optimal shared layers isψα3, which means more shared layers, and as monitoring locations increase, the number of shared",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "In general, (2) can be solved by gradient descent algo- rithms [11], such as mini-batch gradient descent (mini-batch SGD). For the mini-batch SGD, an iteration represents that the local device performs gradient descent on a mini-batch of data. One round of local updates consists of multiple iterations. After a round of local updates, the local device pushes the local model wt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k =ψwt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k←−η∇Lk(wt) (η is the learning rate) to the server for aggregation.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Note that the communication overhead of FL is determined by the size of transmitted model parameters [36]. Assuming that in roundψt, for deviceψk, the bandwidth requirement←Ct",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k can be formulated by",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ct",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k =←CO(wt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k), (3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "where the size of the model parametersψwt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k is directly propor- tional to←CO(·). FedASA reduces the communication overhead by reducing the size of the transmitted model parameters.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Definition 1 (Fairness): When comparing the fairness of the two models, we consider that the fairer one has more uniform performance across devices, i.e., forψw1 andψw2, if std(⊓Lk(w1)⊒K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k=1)ψ♯ψstd(⊓Lk(w2)⊒K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k=1), whereψstd(·) is the standard deviation, thenψw1 is fairer thanψw2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "FedASAensuresthatdeviceshavesimilarperformancelevels, reducing the impact of fairness barriers. To realize personaliza- tion, FedASA divides the local model into shared and personal- ized architecture. Letψfk =ψgk←◦hk, whereψgk←∈Gk represents the shared architecture,ψhk←∈Hk is the personalized architec- ture, and the parameters ofψgk isψθk←∈Θk, and the parameters ofψhk isψφk←∈Φk. Therefore, our optimization objective is",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "(θ∗,ψφ∗) = arg min",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "⊓θk,φk⊒K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "pkLk(θk←◦φk), (4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "whereψθ∗= (θ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "1,ψθ∗ 2,ψ.ψ.ψ.ψ,ψθ∗ K),ψφ∗= (φ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "1,ψφ∗ 2,ψ.ψ.ψ.ψ,ψφ∗ K). Simi- larly, (3) is rewritten as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ct",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k =←CO(θt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k). (5)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Fig. 5. Overview of FedASA. The training procedure consists of the following steps: 1⃝. Data preprocessing. 2⃝. Local training on private data. 3⃝. Each device uploads the trained model parameters to the parameter server. 4⃝. The parameter server adaptively determines the global shared architectures by cell-wised alignment. 5⃝. The parameter server updates the hyper-model by cell-based aggregation and sample the trained local model parameters. 6⃝. Each device downloads the updated model parameters. Repeat 2⃝- 6⃝until the model converges or meets the accuracy requirements.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Assuming that for deviceψk, the total communication resource budget is←Ck. Accordingly, we formulate the problem as follows:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "min θk,φk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "pkLk(θk←◦φk),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "s.t.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "⎧ ⎪ ⎪ ⎪ ⎨",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "⎪ ⎪ ⎪ ⎩",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Lk(θT",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k←◦φT",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k )←−Lk(θ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k←◦φ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k)ψ♯ψε1, Ct",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k←≤Ck, std(⊓Lk(θT",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k←◦φT",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "k )⊒)ψ♯ψε2, ∀k←∈[K],",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "whereψε1,ψε2ψ⌢ 0 are the predefined threshold (close to zero) and we useψk←∈[K] representψk←∈⊓0, 1,ψ.ψ.ψ.ψ,ψK⊒. Some important notations in this paper are listed in Table II.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "As illustrated in Fig. 5, we present an overview of FedASA. It consists of two main steps: data preprocessing and model training. Specifically, the workflow of FedASA is as follows: (i) The server initializes the global model parameters and local device training epochsψE, which are broadcast to all devices. Each device performs data preprocessing. (ii) After local train- ing, each device sends the trained model parameters to the pa- rameter server. (iii) The server uses cell-wised alignment to iden- tify the shared architectures and then updates the hyper-model through cell-based aggregation. (iv) The server broadcasts the sampled local device parameters to each device. (v) Repeat ii-iv until the model converges or meets the accuracy requirements. In the following, we first give the data preprocessing of FedASA.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Since the raw vibration signals only represent the time domain (referred to Fig. 6(a)) and their phases are different, the cosine similarities among the devices are very low, less than 3% in CWRU dataset. In Section II-A, the FFT is used to convert raw signals to obtain frequency domain signals (referred to Fig. 6(b)). The FFT algorithm is used for calculating the discrete Fourier transform (DFT) of a sequence. The DFT is obtained by decomposing a series of values into components of different frequencies. Letψx = (x0,ψ.ψ.ψ.ψ,ψxS−1) be a signal. The DFT is defined by (7),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Xd =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "S−1 \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "s=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "xse−i2πds/S, d = 0,ψ.ψ.ψ.ψ,ψS←−1, (7)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "whereψei2π/S is a primitiveψS-th root of 1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "To facilitate training, FedASA simplifies the model archi- tecture to a cell-based architecture. As shown in Fig. 7, the residual-based cell comprises a convolutional layer followed by a pooling layer, with equal input and output feature dimensions. Each local model contains two convolutional layers,ψM cells andFClayers,identicaltothehyper-modelarchitectureshownin",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Fig. 7. This design has two advantages. Firstly, it ensures that the feature dimension of the output of each cell is the same, which makes it simpler to divide heterogeneous architectures. Sec- ondly, due to the residual structure, it prevents the degradation of deep network models. In order to determine the adaptive model architecture, the auxiliary model trained from the parameter server’s auxiliary dataset is essential. In IoT scenarios, collecting anauxiliarydatasetisasimpletaskbecauseeachbatchofdevices is tested before being sold. In our experience, the auxiliary data can come from only one monitoring location and the trained auxiliary model can perform poorly with only 78.12%. Note that the auxiliary model and hyper-model have similar architectures. The auxiliary model containsψL cells, whereas the hyper-model containsψM cells (L←≤M). Since the shared architectures across devices are heterogeneous, we introduce a hyper-model to assist aggregation. Specific details for aggregation can be found in the cell-basedaggregationalgorithm.Fig.7displaysthearchitecture of these models.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Note that FedASA adaptively determines the shared archi- tectureψgk based on the private dataset in each device. In the real-world FL scenarios, achieving this goal is challenging. Fortunately, the auxiliary datasetψDaux and auxiliary modelψgaux of the parameter server are available. To address this challenge, we propose a cell-wised alignment algorithm, which takes the output features of the cells as the criterion. After uploading all local models, they are processed by the auxiliary dataset to capture output features from each cell. The auxiliary model’s output features are aligned with the client model’s. Note that the optimal sharing architecture must satisfy both accuracy and communication resource requirements. Directly selecting the minimum alignment distance may be biased, which may cause additional communication overhead for the local device. Let the auxiliary modelψgl",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "aux containψlcells, and the local modelψgm",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "k containψm cells, then the optimal alignment cellψm∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "k is",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "m∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "k = arg min",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "m∈[M]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Ex∈Daux∥gl",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "aux(x;ψθaux)←−gm",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "k (x;ψθk)∥2,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "s.t.ψl∈[L],←Ct",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "k←≤Ck, (8)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "whereψlis a hyperparameter. Furthermore,ψm∗= (m∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "1,ψm∗ 2, .ψ.ψ.ψ,ψm∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "K) is referred to as the alignment vector, which is used to record the shared architecture in the next round.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Statistical heterogeneity can cause shared architectures to have varying numbers of cells, which are stochastically exposed to the datasets of devices. As such, naively using FedAvg [11] for aggregation is not feasible since it is designed to aggregate the same architecture. For this reason, we propose a cell-based ag- gregation algorithm, where the update experience of the cell de- termines the weight of the update. Let←O =←⊓o0,ψo1,ψo2,ψ.ψ.ψ.ψ,ψoM⊒ be the set of operators involved in aggregation, e.g. the convo- lutional layer and cell. Letψθ(o0) be the parameters of the two convolutional layers andψθ(om) be the parameters of theψm-th",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Algorithm 1: The FedASA Algorithm. Input: Communication resources budget for each device←Ck,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "training roundψT, auxiliary datasetψDaux, auxiliary model gaux, alignment roundsψt0 Output:ψθT",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k ,ψφT",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k 1: Initialize the devices’ model parametersψθ0 k,ψφ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k, hyper-model parametersψθ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp(·) 2: At Parameter Server: 3: forψt = 1, 2,ψ.ψ.ψ.ψ,ψT do 4: ifψt←≤t0 then 5: Receiveψwt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k for allψk←∈[K] 6: m∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k = arg minm∈[M] E∥gl",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "aux(x;ψθaux)←− gm",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k (x;ψθk)∥2 //Refer to (8) 7: Collect the alignment vectorψm∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "8: else 9: Receiveψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k for allψk←∈[K] 10: end if 11: ifψS(o)0 then",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "12: θt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp (o) = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Nψt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k,o \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i=1ψNψt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i,oψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k(o) //Refer to (9)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "13: else 14: θt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp (o) =ψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp(o) //Refer to (9) 15: end if 16: Sample updated shared modelsψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "17: Broadcastψθt+1 to all devices 18: end for 19: At Deviceψk: 20: forψt = 1, 2,ψ.ψ.ψ.ψ,ψT do 21: Receiveψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k from the Parameter Server 22: θt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k =ψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k←−ηg∇ˆLk(θk←◦φk) //Refer to (13) 23: φt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k =ψφt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k←−ηh∇ˆLk(θk←◦φk) //Refer to (13) 24: Sendψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k to the Parameter Server 25: end for",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "cell. For allψo←∈O,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "θt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp (o) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "\b\u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Nψt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k,o \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i=1ψNψt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i,oψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k(o), S(o)ψ⌢ 0,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "θt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp(o), otherwise,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "whereψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hp(·) are the parameters of hyper-model in roundψt, θt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k(·) are parameters of deviceψk in roundψt,ψNψt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k,o is the number of samples using operatorψo in roundψt, andψS(o) denotes the frequency of using the operatorψo during a round of updates. An operator in the hyper-model is updated only if it has been used more than once. Finally, if an operator (such as operator o0) is used in all devices, then (9) degenerates into FedAvg. Specifically, FedASA is a generalization of FedAvg, where the average is performed independently for each operator rather than for the full architecture.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Sampling: After the hypermodel update, the parameter server has completed one round of updates. Delivering the hyper-model directly is inappropriate as each device only needs the same model parameters as the shared architecture, which incurs ad- ditional communication overhead. We can sample the updated shared architectures of devices by using an alignment vector m∗= (m∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1,ψm∗ 2,ψ.ψ.ψ.ψ,ψm∗ K).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Although classification tasks with cross-entropy would in- tuitively bring improvement, unfortunately, we cannot directly access supervision information of the target tasks [12]. For a given sampleψxk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i from deviceψk, we have",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "sk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i = softmax(h(g(xk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i ))), (10)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "whereψsk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i is a soft label ofψxk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i . Meanwhile, a hard label forψxk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i is generated by one-hot encoder",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i = one_hot(max(sk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i )). (11)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "ˆLk(θk←◦φk)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "=←−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Nk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "C \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "c=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1⊓yi =ψc⊒",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "log esk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i,c \u0002C",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "j=1ψesk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "j,c←−eE",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": ", (12)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "where←E =←−\u0002C",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i=1ψsk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i,c logψsk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i,c is the entropy ofψsk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "i,c andψC is the number of categories.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "During local training,ψφk andψθk of the model are merged to wk. Assuming that the gradient descent algorithm is used for model optimization, then for deviceψk,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "\b",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "θt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k =ψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k←−ηg∇ˆLk(θk←◦φk),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "φt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k =ψφt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k←−ηh∇ˆLk(θk←◦φk),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "whereψηg is the learning rate ofψθk andψηh is the learning rate of φk.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "To sum up, for deviceψk, the algorithm for each round of updates is: (i) Initialize the devices’ model parametersψθ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k,ψφ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k or receive the updatedψφt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k. (ii)ψφt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k andψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k are trained locally forψE epochs regarding (13). (iii) Send the trainedψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k to the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "parameter server. For the server, the algorithm for each round of updates is: (i) Receive all updatedψθt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k. (ii) Ifψt = 1 perform to determine the optimalψm∗by cell-wised alignment otherwise skip this step. (iii) Update hyper-modelψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "hp (·) through cell- based aggregation. (iv) Sample updated shared modelsψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k byψm∗. (v) Sendψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k to all devices. Follow this loop for multiple rounds of training until the model converges or reaches the accuracy requirements. The detailed algorithm is referred to as Algorithm 1. Algorithm 1 begins with estimating the communication resources budget for each device←Ck, the setting of training roundψT, and the collection of auxiliary datasetψDaux and auxiliary modelψgaux. Line 1 is the initialization of the local model parametersψθ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k,ψφ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k and hyper-model parametersψθ0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "hp(·). At the parameter server, lines 4-8 are used to perform cell-wised alignment and to collect the alignment vectorsψm∗. Lines 11-16 are used to perform cell-based aggregation and sample updated shared modelsψθt+1. Line 17 is used to broadcastψθt+1 to all devices. At deviceψk, line 21 is used to receive the updatedψθt. Lines 22-23 are used to update the local model parametersψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k , φt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k . Line 24 is used to sendψθt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k to the parameter server.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "In supervised learning, given a set of training samples, the goal is to find the optimal functionψf←∗∈F by minimizing the error on the test set. However, this relies on the assumption that the training and test sets are independent and identically distributed. In actual production, this assumption requires a lot of cost for data preprocessing. Domain adaptation aims to solve the problem of inconsistent data distribution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "In typical domain adaptation, we are referring to a labeled source domain←D1 and an unlabeled target domain←D2. The objective is to find a functionψf←∈F that minimizes the gen- eralization error←L2 = E(x,y)∼D2[l(f(x;ψw),ψy)] of the target domain. In [40], with a probability of at least 1←−δ, we get the following error upper bound",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "L2(f)←≤L1(f) + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "2 ˆdFΔF(D1,←D2) \u000b \f\r \u000e Ideal Joint Error",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "2d log(2m) + log 2 δ m + λ \u000b \f\r \u000e Disparity Difference",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": ", (14)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "whereψδ←∈(0, 1), λ =←L1(f←∗) +←L2(f←∗) is a constant, and for f,ψf←′←∈F,←⊕is the XOR function, then←FΔF is equivalent to",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "f(x)←⊕f←′(x). (14) shows that the target domain error is related not only to the source domain error but also to the ideal joint error and disparity difference. Subsequent domain adaptation theorems, such as [34], [39], are based on (14).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "FL involves a series of independent and identically dis- tributed devices, which differs from classical domain adaptation. Multi-source domain adaptation faces the following challenges: (i) There are multiple devices, and data sharing is limited among each other. (ii) The adaptation effects can vary among devices due to statistical heterogeneity. Fortunately, in FL, a powerful parameter server is available. In FL,ψK devices work together to train a generalization model that can adapt to deviceψi. Similarly, ensemble learning (EL) aims to create a generalization model that can adapt to the new device, e.g., a weighted ensemble. But which one is better? In this brief analysis, we will com- pare them in terms of error bounds. According to the above analysis, the target domain error is related not only to the source domain error but also to ideal joint error and disparity difference. Obviously, FL and EL are similar in the latter two parts, so their source domain errors are considered. In FL, the source domain error is←LFψL =←L(\u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k=1ψpkfk), while in EL, it is←LEL = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k=1ψpkL(fk). If the loss function is convex, then it is obvious←LFψL←≤LEL. However, the loss function←L(·) often satisfies L-smooth (referred to Definition 2). For L-smooth functions, the lower bound of←L(·) is a hyperplane, and its upper bound is a quadratic function. Its upper bound is convex, and its lower bound also satisfies←LFψL←≤LEL. So, we can get LFψL←≤LEL, which means FL achieves a minor error bound when obtaining the objective functionψf←∗.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Next, we provide various federated error bounds. According to Theorem 2 of [41], let  ̃D = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k=1ψpkDk be the mixture distribution of all devices, and the corresponding mixture error is  ̃L(·). With a probability of at least 1←−δ, the following error upper bound can be obtained:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Li(f)←≤ ̃L",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "ψK \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "pkfk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "pk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "\u00101",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "2 ˆdFΔF(Dk,←Di) + λk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "\u0011",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "2d log(2Km) + log 2 δ Km , (15)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where λk =←Lk(f←∗) +←Li(f←∗).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "The loss upper bound (15) is only suitable for all-sharing scenarios. In [34], Regatti et al. divided the local model into the base layerψuk and the top layerψvk. The globally optimalψvk is defined as ˆv = arg minv←L  ̃D(·). The local optimalψvk is defined asψv∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k = arg minv←LDk(·). With a probability of at least 1←−δ, the following loss upper bound can be obtained:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Lk(ˆv)←−Lk(v∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "k)←≤1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "i=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "pik ˆdFΔF(Di,←Dk) +←⊑ˆλv←−λ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "v⊑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where ˆλv and λ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "v represent the error constants whenψvk is global optimal and local optimal, respectively. The loss upper bound (16) focuses on the top layerψvk, but we focus more on the shared architectureψgk. For deviceψk,ψgk is sampled from the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "hyper-modelψg. Let the global optimal modelψg∗satisfy  ̃L(g∗) = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1ψpkLk(g∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k), and then we have the following theorem: Theorem 1: Let the VC-dimension of the function space←G beψd and the number of local samples beψm. The estimate of the disparity difference between the two devices is ˆdGΔG(Di,←Dj). For anyψδ←∈(0, 1) andψgk←∈G, with a probability of at least 1←−δ, we have",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Li(gi)←≤ ̃L(g) + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0003K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1ψpk ˆdGΔG(Dk,←Di) \u000b \f\r \u000e Disparity Difference",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2d log(2Km) + log 2 δ Km + λ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u000e Ideal Joint Error",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ", (17)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where λ∗=←L(g∗) +←Li(g∗).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Li(gi)←≤ ̃L",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ψK \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "pkgk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "pk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u00101",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2 ˆdGΔG(Dk,←Di) + λk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0011",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2d log(2Km) + log 2 δ Km",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "=  ̃L(g) + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "pk ˆdGΔG(Dk,←Di)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2d log(2Km) + log 2 δ Km +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "pkλk (18)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Moreover, if the global optimal modelψg∗satisfies←L(g∗) = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1ψpkLk(g∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k), and also define λ∗=←L(g∗) +←Li(g∗), then (18) can be rewritten as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Li(gi)←≤ ̃L(g) + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0003K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1ψpk ˆdGΔG(Dk,←Di) \u000b \f\r \u000e Disparity Difference",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2d log(2Km) + log 2 δ Km + λ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u000e Ideal Joint Error",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "■ Note that the error bound presented in Theorem 1 is a gener- alized version of (15). In FedASA, the cell-wised alignment scheme makes the extracted features amongψgk exhibit high similarity. Clearly, compared with (15), the error bound of FedASA is minor, which means that the standard deviation of loss across devices is minor. According to Definition 1, FedASA offers better fairness.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Letψw denote the concatenation of (θ,ψφ). First, we introduce related definitions and assumptions.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Definition 2: A differentiable functionψf(x) is called L- smooth, iff it has a Lipschitz continuous gradient, i.e., iff",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∃Lψ♯←∞such that",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∥∇f(x1)←−∇f(x2)∥≤L∥x1←−x2∥,←∀x1,ψx2←∈Rd. (20)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Assumption 1: The global loss function←L(·) satisfies L- smooth, i.e.,←∀w1,ψw2←∈Rd,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "L(w1)←−L(w2)←≤⟨∇L(w2),ψw1←−w2⟩+ψL",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2←∥w1←−w2∥2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Assumption 2: The expected squared norm of stochastic gra- dients is uniformly bounded, i.e.,←∀k←∈[K],←∀t←∈[T],←∃G, such that",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "E∥∇ˆLk(wt)∥2←≤G2. (22)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Assumption 3: The gradient←∇ˆL(wt) = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1ψpk∇ˆLk(wt) is bounded, i.e.,←∃a0 such that",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∇L(wt)T E(∇ˆL(wt))←≥a∥∇L(wt)∥2. (23)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Assumption 1 is commonly present in multiple federated learning approaches, including FedProx [27] and FedCMA [34]. Assumption 2 restricts the gradient’s scope during the update. Assumption 3 ensures that←∇ˆL(wt) is an estimate of←∇L(wt). If and only ifψa = 1, we have←∇ˆL(wt) as the unbiased estimation of←∇L(wt).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Lemma 1: With Assumption 2, for aggregated model ˆL(wt), we have,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "E∥∇ˆL(wt)∥2←≤K2G2 (24)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Proof: Using←∇ˆL(w) = \u0002K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1ψpk∇ˆLDk(wk) and Assump- tion 3, we can get",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∥∇ˆL(wt)∥2 =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0012\u0012\u0012\u0012\u0012",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "K \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "pk∇ˆLk(wt)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0012\u0012\u0012\u0012\u0012",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "≤∥∇ˆL1(wt) +←∇ˆL2(wt) +←·←·←· +←∇ˆLk(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "≤K2∥∇ˆLk∗(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0010",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k∗= arg max",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "k",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∇ˆLk(wt)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0011",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "E∥∇ˆL(wt)∥2←≤K2E∥∇ˆLk∗(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "≤K2G2 (26)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "■ Lemma 2: If←L(·) is L-smooth, then with Assumptions 1 and 3, we have,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "E[L(wt+1)]←≤E[L(wt)]←−ηa∥∇L(wt)∥2 + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "2Lη2K2G2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Proof: Using the smoothness property of←L(·) from Assump- tion 1, we can get",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "L(wt+1)←≤L(wt) +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0013",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∇L(wt),ψwt+1←−wt\u0014",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ψL",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2←∥wt+1←−wt∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "=←L(wt)←−η∇L(wt)T←∇ˆL(wt)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ψLη2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2←∥∇ˆL(wt)∥2 (28)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "E[L(wt+1)]←≤E[L(wt)]←−η∇L(wt)T E[∇ˆL(wt)]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ψLη2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2 E∥∇ˆL(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "≤E[L(wt)]←−ηa∥∇L(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ψLη2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2 E∥∇ˆL(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "≤E[L(wt)]←−ηa∥∇L(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2Lη2K2G2 (29)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "■ Theorem2: LetAssumptions1,2and3holdandafterrunning the algorithm withψT rounds, we have",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "T←−1 \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "∥∇L(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "T ≤E[L(w0)]←−L(w∗)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ηaT + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2aLηK2G2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "E[L(wt+1)]←≤E[L(wt)]←−ηaE∥∇L(wt)∥2 + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2Lη2K2G2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ηaE∥∇L(wt)∥2←≤E[L(wt)]←−E[L(wt+1)] + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2Lη2K2G2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Applyψt = 0, 1,ψ.ψ.ψ.ψ,ψT←−1 into (32), and add both sides of these inequalities,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ηa",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "T←−1 \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "E∥∇L(wt)∥2←≤E[L(w0)]−E[L(wT )]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2LTη2K2G2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "≤E[L(w0)]−L(w∗) + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2LTη2K2G2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Let us divide both sides of this inequality byψηaT,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "T←−1 \u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "∥∇L(wt)∥2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "T ≤E[L(w0)]←−L(w∗)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ηaT + 1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2aLηK2G2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "■ Note that if E[L(w0)]←−L(w∗) =ψM, FedASA converges to",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "a first-order stationary point whenψη =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u0015",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "2M LTψK2G2 .",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Methods for comparison: Several methods have been imple- mented to evaluate the superiority of FedASA. In particular, we focus on the comparison of the following methods: r Local-only is a baseline method. In this method, each edge",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "device performs model training solely using local dataset. r FedAvg [11] is one of the most famous algorithms in FL,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "with edge devices sharing the same model architecture. r FedProx [27] utilizesψl2 regularization to constrain the up-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "dates of edge devices to mitigate statistical heterogeneity. For FedProx, we set the hyperparameterψμ to 0.01.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "r FedPer [30] is a typical G-sharing method that addresses",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "statistical heterogeneity through personalized layers. r Ditto [23] employsψl2 regularization to preserve the as-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "sociation between the global architecture and the local architectures. For Ditto, we set the hyperparameter λ to 0.01. Tasks & hyperparameters: We evaluate these methods in resource-constrained scenarios with 12 devices on various learn- ing tasks. Table V provides a summary of the configuration of the local dataset. The CWRU dataset encompasses 12 tasks (each device completes one task), each corresponding to four levelsofrotatingspeedsandload,multipliedbythreemonitoring locations. In the experimental setting, we utilize locations A & B to denote that the dataset is sourced from location A and location B. Similar configurations include locations A & C, locations B & C, and locations A & B & C. As the default configuration, we set the local batch size to 32, the local training epochs to 5, and the global training rounds to 200. Each device is given 1,000 samples, which is split into 80% trainset and 20% testset. The model architecture used by the compared methods is consistent with that of the hyper-model. AI models are updated by the Adam optimizer with a learning rate of 2←× 10−4. In FedASA, the number of cells for the auxiliary model and hyper-model is L =ψM = 4 . The auxiliary data on the parameter server comes from location A, and the accuracy of the auxiliary model is only 78.12%.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Inspired by theψG-sharing scheme, Table VI and Fig. 11 show the accuracy comparison of different fixed shared architectures. α0 toψα4 represent the number of cells in the shared architecture from 0 to 4. Table VI shows that the fixed shared architecture is a good choice for one monitoring location since the accuracies are similar fromψα0 toψα4, with an accuracy greater than 93%.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Fig. 11(a) shows that at locations A & B, the optimal archi- tecture,ψα1, achieved an accuracy of 96.33%, while the worst architecture,ψα4, is 90.88%. The difference between the two is 5.45%. At locations A & C, this discrepancy is 3.08% (as depicted in Fig. 11(b)), at locations B & C, it is 2.08% (as shown in Fig. 11(c)), and at locations A & B & C, it is 2.64% (in Fig. 11(c)). We have observed that the optimal architecture varies across different scenarios, with discrepancies reaching up to 5.45%. The reason is that each heterogeneous environment",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Table VI and Fig. 12 show the performance comparison of different architectures of the auxiliary model.ψl0 toψl4 represent the number of cells in the auxiliary model from 0 to 4. At locations A & B, locations A & C, and locations A & B & C, the optimal hyperparameter isψl2 (referred to Fig. 12(a), (b), and (d)). As shown in Fig. 12(c), at locations B & C, the optimal hyperparameter isψl1. Note that FedASA is not sensitive to the hyperparameterψl, and the accuracy is similar among different values. The largest discrepancy is observed in locations A & C, amounting to 1.29%. And the smallest variation",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

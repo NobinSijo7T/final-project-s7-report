@@ -1,0 +1,119 @@
+\documentclass[border=15pt]{standalone}
+\usepackage{tikz}
+\usetikzlibrary{calc, shapes.geometric, arrows, arrows.meta, positioning, fit, backgrounds}
+\begin{document}
+\begin{tikzpicture}[
+    auto, font=\small,
+    box/.style={rectangle, draw=black, line width=0.8pt, fill=white, rounded corners=1.5pt, minimum height=0.7cm, align=center, inner sep=4pt},
+    table_box/.style={rectangle, draw=black, line width=0.8pt, fill=white, rounded corners=1.5pt, align=left, inner sep=5pt, font=\scriptsize},
+    container/.style={rectangle, draw=black, line width=1.0pt, fill=white, rounded corners=2pt},
+    cylinder_node/.style={cylinder, draw=black, line width=0.8pt, fill=white, shape border rotate=90, aspect=0.18, minimum height=1.1cm, minimum width=7.0cm, align=center, font=\small},
+    arrow/.style={-{Stealth[scale=0.9]}, line width=0.8pt, draw=black},
+    biarrow/.style={{Stealth[scale=0.9]}-{Stealth[scale=0.9]}, line width=0.8pt, draw=black}
+]
+    \node [box, text width=4.8cm] (ui_react) at (-3.2, 11.2) {
+        \textbf{React 19 Components}\\[1pt]
+        (AgentSwarm, Checklists, Tools)
+    };
+    \node [box, text width=4.8cm] (hooks_rx) at (3.2, 11.2) {
+        \textbf{Reactive Hooks Layer}\\[1pt]
+        (\texttt{useLiveQuery}, \texttt{useBookmarks})
+    };
+    \draw [biarrow] (ui_react) -- node[above, font=\scriptsize, fill=white, inner sep=2pt]{Observable Hook} (hooks_rx);
+
+    \node [box, text width=11.6cm] (dexie_engine) at (0, 9.2) {
+        \textbf{Dexie.js v3 Database Engine (\texttt{PrismDatabase})}\\[3pt]
+        {\fontsize{7.5}{9}\selectfont Schema Versioning $\;\vert\;$ ACID Transactions $\;\vert\;$ B-Tree Indexing $\;\vert\;$ Change Observers}
+    };
+    \draw [arrow] (hooks_rx.south) -- (hooks_rx.south |- dexie_engine.north);
+
+    % Row 1 Tables (centered at y = 5.6)
+    \node [table_box, text width=3.1cm] (t_sess) at (-4.4, 5.6) {
+        \textbf{agent\_chat\_sessions}\\[-0.2em]
+        \rule{\linewidth}{0.4pt}\\[0.15em]
+        \textbf{\&id} : UUID (PK)\\
+        title : string\\
+        createdAt : number (Idx)\\
+        updatedAt : number (Idx)
+    };
+
+    \node [table_box, text width=3.4cm] (t_msg) at (0, 5.6) {
+        \textbf{agent\_chat\_messages}\\[-0.2em]
+        \rule{\linewidth}{0.4pt}\\[0.15em]
+        \textbf{++id} : number (Auto PK)\\
+        sessionId : FK $\to$ sessions\\
+        \textit{[sessionId+createdAt]}\\
+        role : user $\vert$ assistant $\vert$ tool\\
+        content : string
+    };
+
+    \node [table_box, text width=3.1cm] (t_tool) at (4.4, 5.6) {
+        \textbf{ai\_tool\_history}\\[-0.2em]
+        \rule{\linewidth}{0.4pt}\\[0.15em]
+        \textbf{++id} : number (Auto PK)\\
+        sessionId : FK $\to$ sessions\\
+        toolType : string (Idx)\\
+        input : text payload\\
+        output : text result
+    };
+
+    % Row 2 Tables (centered at y = 2.5)
+    \node [table_box, text width=3.1cm] (t_chk) at (-4.4, 2.5) {
+        \textbf{checklists \& items}\\[-0.2em]
+        \rule{\linewidth}{0.4pt}\\[0.15em]
+        \textbf{++id} : number (PK)\\
+        name : string\\
+        \textit{[checklistId+order]}\\
+        completed : boolean
+    };
+
+    \node [table_box, text width=3.4cm] (t_hab) at (0, 2.5) {
+        \textbf{habits \& habit\_logs}\\[-0.2em]
+        \rule{\linewidth}{0.4pt}\\[0.15em]
+        \textbf{++id} : number (PK)\\
+        name : string\\
+        \textit{[habitId+date]}\\
+        completions : number
+    };
+
+    \node [table_box, text width=3.1cm] (t_bm) at (4.4, 2.5) {
+        \textbf{bookmarks \& settings}\\[-0.2em]
+        \rule{\linewidth}{0.4pt}\\[0.15em]
+        \textbf{++id} : number (PK)\\
+        url : string (Idx)\\
+        *tags : string[]\\
+        \textbf{\&key} $\to$ JSON settings
+    };
+
+    % IndexedDB Cylinder
+    \node [cylinder_node] (idb_store) at (0, -0.5) {
+        \textbf{Browser IndexedDB Storage Engine}
+    };
+
+    % Relational links between tables
+    \draw [arrow] (t_sess.east) -- node[above=1pt, font=\scriptsize\bfseries]{ \to N$} (t_msg.west);
+    \draw [arrow] (t_msg.east) -- node[above=1pt, font=\scriptsize\bfseries]{ \to N$} (t_tool.west);
+
+    % Flows from Row 2 down to IndexedDB Cylinder with clean orthogonal routing
+    \draw [arrow] (t_chk.south) |- (idb_store.west);
+    \draw [arrow] (t_hab.south) -- (idb_store.north);
+    \draw [arrow] (t_bm.south) |- (idb_store.east);
+
+    % Outer container bounding box around IndexedDB Layer
+    \begin{scope}[on background layer]
+        \node [container, fit=(t_sess) (t_tool) (t_chk) (t_bm) (idb_store), inner xsep=12pt, inner ysep=24pt] (box_schema) {};
+    \end{scope}
+
+    % Container Title Badge centered at the top border with clear background
+    \node [font=\footnotesize\bfseries, fill=white, draw=black, line width=0.8pt, rounded corners=2pt, inner sep=3.5pt] (title_badge)
+        at (box_schema.north) {Browser IndexedDB (\texttt{PrismDB})};
+
+    % Dispatches from Dexie engine down to Row 1 tables
+    \draw [arrow] (dexie_engine.south -| t_sess.north) -- (t_sess.north);
+    \draw [arrow] (dexie_engine.south) -- (title_badge.north);
+    \draw [arrow] (title_badge.south) -- (t_msg.north);
+    \draw [arrow] (dexie_engine.south -| t_tool.north) -- (t_tool.north);
+
+\end{tikzpicture}
+
+\end{document}

@@ -1,0 +1,502 @@
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.5)  5 OCT 2026 21:56
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**./main.tex
+(main.tex
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/base\article.cls
+Document Class: article 2025/01/22 v1.4n Standard LaTeX document class
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/base\size11.clo
+File: size11.clo 2025/01/22 v1.4n Standard LaTeX file (size option)
+)
+\c@part=\count275
+\c@section=\count276
+\c@subsection=\count277
+\c@subsubsection=\count278
+\c@paragraph=\count279
+\c@subparagraph=\count280
+\c@figure=\count281
+\c@table=\count282
+\abovecaptionskip=\skip49
+\belowcaptionskip=\skip50
+\bibindent=\dimen148
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.sty
+Package: geometry 2026/03/07 v6.0 Page Geometry
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics\keyval.sty
+Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
+\KV@toks@=\toks17
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/generic/iftex\ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/generic/iftex\iftex.sty
+Package: iftex 2024/12/12 v1.0g TeX engine tests
+))
+\Gm@cnth=\count283
+\Gm@cntv=\count284
+\c@Gm@tempcnt=\count285
+\Gm@bindingoffset=\dimen149
+\Gm@wd@mp=\dimen150
+\Gm@odd@mp=\dimen151
+\Gm@even@mp=\dimen152
+\Gm@layoutwidth=\dimen153
+\Gm@layoutheight=\dimen154
+\Gm@layouthoffset=\dimen155
+\Gm@layoutvoffset=\dimen156
+\Gm@dimlist=\toks18
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/geometry\geometry.cfg))
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/pdfpages\pdfpages.sty
+Package: pdfpages 2026/03/30 v0.6h Insert pages of external PDF documents (AM)
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/base\ifthen.sty
+Package: ifthen 2024/03/16 v1.1e Standard LaTeX ifthen package (DPC)
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/tools\calc.sty
+Package: calc 2025/03/01 v4.3b Infix arithmetic (KKT,FJ)
+\calc@Acount=\count286
+\calc@Bcount=\count287
+\calc@Adimen=\dimen157
+\calc@Bdimen=\dimen158
+\calc@Askip=\skip51
+\calc@Bskip=\skip52
+LaTeX Info: Redefining \setlength on input line 86.
+LaTeX Info: Redefining \addtolength on input line 87.
+\calc@Ccount=\count288
+\calc@Cskip=\skip53
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/eso-pic\eso-pic.sty
+Package: eso-pic 2026/05/31 v3.0e eso-pic (RN)
+\ESO@tempdima=\dimen159
+\ESO@tempdimb=\dimen160
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/xcolor\xcolor.sty
+Package: xcolor 2024/09/29 v3.02 LaTeX color extensions (UK)
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 274.
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics-def\pdftex.def
+File: pdftex.def 2025/09/29 v1.2d Graphics/color driver for pdftex
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics\mathcolor.ltx)
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1349.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1353.
+Package xcolor Info: Model `RGB' extended on input line 1365.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1367.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1368.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1369.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1370.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1371.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1372.
+))
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/etoolbox\etoolbox.sty
+Package: etoolbox 2025/10/02 v2.5m e-TeX tools for LaTeX (JAW)
+\etb@tempcnta=\count289
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphicx.sty
+Package: graphicx 2024/12/31 v1.2e Enhanced LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics\graphics.sty
+Package: graphics 2024/08/06 v1.4g Standard LaTeX Graphics (DPC,SPQR)
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics\trig.sty
+Package: trig 2023/12/02 v1.11 sin cos tan (DPC)
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics-cfg\graphics.c
+fg
+File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
+)
+Package graphics Info: Driver file: pdftex.def on input line 106.
+)
+\Gin@req@height=\dimen161
+\Gin@req@width=\dimen162
+)
+\AM@pagewidth=\dimen163
+\AM@pageheight=\dimen164
+\AM@fboxrule=\dimen165
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/pdfpages\pppdftex.def
+File: pppdftex.def 2026/03/30 v0.6h Pdfpages driver for pdfTeX (AM)
+)
+\pdfpages@includegraphics@status=\count290
+\AM@pagebox=\box53
+\AM@global@opts=\toks19
+\AM@pagecnt=\count291
+\AM@toc@title=\toks20
+\AM@lof@heading=\toks21
+\c@AM@survey=\count292
+\AM@templatesizebox=\box54
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdf
+tex.def
+File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count293
+) (main.aux)
+\openout1 = `main.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 11.
+LaTeX Font Info:    ... okay on input line 11.
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(57.81621pt, 481.87546pt, 57.81621pt)
+* v-part:(T,H,B)=(57.81621pt, 729.41443pt, 57.81621pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=481.87546pt
+* \textheight=729.41443pt
+* \oddsidemargin=-14.45378pt
+* \evensidemargin=-14.45378pt
+* \topmargin=-51.45378pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=11.0pt
+* \footskip=30.0pt
+* \marginparwidth=50.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
+ii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count294
+\scratchdimen=\dimen166
+\scratchbox=\box55
+\nofMPsegments=\count295
+\nofMParguments=\count296
+\everyMPshowfont=\toks22
+\MPscratchCnt=\count297
+\MPscratchDim=\dimen167
+\MPnumerator=\count298
+\makeMPintoPDFobject=\count299
+\everyMPtoPDFconversion=\toks23
+)
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-b
+ase.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/00miktex\epstopdf-sys.c
+fg
+File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
+))
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/pdflscape\pdflscape.sty
+Package: pdflscape 2022-10-27 v0.13 Display of landscape pages in PDF
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/pdflscape\pdflscape-nom
+etadata.sty
+Package: pdflscape-nometadata 2022-10-28 v0.13 Display of landscape pages in PD
+F (HO)
+
+(C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/graphics\lscape.sty
+Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
+)
+Package pdflscape Info: Auto-detected driver: pdftex on input line 81.
+))
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 13.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 13.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 13.
+
+[1
+
+{C:/Users/nobin/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}]
+<framework.pdf, id=6, 597.50829pt x 845.0471pt>
+File: framework.pdf Graphic file (type pdf)
+<use framework.pdf>
+Package pdftex.def Info: framework.pdf  used on input line 17.
+(pdftex.def)             Requested size: 597.50682pt x 845.04504pt.
+<framework.pdf, id=8, page=1, 597.50829pt x 845.0471pt>
+File: framework.pdf Graphic file (type pdf)
+<use framework.pdf, page 1>
+Package pdftex.def Info: framework.pdf , page1 used on input line 17.
+(pdftex.def)             Requested size: 597.50682pt x 845.04504pt.
+File: framework.pdf Graphic file (type pdf)
+<use framework.pdf, page 1>
+Package pdftex.def Info: framework.pdf , page1 used on input line 17.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: framework.pdf Graphic file (type pdf)
+<use framework.pdf, page 1>
+Package pdftex.def Info: framework.pdf , page1 used on input line 17.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: framework.pdf Graphic file (type pdf)
+<use framework.pdf, page 1>
+Package pdftex.def Info: framework.pdf , page1 used on input line 17.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: framework.pdf Graphic file (type pdf)
+<use framework.pdf, page 1>
+Package pdftex.def Info: framework.pdf , page1 used on input line 17.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+ [2
+
+ <./framework.pdf>]
+<architecture_workflow.pdf, id=151, 597.50829pt x 845.0471pt>
+File: architecture_workflow.pdf Graphic file (type pdf)
+<use architecture_workflow.pdf>
+Package pdftex.def Info: architecture_workflow.pdf  used on input line 20.
+(pdftex.def)             Requested size: 597.50682pt x 845.04504pt.
+<architecture_workflow.pdf, id=153, page=1, 597.50829pt x 845.0471pt>
+File: architecture_workflow.pdf Graphic file (type pdf)
+<use architecture_workflow.pdf, page 1>
+Package pdftex.def Info: architecture_workflow.pdf , page1 used on input line 2
+0.
+(pdftex.def)             Requested size: 597.50682pt x 845.04504pt.
+File: architecture_workflow.pdf Graphic file (type pdf)
+<use architecture_workflow.pdf, page 1>
+Package pdftex.def Info: architecture_workflow.pdf , page1 used on input line 2
+0.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: architecture_workflow.pdf Graphic file (type pdf)
+<use architecture_workflow.pdf, page 1>
+Package pdftex.def Info: architecture_workflow.pdf , page1 used on input line 2
+0.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: architecture_workflow.pdf Graphic file (type pdf)
+<use architecture_workflow.pdf, page 1>
+Package pdftex.def Info: architecture_workflow.pdf , page1 used on input line 2
+0.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: architecture_workflow.pdf Graphic file (type pdf)
+<use architecture_workflow.pdf, page 1>
+Package pdftex.def Info: architecture_workflow.pdf , page1 used on input line 2
+0.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+ [3
+
+ <./architecture_workflow.pdf>]
+<system_flow.pdf, id=220, 455.24379pt x 256.07469pt>
+File: system_flow.pdf Graphic file (type pdf)
+<use system_flow.pdf>
+Package pdftex.def Info: system_flow.pdf  used on input line 23.
+(pdftex.def)             Requested size: 455.24268pt x 256.07405pt.
+<system_flow.pdf, id=222, page=1, 455.24379pt x 256.07469pt>
+File: system_flow.pdf Graphic file (type pdf)
+<use system_flow.pdf, page 1>
+Package pdftex.def Info: system_flow.pdf , page1 used on input line 23.
+(pdftex.def)             Requested size: 455.24268pt x 256.07405pt.
+File: system_flow.pdf Graphic file (type pdf)
+<use system_flow.pdf, page 1>
+Package pdftex.def Info: system_flow.pdf , page1 used on input line 23.
+(pdftex.def)             Requested size: 455.3677pt x 256.14438pt.
+File: system_flow.pdf Graphic file (type pdf)
+<use system_flow.pdf, page 1>
+Package pdftex.def Info: system_flow.pdf , page1 used on input line 23.
+(pdftex.def)             Requested size: 455.3677pt x 256.14438pt.
+File: system_flow.pdf Graphic file (type pdf)
+<use system_flow.pdf, page 1>
+Package pdftex.def Info: system_flow.pdf , page1 used on input line 23.
+(pdftex.def)             Requested size: 455.3677pt x 256.14438pt.
+File: system_flow.pdf Graphic file (type pdf)
+<use system_flow.pdf, page 1>
+Package pdftex.def Info: system_flow.pdf , page1 used on input line 23.
+(pdftex.def)             Requested size: 455.3677pt x 256.14438pt.
+ [4
+
+ <./system_flow.pdf>]
+<database_schema.pdf, id=245, 845.0471pt x 597.50829pt>
+File: database_schema.pdf Graphic file (type pdf)
+<use database_schema.pdf>
+Package pdftex.def Info: database_schema.pdf  used on input line 26.
+(pdftex.def)             Requested size: 845.04504pt x 597.50682pt.
+<database_schema.pdf, id=247, page=1, 845.0471pt x 597.50829pt>
+File: database_schema.pdf Graphic file (type pdf)
+<use database_schema.pdf, page 1>
+Package pdftex.def Info: database_schema.pdf , page1 used on input line 26.
+(pdftex.def)             Requested size: 845.04504pt x 597.50682pt.
+File: database_schema.pdf Graphic file (type pdf)
+<use database_schema.pdf, page 1>
+Package pdftex.def Info: database_schema.pdf , page1 used on input line 26.
+(pdftex.def)             Requested size: 845.08372pt x 597.53416pt.
+File: database_schema.pdf Graphic file (type pdf)
+<use database_schema.pdf, page 1>
+Package pdftex.def Info: database_schema.pdf , page1 used on input line 26.
+(pdftex.def)             Requested size: 845.08372pt x 597.53416pt.
+File: database_schema.pdf Graphic file (type pdf)
+<use database_schema.pdf, page 1>
+Package pdftex.def Info: database_schema.pdf , page1 used on input line 26.
+(pdftex.def)             Requested size: 845.08372pt x 597.53416pt.
+File: database_schema.pdf Graphic file (type pdf)
+<use database_schema.pdf, page 1>
+Package pdftex.def Info: database_schema.pdf , page1 used on input line 26.
+(pdftex.def)             Requested size: 845.08372pt x 597.53416pt.
+ [5
+
+ <./database_schema.pdf>]
+<algorithm.pdf, id=284, 597.50829pt x 845.0471pt>
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf>
+Package pdftex.def Info: algorithm.pdf  used on input line 29.
+(pdftex.def)             Requested size: 597.50682pt x 845.04504pt.
+<algorithm.pdf, id=286, page=1, 597.50829pt x 845.0471pt>
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 1>
+Package pdftex.def Info: algorithm.pdf , page1 used on input line 29.
+(pdftex.def)             Requested size: 597.50682pt x 845.04504pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 1>
+Package pdftex.def Info: algorithm.pdf , page1 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 1>
+Package pdftex.def Info: algorithm.pdf , page1 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 1>
+Package pdftex.def Info: algorithm.pdf , page1 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 1>
+Package pdftex.def Info: algorithm.pdf , page1 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+ [6
+
+ <./algorithm.pdf>]
+<algorithm.pdf, id=325, page=2, 597.50829pt x 845.0471pt>
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 2>
+Package pdftex.def Info: algorithm.pdf , page2 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 2>
+Package pdftex.def Info: algorithm.pdf , page2 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 2>
+Package pdftex.def Info: algorithm.pdf , page2 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+ [7
+
+ <./algorithm.pdf>]
+<algorithm.pdf, id=358, page=3, 597.50829pt x 845.0471pt>
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 3>
+Package pdftex.def Info: algorithm.pdf , page3 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 3>
+Package pdftex.def Info: algorithm.pdf , page3 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 3>
+Package pdftex.def Info: algorithm.pdf , page3 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+ [8
+
+ <./algorithm.pdf>]
+<algorithm.pdf, id=366, page=4, 597.50829pt x 845.0471pt>
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 4>
+Package pdftex.def Info: algorithm.pdf , page4 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 4>
+Package pdftex.def Info: algorithm.pdf , page4 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+File: algorithm.pdf Graphic file (type pdf)
+<use algorithm.pdf, page 4>
+Package pdftex.def Info: algorithm.pdf , page4 used on input line 29.
+(pdftex.def)             Requested size: 597.53416pt x 845.08372pt.
+ [9
+
+ <./algorithm.pdf>] (main.aux)
+ ***********
+LaTeX2e <2025-11-01>
+L3 programming layer <2025-12-24>
+ ***********
+ ) 
+Here is how much of TeX's memory you used:
+ 3666 strings out of 467871
+ 59490 string characters out of 5418377
+ 475071 words of memory out of 5000000
+ 32528 multiletter control sequences out of 15000+600000
+ 631670 words of font info for 53 fonts, out of 8000000 for 9000
+ 1141 hyphenation exceptions out of 8191
+ 72i,17n,90p,223b,463s stack positions out of 10000i,1000n,20000p,200000b,200000s
+<C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
+cmbx10.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
+fonts/cm/cmbx12.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/p
+ublic/amsfonts/cm/cmbx5.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts
+/type1/public/amsfonts/cm/cmbx6.pfb><C:/Users/nobin/AppData/Local/Programs/MiKT
+eX/fonts/type1/public/amsfonts/cm/cmbx7.pfb><C:/Users/nobin/AppData/Local/Progr
+ams/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx8.pfb><C:/Users/nobin/AppData/Loc
+al/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx9.pfb><C:/Users/nobin/App
+Data/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmex10.pfb><C:/Users/
+nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cmextra/cmex7.p
+fb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm
+extra/cmex9.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/publi
+c/amsfonts/cm/cmmi10.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/ty
+pe1/public/amsfonts/cm/cmmi5.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/
+fonts/type1/public/amsfonts/cm/cmmi6.pfb><C:/Users/nobin/AppData/Local/Programs
+/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi7.pfb><C:/Users/nobin/AppData/Local/
+Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi8.pfb><C:/Users/nobin/AppDat
+a/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmmi9.pfb><C:/Users/nobi
+n/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Us
+ers/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr5.pfb
+><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/c
+mr6.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfon
+ts/cm/cmr7.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public
+/amsfonts/cm/cmr8.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1
+/public/amsfonts/cm/cmr9.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/font
+s/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/nobin/AppData/Local/Programs/Mi
+KTeX/fonts/type1/public/amsfonts/cm/cmsy5.pfb><C:/Users/nobin/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy6.pfb><C:/Users/nobin/AppData/L
+ocal/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy7.pfb><C:/Users/nobin/A
+ppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy8.pfb><C:/Users
+/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy9.pfb><
+C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmss12.pfb><
+C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmss8.pfb><C
+:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb>
+<C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbo
+ls/msam10.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/
+amsfonts/symbols/msbm10.pfb><C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts
+/type1/public/amsfonts/symbols/msbm5.pfb><C:/Users/nobin/AppData/Local/Programs
+/MiKTeX/fonts/type1/urw/courier/ucrb8a.pfb><C:/Users/nobin/AppData/Local/Progra
+ms/MiKTeX/fonts/type1/urw/courier/ucrr8a.pfb><C:/Users/nobin/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/nobin/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/nobin/AppData/Local/Prog
+rams/MiKTeX/fonts/type1/urw/times/utmri8a.pfb><C:/Users/nobin/AppData/Local/Pro
+grams/MiKTeX/fonts/type1/urw/zapfding/uzdr.pfb>
+Output written on main.pdf (9 pages, 588651 bytes).
+PDF statistics:
+ 421 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 91 words of extra memory for PDF output out of 10000 (max. 10000000)
+

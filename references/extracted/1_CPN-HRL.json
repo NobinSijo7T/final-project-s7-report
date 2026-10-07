@@ -1,0 +1,1016 @@
+{
+  "source_file": "1_CPN-HRL.pdf",
+  "num_pages": 22,
+  "full_text": "Journal of King Saud University Computer and Information Sciences         (2026) 38:290  https://doi.org/10.1007/s44443-026-00690-x\nRESEARCH\nCPN-HRL :a hierarchical deep reinforcement learning approach for priority–aware task scheduling in CPN enabled by cloud–edge–end environments\nQiqiang Yue1 · Le Tian1,2,3,4 · Xu Feng1 · Zheng Yuan1,2,3,4 · Shuai Wei1 · Jiqiang Xia1 · Bo Chen1,2,3,4 · Xuanyan Song1,2,3,4 · Ying Yao1 · Yi Liu5\nReceived: 20 January 2026 / Accepted: 19 March 2026 © The Author(s) 2026\nAbstract A Computing Power Network (CPN) is a cloud–edge–end integrated infrastructure that interconnects heterogeneous com- puting resources to support latency-sensitive and volatile workloads. A core challenge in CPN task scheduling is to jointly determine task prioritization and computational node selection under dynamic arrivals, resource heterogeneity, and multi- objective conflicts. In this paper, we study dynamic task scheduling in a CPN and aim to (i) minimize average task completion time, (ii) maximize scheduling success rate under deadline constraints, and (iii) improve global resource utilization. We propose CPN-HRL, a hierarchical deep reinforcement learning framework that decomposes scheduling into two coordinated subproblems: a high-level agent (LSTM-PPO) generates global priority weights for queued tasks, and a low-level agent (GAT-PPO) performs topology-aware node selection for each task in the ranked sequence. To further guarantee timeliness for latency-critical tasks, we introduce a two-queue mechanism with an Urgent Queue and a Main Queue, together with a dynamic reordering trigger. Simulation results on multiple real-world topologies show that, under our experimental settings, CPN-HRL reduces average completion time and maintains high scheduling success rate under high loads, while improving overall resource utilization.\nKeywords Computing power networks · Priority-aware scheduling · Hierarchical deep reinforcement learning · Resource allocation\n1 Introduction\nWith the advancement of technologies such as the Industrial Internet, Internet of Things, and artificial intelligence, emerg- ing application scenarios have seen an explosive growth in demand for computing power, making it increasingly dif- ficult for single computing facilities to meet these needs. Computing power networks (Yukun et al. 2024; Tang et al. 2021; Huijuan et al. 2021; Bo et al. 2019), as a new type of information infrastructure integrating multi-dimensional heterogeneous computing resources across cloud, edge, and endpoint, have become pivotal to supporting the digital econ- omy. Within computing power networks, task scheduling (Li et al. 2020, 2022) refers to the process of determining the final execution location when a user-submitted computa-\nLe Tian, Xu Feng, Zheng Yuan, Shuai Wei, Jiqiang Xia, Bo Chen, Xuanyan Song, Ying Yao and Yi Liu contributed equally to this work.\nExtended author information available on the last page of the article\ntional task can be processed by multiple servers or computing resources. Its essence lies in achieving efficient matching between diverse tasks and heterogeneous resources to opti- mize Quality of Service (QoS) metrics.\nTo enhance the Quality of Service (QoS) for task schedul- ing, we need to queue incoming computational tasks and determine their scheduling priorities.Task priority sorting methods can be categorized into two types: pre-scheduling sorting and local scheduling sorting. The former involves the computing network control center assigning priorities or classifying tasks based on global state information within a global buffer queue before task execution. Computing nodes then execute tasks sequentially without requiring complex queuing or reordering logic. The latter performs final sort- ing based on local queue policies after tasks are assigned to compute nodes. However, lacking global coordination, this approach risks load imbalance. Additionally, queuing tasks upon node arrival introduces extra end-to-end latency, particularly detrimental to latency-sensitive tasks, thereby reducing overall scheduling efficiency.\n0123456789().: V,-vol  123\n\n--- Page Break ---\n\n290  Page 2 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nHowever, computing network environments exhibit high dynamism and complexity, presenting the following chal- lenges for task scheduling:\n1. Task Heterogeneity and Dynamic Priority Adapta- tion: Tasks vary significantly in resource requirements, urgency, data volume, and latency sensitivity, necessitat- ing dynamic determination of scheduling priorities (Feng et al. 2024); 2. Resource Heterogeneity: Computing nodes exhibit un- even distribution in processing capabilities, geographic locations, and load states (He et al. 2024; Liu et al. 2023; Zhou et al. 2022); 3. Multi-Objective Constraints: Simultaneous optimiza- tion of multiple often-conflicting objectives such as average task completion time, task success rate, and resource utilization is required (Wang et al. 2025); 4. Dynamic Uncertainty: Random task arrivals and con- tinuously changing resource states demand scheduling algorithms (Koslovski et al. 2024; Mande et al. 2024) with online decision-making and adaptive capabilities.\nThe task scheduling problem in computing grids fun- damentally belongs to complex combinatorial optimization problems, requiring the identification of optimal solutions that satisfy constraints within finite resource allocation schemes. This constitutes an NP-hard problem. Traditional mathematical approaches such as integer programming and dynamic programming struggle to efficiently compute exact solutions. Meanwhile, classical heuristic rules like First- Come-First-Served (FCFS) fail to adapt to dynamic envi- ronments. Although metaheuristic algorithms like Particle Swarm Optimization (PSO) (Alsaidy et al. 2022; Zhan and Huo 2012) and Genetic Algorithms (GA) (Behera and Sob- hanayak 2024; Pang et al. 2019) can handle multi-objective optimization, they suffer from slow convergence rates and complex parameter tuning, making them unsuitable for real- time scheduling demands.\nDeep reinforcement learning (DRL) learns optimal poli- cies through interaction with the environment. Leveraging its robust environmental perception and decision-making capabilities,ithasbeenappliedtoschedulingproblems,prov- ing particularly effective for intelligent decision-making in dynamic environments. However, single-layer DRL models (Sheng et al. 2021) such as DQN and DDPG often suffer fromthecurseofdimensionalityandtraininginstabilitywhen dealing with large action spaces. Moreover, these models struggle to effectively balance the two critical factors of pri- ority assignment and node selection simultaneously.\nThe methods for task priority sorting can be categorized into two types: pre-scheduling sorting (Xie et al. 2025) and local scheduling sorting (Feng et al. 2024). The former is performed by the network control center based on global\nstate information prior to task execution, during which prior- ity allocation or classification is conducted within the global buffer queue. Computing nodes then execute tasks sequen- tially, without requiring complex queuing or reordering mechanisms. In contrast, the latter approach performs final sorting at the computing node after task assignment, accord- ing to a local queuing strategy. However, due to the absence of global coordination, this method is prone to load imbal- ance. Additionally, queuing tasks upon arrival at the node introduces extra end-to-end latency, which is particularly detrimental to delay-sensitive tasks and ultimately reduces overall scheduling efficiency. To address these limitations, this paper proposes a pre-scheduling sorting mechanism that responds to the critical requirements of delay-sensitive appli- cations by leveraging global information to achieve efficient and low-latency task scheduling.\nTo address the aforementioned issues, we propose a hier- archical deep reinforcement learning scheduling algorithm.\n1. We propose a novel hierarchical reinforcement learning framework that decouples global task prioritization from local resource allocation. This design enables an effi- cient task scheduling algorithm capable of adapting to the dynamic environment of computational networks, sig- nificantly reducing decision complexity while achieving efficient task execution and optimal resource utilization. 2. We treat task prioritization and node selection as high- levelandlow-leveltaskswithinahierarchicalframework, modeling them respectively as MDPs to learn joint poli- cies. The high-level agent employs an LSTM as its policy network to consider long-term benefits and learn priority weights from a global perspective; The lower-level agent employs GAT for feature embedding, focusing on imme- diate benefits to achieve precise resource allocation for each ranked task. Both upper and lower-level agents uti- lize the PPO reinforcement learning algorithm for policy optimization. 3. We designed a multi-level queue management mecha- nism integrating emergency queues with the main queue, along with a dynamic reordering trigger mechanism, to ensure the scheduling requirements of high-urgency tasks. 4. Simulation experiments validate that the CPN-HRL algo- rithm outperforms multiple baseline algorithms across several core performance metrics.\nThe rest of this paper is organized as follows. Section 2 reviews relevant research on task scheduling, including rule- based and learning-based approaches; Section 3 introduces the system model and presents the problem model; Section 4 elaborates on the algorithm design; Section 5 analyzes and discusses simulation results; Section 6 summarizes the paper and outlines future work.\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 3 of 22   290\n2 Related works and motivation\nTask scheduling is a critical challenge in computing power networks, with related research based on two approaches: rule-based and learning-based methods.\n2.1 Rule-based approach\nEarly research on task scheduling in computing networks primarily relied on heuristic rules, meta-heuristic algo- rithms, and game theory approaches. Heuristic rules such as FCFS and HEFT (Gupta et al. 2022) gained widespread adoption due to their low computational overhead and sim- plicity of implementation. However, they lack systematic globalstateawareness,resultinginlimitedschedulingperfor- mance within highly heterogeneous and dynamic computing network environments where tasks and resources exhibit sig- nificant heterogeneity.\nTo enhance scheduling quality, meta-heuristic algorithms were introduced to intelligently search the solution space for optimal scheduling schemes. For instance, Ref. Wu et al. (2019) proposed a cloud-edge collaborative computing offloading model based on improved particle swarm opti- mization for mobile edge computing scenarios, dynamically adjusting inertial weights to balance task latency and energy costs; Ref. Mousavi et al. (2022) proposed an improved NSGA-II algorithm incorporating a recombination opera- tor to optimize dual objectives: server energy consumption and overall response time. However, meta-heuristic algo- rithms exhibit performance sensitivity to parameter tuning and suffer from slow convergence, making them ill-suited for low-latencyrequirementsinlarge-scalereal-timescheduling. Additionally, game theory has been applied to distributed scheduling scenarios. Ref. Yang et al. (2020) based on game theory,ataskschedulingalgorithmthatbalancestaskreliabil- ity is proposed. A computational node task scheduling model is constructed, applying game strategies to computational node rate allocation within a cooperative game framework.\nIn summary, traditional rule-based methods prove sim- ple and effective in specific static scenarios. However, when confronting the high dynamism, heterogeneity, and multi- objective conflicts inherent in computing networks, they exhibit significant limitations in adaptability, convergence speed, and real-time performance. Furthermore, they fail to account for the priority attributes of composite tasks.\n2.2 Learning-based approach\nWith the advancement of artificial intelligence technol- ogy, learning-based methods represented by deep reinforce- ment learning (DRL) offer novel solutions for dynamic task scheduling through robust environmental perception and decision-making capabilities. In existing research, Ref.\nCheng et al. (2022) applies DRL to hybrid cloud real-time job scheduling, jointly optimizing cost, response time, and service success rate; Ref. Zou et al. (2022) constructs a computation-priority network architecture, modeling multi- user scheduling on heterogeneous computing resources as a multi-objective Markov decision process solved via DRL; Ref. Xie et al. (2025) proposes a priority-aware scheduling scheme based on enhanced DRL for edge computing sys- tems in computing networks to improve task success rates and resource utilization.\nA recent body of work in intelligent IoE and 6G edge environments has shifted towards AI-native coordination for task allocation and device selection under heterogeneous and dynamic conditions. For instance, Ref (Jamil et al. 2025) proposes an intelligent resource selection strategy that explicitlyanalyzesdeviceselectiondelay,computationaleffi- ciency, and task success rates as key performance indicators in dense edge networks. These frameworks often leverage learning-based components to adapt to highly volatile traffic and resource availability at the network edge.However, such IoE/edge-oriented approaches primarily address localized scheduling within a limited set of interconnected nodes, and typically do not incorporate multi-domain topology aware- ness or hierarchical decision-making for global prioritization across diverse queue types.\nMoreover, these studies predominantly employ single- layer DRL architectures that couple decision-making tasks such as priority ranking and node selection, which leads to an exponential increase in the action space as task and node scales grow, resulting in the curse of dimensionality and policy convergence difficulties and thus limiting their applicability in large-scale computing networks.\nHierarchical reinforcement learning (HRL) achieves decou- pling by decomposing complex decisions into high- and low-level subtasks. High-level agents make infrequent deci- sions to optimize long-term returns, while low-level agents execute high-frequency actions to achieve short-term goals. Its effectiveness has been validated in resource allocation scenarios such as virtual network embedding (Wang et al. 2023, 2024). Inspired by this approach, we addresses the urgency requirements of latency-sensitive tasks by adopting a pre- scheduling sorting mechanism. Leveraging global informa- tion, it achieves efficient, low-latency task scheduling. we proposes introducing a hierarchical architecture into com- puting power network task scheduling. It establishes a col- laborative model where high-level agents handle macro-level priority sorting of responsible tasks, while low-level agents focus on real-time, fine-grained node selection. A hierarchi- cal deep reinforcement learning dynamic priority scheduling algorithm is designed to enhance the scheduling efficiency and performance of large-scale computing-network systems (Table 1).\n123\n\n--- Page Break ---\n\n290  Page 4 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nTable 1 Comparison of task scheduling models\nPaper Dynamicity Priority-Aware Scheduling\nResource Heterogeneity\nMulti-Objective Constraints\nLow Complexity\nDVFS (Liu et al. 2023) ✕ ✕ ✓ ✕ ✕\nRef (Alsaidy et al. 2022) ✕ ✕ ✕ ✓ ✕\nRef (Feng et al. 2024) ✕ ✕ ✓ ✓ ✕\nRef (Zou et al. 2022) ✓ ✕ ✓ ✓ ✕\nRef (Jamil et al. 2025) ✓ ✕ ✓ ✓ ✕\nRef (Xie et al. 2025) ✓ ✓ ✓ ✓ ✕\nCPN-HRL ✓ ✓ ✓ ✓ ✓\n3 System description and problem formulation\nIn this section, we will introduce the system model and scheduling mechanism that support priority scheduling for compute-network tasks.\n3.1 A computing power network model based on hierarchical task priority scheduling\nAs shown in Fig. 1, we proposes a computing power network system that supports task priority scheduling, consisting of three main components:\n(1) User Layer : Computing tasks are generated at the user\nlayer by various terminal devices (Han et al. 2019; Wei et al. 2025), which access computing power routing nodes via communication links/base stations to enter the computing power network. In computing network task scheduling, computational tasks can be formally repre- sentedastuples: Taskk =\n\u0002\nck\ncpu, ck\ngpu, ck\nmem, dk, tarrive,k\n, τk, bwk\nreq, priok, f lag\n\u0003\n, each parameter represents the total CPU, GPU, and memory resources required to complete the task, the task data volume, the arrival time at the system, the maximum tolerated delay, the minimum required bandwidth, the initialization prior- ity, and the queue identifier. Based on the sensitivity of computational tasks to delay, they are categorized into two types: delay-sensitive tasks and conventional tasks. We define xkj ∈{0, 1}, ∀k, j as the scheduling strategy of computing tasks: xkj = 1 indicates that computing task k is scheduled to execute on computing node v j; when xkj = 0 means the computing task is queued in the buffer queue. Summary of the key notations are listed in Table 2.\n(2) Cloud-Edge-End CPN Infrastructure : We model the\nCloud-Edge-End (Yin et al. 2026; Xia et al. 2025; Liu and Zhang 2025; Liu et al. 2025) environment as an undirected weighted graph G = (V , E, W), where V = {v1, v2, . . . , vn} is the set of all nodes in the net- work, including network nodes vn and computing nodes v j. The computing node v j is composed of cloud-edge- end devices: Cloud nodes (Xiong et al. 2025) are remote large-scale server clusters with sufficient computing and storage resources; Edge nodes (Zhao et al. 2024) are hardware-based virtualized application platforms that can provide resources to process user tasks; End nodes are various terminal devices with limited computing resources, and are often used as the initiating end of computing tasks. Network nodes vn include regular network nodes vc and computing routing nodes vr: regular network nodes vc are responsible for forwarding computing tasks. Computing routing nodes vr handle computing tasks generated by terminals and transmitted to the computing network via base stations, then hand these tasks to agents for processing and scheduling. To meet the scheduling needs of high-urgency tasks, this node sets two task buffer queues based on FIFO: The urgent queue pro- cesses delay-sensitive tasks;The main queue processes regular tasks. Urgent Queue (UQ): Stores tasks with extreme delay sensitivity and the highest priority, whose maximum tol- erable delay τk is shorter than the scheduling time slot. Task timeout will cause severe losses (e.g., industrial real-time control systems Lin et al. 2025, 5G URLLC scenarios Cai et al. 2024). Tasks in this queue have high priority: after entrying, set the flag bit to 1, and the low- level agent allocates resources preferentially. Main Queue (MQ): Stores most regular tasks. Their priorities are dynamically determined by the high-level agent. Tasks in this queue have high priority: after entry- ing, set the flag bit to 0.\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 5 of 22   290\nFig. 1 System framework\nLet E = {ei j | vi, v j ∈V } denote the set of inter- node communication links, where link ei j exists if and only if nodes vi and v j are interconnected. Let W =\n{wi j | ei j ∈E} be the set of link weights, where wi j = (bwi j,lati j) represents the bandwidth and trans- mission delay of link ei j. Since multiple computing task\n123\n\n--- Page Break ---\n\n290  Page 6 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nTable 2 Summary of key notations Symbol Definition\nTaskk The k-th computing task tuple\nck\ncpu, ck\ngpu, ck\nmem The amount of CPU, GPU, and memory resources required by comput- ing task k\ndk The data volume of computing task k\ntarrive,k, τk The arrival time and maximum tolerable delay of computing task k\nbwk\npath The required bandwidth of the link during data transmission of task k\npriork, ρ The initial priority and queue identifier of the k-th task\nV The set of all nodes in the network\nvn, v j, vr, vc Network node, computing node, computing routing node, regular net- work node\nM Q, U Q, SQ Main task queue, Urgent task queue, Sorted task queue\nE Set of links\nBl Total bandwidth resource of link l\nDl Transmission delay on link l\nTk, ttotal,k Total delay of task k\nttrans,k Transmission delay of task k\ntexec,k Execution delay of task k\ntwait,k Queuing delay of task k\ntstart,k Start execution delay of task k\nrcpu, j,rgpu, j,rmem, j Remaining CPU, GPU, and memory resources at node j\nxi j Scheduling policy\nδcpu\nj , δgpu\nj , δmem\nj CPU, GPU, and memory occupancy at computing node v j\nye Resource occupancy of link e\nηsuccess Scheduling success rate\nUavg System resource utilization\nrequests may occupy the bandwidth of the same link during scheduling, we use ye ∈{0, 1} in this paper to indicate whether the bandwidth resource of link e is occupied at a certain moment. (3) Computing Power Network Control Center : com-\nprises three components: a centralized controller and high- and low-level agents. The centralized controller collects computing power network status information and task requests, uploading them to the agents for col- laborative scheduling decisions.\n3.2 Scheduling mechanism\nNext, we elaborate on the workflow of CPN-HRL. As shown in Fig. 2, CPN-HRL runs on the Computing Power Net- work Control Center of the computing-network system, and executes scheduling decisions periodically with a fixed scheduling time slot \u0006t. In each time slot, the scheduling mechanism of the system (Algorithm 1) operates according to the following steps, and the detailed queue update process is shown in Fig. 3.\nAlgorithm 1 describes the online reasoning time schedul- ing process that is executed at each time interval in the CPN\ncontrol center. Once the agents have completed their train- ing, the learned strategies will be deployed in Algorithm 1 and will be triggered when new tasks arrive or when node resources are released, thereby enabling dynamic reordering and allocation decisions. Step 1: task queuing and classification In the computing power network, computing tasks generated by various termi- nals arrive at the system in a first-come-first-served (FCFS) mannerfollowingaPoissonprocesspertimeslot.Afterenter- ing the buffer space of the computing power routing node, each task is categorized based on its maximum tolerable delay τk: if τk < \u0006t, the task is placed into the urgent queue (UQ); otherwise, it is placed into the main queue (MQ).\nStep 2: triggering of high-level decision-making The sys- tem operates with fixed time slots. When new tasks arrive or any computing node releases resources, the high-level agent is triggered to make decisions. Based on the current tasks to be scheduled and the global state of computing- network resources, the high-level agent outputs a task priority weight vector, reorders the tasks in the main queue (MQ), and sets the scheduling flag of tasks in the urgent queue (UQ) to 1 to ensure their priority scheduling. The necessity of\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 7 of 22   290\nFig. 2 CPN-HRL workflow\nthis mechanism lies in two aspects: first, it responds timely to dynamically accessed high-priority tasks and adapts to\nAlgorithm 1 CPN-HRL Hierarchical Scheduling Algorithm. Require: Task set←T , Network topology←G, Node resource states N Ensure: Task scheduling assignment result←A\n1: Initialize M Q ←∅, U Q ←∅ 2: for tk ∈T do 3: if Dmax\nk ≤\u0006t then 4: U Q ←U Q ∪{tk} 5: else 6: M Q ←M Q ∪{tk} 7: end if 8: end for 9: shigh ←[T, N] 10: w ←πθhigh(shigh) 11: SQ ←U Q ⊕Sort(M Q, w) 12: for tk ∈SQ do 13: sk\nlow ←[G, tk, w] 14: ak ←πθlow(sk\nlow) 15: if Resource meets requirement(ak, tk) then 16: A ←A ∪(tk, ak) 17: end if 18: end for 19: return←A\nchanges in task distribution and resource competition; sec- ond, it utilizes newly released resources to re-evaluate the scheduling priority of waiting tasks, achieving dynamic opti- mal matching of computing-network resources.\nStep 3: low-level execution scheduling Based on priority weights from higher-level outputs, low-level agents sequen- tially select the optimal computing node for each task according to the reordered task sequence, ensuring compli- ance with resource and latency constraints. Their decision frequency exceeds that of higher levels, with each task trig- gering a single low-level scheduling decision.\nStep 4: state update and timeout handling At the end of a time slot, the system state is updated. Tasks that have not been scheduled remain in UQ or MQ and participate in the reordering process of the next time slot. Successfully sched- uled tasks are removed from the queue; unscheduled tasks are retained until the next time slot; tasks whose waiting time exceeds τk are discarded; tasks that exceed the queue length L will cause an overflow. Therefore, before the next task scheduling, the total number of tasks in the buffer queue\n123\n\n--- Page Break ---\n\n290  Page 8 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nFig. 3 Queue update process\ncan be calculated as:\nNQi (t + 1) = NQi (t) −N comp\nQi (t) −N out\nQi (t)\n+ N new\nQi (t + 1) −N overflow\nQi (t + 1) (1)\nwhere N comp\nQi (t) denotes the tasks that have been success- fully scheduled, N out\nQi (t) denotes the tasks discarded due to timeout, N new\nQi (t + 1) denotes the newly arrived tasks at the next time slot, and N overflow\nQi (t + 1) denotes the number of tasks that overflow the queue.\n3.3 Delay model\nIn the delay modeling of the computing power network, the total delay can be divided into two categories according to the task scheduling strategy. When a computing task is scheduled to run on the local computing node vp directly connected to the computing power router, its end-to-end delay consists of queue waiting delay and computation execution delay; when the task is offloaded to the remote collaborative computing\nnode vq, the network transmission delay needs to be addi- tionally included. The calculation methods for each delay component are as follows:\n(1) Transmission Delay T t\ntrans,k: The time for task data to be transmitted from the computing power routing node to the target computing power node, which is determined by the data volume dt\nk and the bandwidth bwlmn of the corresponding transmission link:\nT t\ntrans,k =\n\u0004\nlmn∈li j\ndt\nk bwlmn\n(2)\nwhere dt\nk is the data volume of the k-th computing task, li j is the set of links passed by the task, and bwlmn is the bandwidth required for the specific path lmn in this set. In this paper, we use Dijkstra’s algorithm to obtain the shortesttransmissionlinksetfromtheingresscomputing power router to the destination computing node (Feng et al. 2025).\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 9 of 22   290\n(2) Execution Delay T t\nexec,k: The execution time of the task at the target node, which depends on the remain- ing resources of the node and the task requirements:\nT t\nexec,k = max\n\u0005\nck\ncpu\nr j\ncpu\n,\nck\ngpu\nr j\ngpu\n, ck\nmem r j\nmem\n\u0006\n(3)\nwhere r j\ncpu, r j\ngpu, and r j\nmem are the remaining CPU, GPU, and memory resources of node j, respectively. (3) Queuing Delay Twait,k: The waiting time of the task in\nthe buffer queue of the computing power routing node, i.e.:\nTwait,k = tstart,k −tarrive,k (4)\nwhere tstart,k is the time when the scheduler selects the task for scheduling, and tarrive,k is the time when the task arrives at the system. Therefore, the total delay of the task can be expressed as:\nT t\nk = T t\ntotal,k =\n\u0007\nT t\ntrans,k + T t\nexec,k + Twait,k, v j ∈vp T t\nexec,k + Twait,k, v j ∈vq\n(5)\n3.4 Problem model\nIn computing power networks, dynamic task scheduling is fundamentally a multi-objective optimization problem constrained by multiple goals. Its core challenge lies in achieving efficient matching between randomly arriving het- erogeneous tasks and dynamically changing heterogeneous computingresources.Toreducethecomplexityofscheduling decisions, this paper decomposes the original problem into two key subproblems: dynamic priority task scheduling and topology-aware node selection. A hierarchical reinforcement learning framework is employed to solve these subproblems collaboratively.\n3.4.1 Problem decomposition\nThe problem is decomposed into two cascaded subproblems:\n(1) Task Priority Ranking: This subproblem determines\nthe execution order of tasks \t(t) = {τ1, τ2, . . . , τN} in time slot t via a dynamic priority vector wt = (w1, . . . , wN). The priority weights are derived by a mapping φhigh : (S(t), { f j}) →wt, where S(t) denotes the system state and f j is the feature vector of task τ j; a higher wi corresponds to higher scheduling urgency of τi.\n(2) Computing Node Selection: After task ordering, this\nsubproblem allocates each τi to a node n j ∈N (the com- puting node set) via a mapping φlow : (G(t), wi, f j) → ai\nlow ( G(t) is the network topology state, ai\nlow is the selected node index). The decision integrates node resid- ual resources, load balancing, and task delay constraints, aiming to ensure task execution success, minimize com- pletion time, and improve resource utilization.\n3.5 Optimization objectives and problem formulation\nBased on the models established in the preceding sections, this subsection precisely defines the optimization objectives for task scheduling in computing power networks.\n3.5.1 Optimization objectives\nTask scheduling success rate is defined as the ratio of successfully completed tasks to the total number of tasks receivedwithinastatisticalperiod.Foratasktobeconsidered successful, it must simultaneously satisfy both the latency constraint and the condition of continuous resource occu- pancy. Therefore, one optimization objective in this paper is to maximize the task scheduling success rate:\nmax ηsuccess = Ncompleted\nNtotal\n(6)\nwhere Ncompleted denotes the set of successfully completed tasks. Specifically, Ncompleted refers to the computing tasks successfully finished within the statistical period, which must satisfy two conditions simultaneously: (1) Tk ≤τk; (2) resource allocation is not interrupted during task execution.\nNtotal is the total number of tasks accepted within the statis- tical period.\nAverage task completion time (Wang et al. 2023) The total completion time Tk of task k is the sum of its waiting time, transmission time, and execution time. The primary opti- mization goal of the system is to minimize the average completion time of all successful tasks within the statistical period:\nmin  ̄T = 1\nN\nN \u0004\nk=1\nTk (7)\nSystem resource utilization This metric measures the resource utilization efficiency of “cloud-edge-end” nodes in the com- putingpowernetwork.Itisquantifiedusingaglobalweighted average utilization, considering CPU, GPU, and memory\n123\n\n--- Page Break ---\n\n290  Page 10 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nresources comprehensively. The last optimization goal of this paper is to maximize the resource utilization:\nmax Uavg = 1\nN\nN \u0004\nj=1\n⎛\n⎝ωcpu ·\nCused\ncpu, j Ctotal\ncpu, j\n+ ωgpu ·\nCused\ngpu, j Ctotal\ngpu, j\n+ ωmem ·\nCused\nmem, j Ctotal\nmem, j\n⎞\n⎠ (8)\nwhere N is the total number of computing power nodes; ωcpu, ωgpu, ωmem are resource weights, which reflect the importance of different types of resources.\n3.5.2 Problem formulation\nThe task scheduling problem in computing networks is fun- damentally a multi-objective optimization challenge. It aims to maximize the overall system performance by jointly opti- mizing task priority sequencing and node selection methods, while satisfying constraints on resource capacity, latency, and bandwidth. Considering the practical requirements of task scheduling in computing networks, this paper priori- tizes ensuring task scheduling success rates. Building upon this foundation, it further seeks to minimize task completion time and maximize resource utilization within the comput- ing network. To obtain a unified optimization objective, we adopt a weighted scalarization approach:\nmax J = αηsuccess −β  ̄T + γUavg (9)\nwhere α, β, and γ are non-negative preference weights.In practical CPN scheduling scenarios, reliability ηsuccess is pri- oritized,followed by minimizing average completion time  ̄T and improving resource utilization Uavg.\nSubject to:\nC1 :\n\u0004\nk→v j\nccpu\nk · xkj ≤rcpu v j · δcpu v j , ∀v j (10)\nC2 :\n\u0004\nk\ncgpu\nk · xkj ≤rgpu v j · δgpu v j , ∀v j (11)\nC3 :\n\u0004\nk\ncmem\nk · xkj ≤rmem v j · δmem v j , ∀v j (12)\nC4 :Tk ≤τk, ∀k ∈Kcompleted (13)\nC5 :\n\u0004\nk∈K\nbwk\npath · ye ≥bwk\nmin · ye, ∀k (14)\nwhere constraints C1–C5 collectively define the feasible scheduling space in the CPN system. Specifically, C1–C3 ensure resource feasibility by preventing over-allocation of CPU, GPU, and memory at heterogeneous cloud–edge–end nodes. C4 enforces deadline compliance by requiring each task’s completion time to satisfy its maximum tolerable delay, thereby linking scheduling decisions to the reliability\nobjective. C5 guarantees transmission feasibility by ensuring that the available bandwidth along the selected routing path meets task requirements, avoiding congestion-induced QoS violations.\nTogether, these constraints ensure that task prioritization and node selection decisions remain physically realizable, QoS-compliant, and consistent with network resource limi- tations.\n4 DRL implement\nTo address the optimization problem proposed in Section 3, this section introduces a hierarchical reinforcement learning algorithm based on task priority.\nThe algorithm decouples global scheduling from local resource matching within a hierarchical reinforcement learn- ing framework (Fig. 4), constructing a two-layer MDP model: while the lower-layer GAT-PPO agent aggregates node topology and resource features using graph attention mechanisms to perform task-node matching under upper- layer constraints.\nAn interaction mechanism achieves global-local objec- tive alignment, while PPO pruning and GAE advantage estimation ensure training stability, ultimately enabling col- laborative optimization of multiple scheduling objectives. Subsequent sections detail the design principles and train- ing methods for both upper- and lower-layer agents.\n4.1 High-level agent\nHigh-level agents aim to optimize overall system perfor- mance by dynamically generating task priority weights as sub-objectives based on task characteristics and system resource states. They rank tasks in the message queue to guide scheduling decisions for lower-level agents. Their decision-making process can be modeled as a Markov Deci- sion Process (MDP).\n4.1.1 MDP definition\nThe MDP of the high-level agent is defined as the tuple ⟨Sh, Ah, Rh⟩, where Sh is the state space, Ah is the action space, and Rh is the reward function. The specific definitions are as follows: State Sh Attimeslott, thehigh-levelstatesh\nt =\n\nXt\ntask, Xt\nnode\n\nconsists of the task matrix Xt\ntask and the node feature matrix Xt\nnode.\nEach row of Xt\ntask corresponds to the feature vector of a single task. Xt\nnode represents the remaining resource capacity, resource utilization, and type embedding of each computing power node;\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 11 of 22   290\nFig. 4 Hierarchical DRL agent\nAction Ah ah\nt = wi = (w1, w2, . . . , wN) , where wi is the priority weight of the i-th task, which is used to sort the tasks in the queue.\nReward Rh Rh\nt = w1 · Rsuccess −w2 · Tk +w3 ·Uavg , where Rsuccess denotes the scheduling success rate, and this reward term is related to the number of successfully completed tasks; Tk denotes the average task completion time; Uavg denotes the average resource utilization; w1, w2, w3 are weight coef- ficients satisfying \u000e wi = 1.\nTo mitigate the impact of inconsistent metric units in rewards, given the significant variation in numerical ranges across different metrics, direct linear weighting would cause a single metric to dominate the training process during gradient updates. This would compromise the convergence stability and fairness of the policy. Therefore, we perform scale normalization on high-level rewards.Since static min- max relies on predefined upper and lower bounds, it is prone to failure under varying loads and topologies; therefore, we employ sliding window adaptive normalization.\neach metric x(t) ∈{Rsuccess(t), T (t),Uavg(t)}, estimate on the observation set←BW of the most recent W episodes:\nxmin(t) = min\nk∈BW\nx(k), xmax(t) = max\nk∈BW\nx(k) (15)\nThen perform min-max normalization:\n ̃x(t) = x(t) −xmin(t) xmax(t) −xmin(t) + ε (16)\nwhereε = 10−6 isanumericalstabilityterm.Thisensures  ̃x(t) ∈[0, 1], making the contributions of different metrics\nto the policy gradient at a similar magnitude, thereby sup- pressing the dominance effect.\n4.1.2 Policy network\nThe high-level policy network employs an LSTM encoder to capture temporal dependencies in task sequences, integrat- ing the PPO algorithm to achieve stable learning of priority weights. The network architecture comprises three compo- nents: a feature extraction layer, a policy output layer, and a value output layer.\nFirst, input preprocessing is performed: the task feature matrix Xt\ntask and node feature matrix Xt\nnode are normalized and embedding-encoded to obtain  ̃Xtask and  ̃Xnode. Then, LSTM (Rajak and Tripathi 2025) task sequence encoding is conducted: task features are input into the LSTM encoder in arrival order, and the hidden state hN of the last time step is taken as the final task sequence encoding vector zt:\n\u0007\nht, ct = LSTM\n\u0002\n ̃Xtask, ht−1, ct−1\n\u0003\nzt = hN\n(17)\nwhere ht and ct represent the hidden state and cell state at time step t, respectively; ht−1 and ct−1 denote the hidden and cell states from the previous time step; and hN is the hidden state of the last time step, which serves as the task sequence representation zt.\nTo preserve the heterogeneous properties of nodes, we calculate the weighted weight w j based on the computing power proportion of nodes, and perform weighted pooling on the node feature matrix based on w j to obtain the global\n123\n\n--- Page Break ---\n\n290  Page 12 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nnode features. Here, α and β are the weights of GPU and memory resources:\nw j =\ncapcpu, j + α · capgpu, j + β · capmem, j \u000eM\nk=1\n\u0002\ncapcpu,k + α · capgpu,k + β · capmem,k\n\u0003 , zn =\nM \u0004\nj=1\nw j ·  ̃Xnode (18)\nwhere capcpu, j, capgpu, j, and capmem, j denote the CPU, GPU, and memory capacity of node j, respectively; α and β are weighting coefficients used to balance heterogeneous resource types; M is the total number of computing nodes; and  ̃Xnode denotes the normalized node feature matrix.\nFinally, feature fusion and output are performed by con- catenating the task sequence encoding and global node features zh = [zt, zn]. The policy network outputs the task priority probability distribution through a fully connected layer and the softmax function:\n\u0007\nz = ReLU\n\nW f c1 · zh + b f c1\n\nπθ = softmax\n\nW f c2 · z + b f c2\n(19)\nwhere z is the intermediate feature representation gen- erated by the first fully connected layer; W f c1, W f c2 and b f c1, b f c2 are learnable parameters of the policy network; and πθ denotes the task priority probability distribution parameterized by θ.\nTo generate a unique priority order, an iterative sampling strategy is adopted:\n(1) Initialize the candidate task set J = T and the sorting\nlist O = ∅; (2) Select task j∗from J according to probability p, add it\nto O, and remove it from J; (3) Re-normalize the probabilities of the remaining tasks in\nJ, and repeat until J = ∅; (4) Output the priority sorting sequence ah\nt = O, and cal- culate the task priority weight β j = n−j+1 n(n+1)/2.\nWe design a value network to evaluate the quality of the action output by the above policy network, guide the agent to make optimal decisions, and ensure convergence stability. The value network is used to output the value estimation of the current computing-network state: Vφh(s) is a scalar valueestimation,representingtheexpectedcumulativereturn obtained by following the current priority sorting strategy under state s:\nVφh(s) = W (1)\nc · z′ + b(1) c (20)\nwhere Vφh(s) denotes the state-value function parame- terized by φh, z′ is the fused feature representation of the current state, and W (1)\nc , b(1)\nc are learnable parameters of the value network.\n4.2 Lower-level agent\nLow-level agents focus on real-time resource allocation, receiving sub-objectives from higher-level outputs. Their corefunctionistodynamicallymaphigh-leveltasksequences to computing nodes based on the computational network’s topology, employing GAT-PPO for collaborative optimiza- tion.Thisachieveshighschedulingsuccessratesandresource utilization while satisfying latency and load constraints.\n4.2.1 MDP definition\n(1) State Sl: The low-level state sl\nt =\n\u000f\nG(t), xt\ntask(t), wt\n\u0010\nincludes computing power network structure informa- tion, current task-to-be-scheduled features, and sub- target information transmitted by the high level. G(t) =\n\nV , E, Xnode(t), Xedge(t)\n\ndenotes the comput- ing power network graph at time slot t, where V is the set of computing nodes, E is the set of inter-node links,\nXnode(t) is the node feature matrix, and Xedge(t) is the edge feature matrix; xt\ntask(t) is the core feature of the current task to be scheduled, which is extracted from the ordered sequence sorted by the high level, quantifies the task’s resource requirements and delay constraints, and is of the same type as the high-level task feature xtask(t); wt is the priority weight vector output by the high level. (2) Action Al: The action of the low-level agent is defined as a\nnodeselectionprobabilityvector: al\nt = {p1, p2, . . . , pK } , \u000eK\nj=1 p j = 1, where p j is the probability of selecting node v j. When executing the action, the node with the maximum probability j∗= arg max j p j is selected; if the node meets the task requirements and the total delay constraint, resources are allocated. (3) Reward Rl: The low-level reward function focuses on\ntimely scheduling effects, balancing task success rate and load balancing, and consists of external reward and intrinsic reward:\n\u0007\nRlt = Rext + η · Rint\nRext = −w′\n2 · Tk −Var(U), Rint = w′\n1 · Isuccess (21)\nThe external reward function guides the agent to select nodes with “low delay and load balancing” through timely feedback, avoiding single-node overload and task timeout. Here, Tk is the total task delay; Var(U) is the variance of node resource utilization.\nThe intrinsic reward is based on high-level sub-targets: when the low-level agent successfully schedules a task, the intrinsic reward is proportional to the priority weight of the task, which encourages the low-level agent to prioritize scheduling high-priority tasks. Among them, Isuccess is the\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 13 of 22   290\ntask success indicator: Isuccess = 1 if the task is scheduled successfully, otherwise Isuccess = 0.\n4.2.2 Policy network\nThe lower-level policy network receives the ordered task sequence from the higher level and aims to maximize scheduling success rate and load balance. It extracts topo- logical features via a Graph Attention Network (GAT), combines task encoding and transmission delay information, and performs fine-grained node selection. The network struc- ture consists of four modules: feature encoding, topological embedding, delay calculation, and fusion output. Input construction The input is the computing power network topology graph, represented as G(t) = (V , E, Xnode(t),\nXedge(t)), where V denotes the set of computing nodes, E represents inter-node links, Xnode(t) ∈R|V |×d is the node feature matrix, and Xedge(t) is the edge feature matrix encoding bandwidth and transmission delay attributes. The adjacency matrix is denoted as A ∈{0, 1}|V |×|V |, where\nAi j = 1 indicates the existence of link ei j. Node features include residual resources, utilization ratios, and node-type embeddings.\nTask feature encoding Let fi denote the feature vector of the current task Ti (e.g., resource demand, delay tolerance τi, and bandwidth requirement). The task feature is mapped to a latent representation through a fully connected layer:\net = σ (Wt fi + bt) , (22)\nwhere Wt and bt are learnable parameters and σ(·) denotes a nonlinear activation function.\nTopological embedding via GAT To capture structural rela- tionships and heterogeneous resource interactions among nodes, a Graph Attention Network is employed. For each node v j ∈V , let x j denote its input feature vector (a row in\nXnode(t)). A linear transformation is first applied:\nh j = Wx j, (23)\nwhere W is a learnable weight matrix and h j is the trans- formed node embedding.\nThe unnormalized attention coefficient between node vi and its neighbor v j is defined as:\nei j = LeakyReLU\n\u0002\na⊤\u000f\nhi∥h j\n\u0010\u0003\n, (24)\nwhere a is a learnable attention parameter vector and ∥ denotes vector concatenation. Then, the normalized attention\nweight is obtained through softmax over the neighborhood N(i):\nαi j = exp(ei j) \u000e\nk∈N (i) exp(eik), (25)\nwhere αi j represents the relative importance of node v j to node vi.\nThefinalaggregatedrepresentationofnodevi iscomputed as:\nzi = σ\n⎛\n⎝\u0004\nj∈N (i)\nαi jh j\n⎞\n⎠. (26)\nDelaycalculation Based on the candidate node and link char- acteristics, the transmission delay Ttrans and execution delay Texec are estimated according to the delay model in Sec- tion 3.3. These delay components are used to guide node selection to satisfy latency constraints.\nFusion and output The fused feature vector is obtained by concatenating the node embedding, the encoded task feature, and delay-related features:\nui = [zi∥tt∥Ttrans∥Texec] , (27)\nwhich is fed into a fully connected layer to compute the allocation score si. Finally, the node selection probability is obtained via softmax:\npi = exp(si) \u000e\nk∈V exp(sk), (28)\nwhere pi denotes the probability of selecting node vi for task execution.\nThrough this structure, the low-level agent dynamically integrates topology structure, resource state, and task char- acteristics into a unified decision representation, enabling topology-aware and constraint-compliant node selection under high-level priority guidance.\n4.3 Training method\nTo ensure effective coordination between high-level and low- level agents, this algorithm employs a staged Proximal Policy Optimization (PPO) (Wu and Zhu 2025) training framework. The training process emphasizes inter-layer goal alignment and achieves joint optimization through gradient decompo- sition.The high-level agent outputs the task priority weight vector wt based on the global state sh\nt . This weight is used to\n123\n\n--- Page Break ---\n\n290  Page 14 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nsort tasks and is transmitted to the low level as a sub-target. The low-level agent selects the execution node according to wt, the current task features, and the network topology state sl\nt.\nThe design of the reward function ensures goal align- ment: the low-level reward rl\nt includes external rewards and intrinsic rewards the high-level, reward rh\nt comprehensively considers the scheduling success rate, average task com- pletion time, and system resource utilization.The overall strategy of the system can be regarded as the combination of the high-level strategy πh(ah\nt |sh\nt ; θh) and the low-level strategy πl(al\nt|sl\nt; θl). According to the policy gradient theo- rem, the gradient of the total objective function J(θ) can be decomposed as:\n∇θ J(θ) = E\n\u0011\u0004\nt\nAt\n\u0002\n∇θh log πh(ah\nt |sh\nt ) + ∇θl log πl(al\nt|sl\nt )\n\u0003\u0012\n(29)\nwhere At is the advantage function at time t. This decom- position allows the high-level and low-level strategies to be updated based on their own observations and actions, while maintaining collaboration through shared advantage estima- tion.\nBoth the high-level and low-level agents update their pol- icy parameters using the PPO algorithm, with the clipped objective function:\nLCLI P(θ) = Et\n\u000f\nmin (rt(θ)At, clip (rt(θ), 1 −ε, 1 + ε) At)\n\u0010 (30)\nwhere θ denotes the policy parameters;rt(θ) = πθ(at|st) πθold(at|st) is the probability ratio between the updated and old policies;\nAt denotes the advantage estimate at time step t; and ε is the PPO clipping coefficient. The advantage function At is calcu- lated via Generalized Advantage Estimation (GAE) (Mustafa et al. 2025):\nAt =\n∞ \u0004\nl=0\n(γ λ)lδt+l, δt = rt + γ V (st+1) −V (st) (31)\nwhere γ is the discount factor, λ is the GAE smoothing parameter, and δt denotes the temporal-difference (TD) error.\nThe value network is updated by minimizing (V (st) − Rt)2, and a policy entropy regularizer is introduced to pro- mote exploration.\nThe offline hierarchical training process is divided into two stages (as shown in Algorithm 2): low-level pre-training and hierarchical joint training.Its output consists of the trained policy networks πθh (prioritization policy) and πθl (node selection policy). These trained policies are then deployed into (Algorithm 1) for runtime scheduling execu- tion.\nThe goal of pre-training is to enable the low-level agent to quickly master basic node selection capabilities under\nAlgorithm 2 Hierarchical Collaborative Training Algorithm. Require: Initial high/low-level policy parameters θh, φh, θl, φl; total\nepisodes E; time steps per episode T ; pre-training episodes E p Ensure: Optimized policy parameters θ∗\nh , θ∗\nl 1: Phase 1: Low-level Policy Pre-training 2: for e = 1 to E p do 3: Initialize environment, get initial states sh\n0 , sl 0 4: for t = 1 to T do 5: Generate ah\nt via fixed high-level policy, execute al\nt, get rl\nt and next state 6: Store (sl\nt , al\nt,rl\nt , sl\nt+1) in replay buffer Dl 7: end for 8: Sample data from Dl, compute advantage estimates ˆAt using GAE 9: Update low-level policy θl and value network φl 10: end for 11: Phase 2: Hierarchical Joint Training 12: for e = 1 to E do 13: Initialize environment, get initial states sh\n0 , sl 0 14: for t = 1 to T do 15: High-level policy samples ah\nt ∼πθh(sh\nt ), reorders task queue 16: for each task in queue do 17: Construct low-level state sl\nt , sample action al\nt, select opti- mal node j∗\n18: Assign task based on resource availability, get reward rl\nt (or penalty) 19: Store (sl\nt , al\nt,rl\nt , sl\nt+1) in replay buffer Dl 20: end for 21: Environment steps, get new state sh\nt+1 and high-level reward rh\nt 22: Store (sh\nt , ah\nt ,rh\nt , sh\nt+1) in replay buffer Dh 23: end for 24: Sample from Dh and Dl respectively 25: Update high/low-level policies (θh, θl) and their value networks 26: end for\nfixed task priorities, laying the foundation for subsequent collaborative training. The high-level agent adopts a random shuffling strategy to generate task priority sequences. Specif- ically, the priority weight wi of each task in the main queue is uniformly sampled from the interval [0,1], and tasks are sorted in descending order of wi. Tasks in the urgent queue are always placed at the front of the sorted queue (SQ) to ensure their priority execution.In each time slot, the high- level agent samples and executes actions based on the global resource status and task status, using the priority weights for determination. The environment provides feedback on rewards and the next state in each episode, and the trajec- tory data is stored in Dh. The low-level agent constructs the local state based on the fixed priority sequence, samples and executes node selection actions; the environment feeds back rewards and the next state, and trajectory data is stored in Dl. Every episodes, experience is uniformly sampled from Dh and Dl in batches of 64, GAE advantage estimation is calcu- lated, and the high and low-level policy and value network are updated .\nIf the average reward at the lower level remains sta- ble for 20 episodes and fluctuates within a ±8% range,\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 15 of 22   290\nthe pre-training is completed and joint training begins.After collecting trajectories for one episode, the low-level agent is updated first, followed by the high-level agent. This is because the actions of low-level agent directly affect the sys- tem state feedback received by the high-level agent, ensuring that the high-level agent learns based on the latest low-level execution results.During backpropagation, the gradient norm of the policy network is clipped to 1.0 to avoid gradient explo- sion; for the high-level LSTM network, gradient clipping is performed separately at each time step to prevent excessive gradient accumulation.\n4.4 Complexity analysis\nIn this subsection, we analyze the computational complexity of the proposed CPN-HRL framework from both inference- time and training perspectives. Inference-time complexity At each scheduling time slot, the online decision process consists of two sequential stages: (i) high-level task prioritization and (ii) low-level topology- aware node selection.\nLet Nq denote the number of candidate tasks in the Main Queue (MQ), M denote the number of computing nodes in the CPN, and E denote the number of links in the network topology graph.\nHigh-Level Prioritization. The high-level agent employs an LSTM network with hidden dimension dh. The forward propagation complexity of LSTM for Nq tasks is given by\nO(Nqd2\nh). Low-Level Node Selection. The low-level agent utilizes a Graph Attention Network (GAT) to encode topology infor- mation. For a graph with M nodes and E edges, the attention computation requires O(Edg), where dg denotes the embed- ding dimension. Since node selection is invoked sequentially for at most Nq tasks, the worst-case complexity of the allo- cation stage per time slot becomes O(Nq Edg).\nOverallInferenceComplexity.Therefore,theoverallinferen- ce-time complexity per scheduling time slot is O\n\nNqd2\nh +Nq Edg\n\n. In practical CPN environments, Nq ≪M due to queue filtering and feasibility constraints, which limits the number of candidate tasks evaluated in each time slot. Consequently, the scheduling latency scales linearly with respect to Nq and\nE, ensuring practical scalability under increasing network size.\nTraining complexity Training is performed offline using PPO-based policy optimization. Each update involves for- ward and backward propagation through both the LSTM and GAT networks. Let P denote the total number of learnable parameters. The complexity of a single training update is\nO(P). Although training complexity is higher than inference\ncomplexity due to gradient computation and replay sampling, it does not affect real-time scheduling performance because policy learning is conducted offline.\nScalability discussion Compared with flat reinforcement learning approaches that jointly determine task ordering and node selection in a single large action space, the hierarchical decomposition adopted in CPN-HRL separates global prior- itization from local allocation. This decomposition reduces action-space dimensionality and avoids exponential growth in decision combinations as M increases. Therefore, CPN- HRL achieves manageable inference-time complexity while preserving expressive scheduling capability in large-scale computing power networks.\n5 Performance evaluation and analysis\nThis section evaluates the effectiveness and reliability of a dynamic priority scheduling scheme for computing-network tasks based on HRL through numerical simulation experi- ments.\n5.1 Experiment setup\nThe simulation experiments were conducted using the Ubuntu 20.04 LTS operating system. The algorithm was imple- mented in Python 3.9 within the PyTorch 2.0 deep learning framework and ran on a Windows computer equipped with an Intel Core i7-11700 CPU (3.00GHz), 32GB DDR4 3600MHz memory, and a 1TB NVMe solid-state drive. To ensure the authenticity and reliability of the experimental results, we selected the real-world GEANT global network topology from Topology Zoo as the primary experimental subject. Comparative experiments were conducted with other typical network topologies, including Abilene, Switch, and ChinaNet. Different attributes were assigned to each node and link in the topology to simulate the numerical values of node and link resources in real computing power networks.\nSpecific values are detailed in Tables 3 and 4, while train- ing parameter settings are shown in Table 5. Task arrival follows a Poisson distribution with λ ranging from 5 to 15\nTable 3 Experimental network topology and node setting\nNetwork Nodes Links Computing Routing Topology Nodes Nodes\nAbilene 12 30 6 6\nGEANT 23 74 8 15\nChinaNet 30 48 12 18\nSwitch 42 126 16 28\n123\n\n--- Page Break ---\n\n290  Page 16 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nTable 4 Task and resource parameter settings Parameter Meaning\nComputing task request arrival time Arrival time follows Poisson distribution\nComputing task arrival rate λ = 5 −15\nLink bandwidth resource 1∼10 Gbps\nComputing resource quantity of central cloud node (CU) 20\nComputing resource quantity of edge cloud node (CU) 8∼15\nCPU resource required by computing task k (CU) 2∼10\nGPU resource required by computing task k Bernoulli(0.5) × U(1, 4)\nMemory resource required by computing task k U(2, 8) GB\nData volume of computing task k U(1, 20) MB\nUrgent task delay U(10 −100) ms\nRegular task delay U(100 −500) ms\n(corresponding to low to high load). Delay-sensitive tasks account for 10%-50% of the total tasks, with their maximum tolerable delay τk uniformly distributed between 10–100 ms; regular tasks have τk in the range of 100–500 ms. The resource requirements of tasks are generated as follows: CPU requirements follow U(2, 10) CU, GPU requirements are determined by Bernoulli(0.5) × U(1, 4) (simulating the randomness of GPU-dependent tasks), and memory require- ments follow U(2, 8) GB.\nThe LSTM network of the high-level agent uses He initial- ization for weight matrices, with a hidden layer dimension of 128 and a sequence length equal to the maximum number of tasks per time slot. The GAT network of the low-level agent uses 4 attention heads in the first layer and 1 attention head in the second layer, and the output dimension of each layer is 64. Both agents use an Adam optimizer, with a learning rate decay strategy of exponential decay to avoid late-stage training oscillations.\nThe high-level advantage function At is calculated with γ = 0.99 and λ = 0.95, focusing on long-term benefits; the low-level advantage function is calculated with γ = 0.95 and λ = 0.90, focusing on immediate feedback.\nThree core metrics—average task completion time, task scheduling success rate, and global resource utilization— were selected to evaluate algorithm performance.\nTable 5 Training parameter settings\nParameter High-level Low-level\nLearning rate 1e-3 5e-4\nDiscount factor γ 0.99 0.95\nGAE parameter λ 0.95 0.90\nClipping coefficient ε 0.2 0.2\nBatch size 64 64\nEntropy coefficient 0.01 0.02\nUpdate step size 4 4\n5.1.1 Comparison baseline\nTo validate the effectiveness of the proposed algorithm, sim- ulation experiments were conducted against the following baseline methods, with all algorithms employing identical state representations and experimental environments:\n1. FCFS-Random: Scheduling computational tasks based on the first-come-first-served principle, with random node selection during allocation. 2. HEFT: A dynamically adaptive HEFT algorithm that periodically re-prioritizes tasks in the current queue and selects nodes. 3. SAC: Flexible Actor-Critic algorithm, a single-layer DRL architecture. 4. PATD3: Priority-Aware Task Dispatcher, first calculating weighted priority scores for tasks, then selecting compute nodes via TD3. 5. PSO-DQN: Particle Swarm Optimization for task order- ing,combinedwithDQNreinforcementlearningfornode selection. 6. CPN-HRL: A Hierarchical Deep Reinforcement Learn- ing Approach for Priority-Aware Task Scheduling in Cloud-Edge-End CPN Environments.\n5.2 Results analysis\n5.2.1 Convergence analysis\nFigure 5 illustrates the training convergence performance of the CPN-HRL algorithm.\nDuring the pre-training phase, high-level policies are ran- domly ordered, with low-level policies converging rapidly while high-level rewards remain low. In the joint training phase, high-level policies optimize task sequences, while low-level policies temporarily decline due to environmen- tal changes. Subsequently, collaborative optimization across\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 17 of 22   290\n0 50 100 150 200 -20\n-10\n0\n10\n20\n30\nHigh-level Reward\nEpisode\nHigh-level Agent\n0 50 100 150 200 -1.0\n-0.5\n0.0\n0.5\n1.0\nLow-level Reward\nEpisode\nLow-level Agent\nFig. 5 (a) High-level reward, (b) low-level reward\nlayers enables gradual convergence of high- and low-level rewards, validating the algorithm’s stable training and effec- tive learning of optimal scheduling decisions.\n5.2.2 Comprehensive performance comparison under different loads\nTo test the algorithm’s robustness under varying system loads, we conducted experiments on the ChinaNet topology. The task arrival rate λ was gradually increased from 5 tasks per time slot to 15 tasks per time slot. We observed changes in three core metrics, with detailed results shown in Fig. 6.\nAs shown in Fig. 6(a), compared with several other base- line algorithms, CPN-HRL consistently maintains the lowest average task completion time. As the load increases, the latency of all algorithms rises, but CPN-HRL exhibits the lowest growth rate. At this point, the CPN-HRL algorithm achievedapproximately11.4%lowerlatencythanPSO-DQN and about 16.5% lower than SAC. This advantage stems\nfrom the high-level agent’s dynamic optimization of task priorities, effectively reducing queueing delays for critical tasks. As shown in Fig. 6(b), CPN-HRL also demonstrates strong performance in task scheduling success rate. As the task arrival rate increased, the success rates of all algorithms declined. However, when the task arrival rate reached , the load increased significantly. At this point, CPN-HRL main- tained a success rate of 87.3%, while PSO-DQN, PATD3, and SAC dropped to 83.7%, 81.5%, and 78.5%, respectively. This indicates that CPN-HRL’s low-level topology aware- ness ensures the feasibility of resource allocation, thereby enhancing scheduling success rates. As shown in Fig. 6(c), regarding system resource utilization, CPN-HRL achieves high resource efficiency by incorporating load balancing metrics into node selection through its low-level agents. Resource utilization remains stable above 80% under varying loads, preventing resource idleness and single-point over- load.\n5 10 15 0.0\n0.1\n0.2\n0.3\n0.4\n0.5\nAverage Task Completion Time(s)\nTask Arrival Rate(tasks/slot)\nFCFS-Random HEFT SAC PATD3 PSO-DQN CPN-HRL\n(a)\n5 10 15\n0.6\n0.8\n1.0\nSuccess Rate\nTask Rrrival Rate(tasks/slot)\nFCFS-Random HEFT SAC PATD3 PSO-DQN CPN-HRL\n(b)\n5 10 15\n0.6\n0.8\nResource Utilization Rate\nTask Arrival Rate(tasks/slot)\nFCFS-Random HEFT SAC PATD3 PSO-DQN CPN-HRL\n(c)\nFig. 6 Comprehensive performance comparison under different loads. (a) Average task completion time, (b) scheduling success rate, (c) resource utilization rate\n123\n\n--- Page Break ---\n\n290  Page 18 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nAbilene GEANT ChinaNet Switch 0.0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\nAverage Task Completion Time(s)\nNetwork Topology\nFCFS-Random HEFT SAC PATD3 PSO-DQN HCDS\n(a)\nAbilene GEANT ChinaNet Switch 0.6\n0.7\n0.8\n0.9\nSuccess Rate\nNetwork Topology\nFCFS-Random HEFT SAC PATD3 PSO-DQN HCDS\n(b)\nAbilene GEANT ChinaNet Switch 0.6\n0.7\n0.8\n0.9\nResoure Utilization Rate\nNetwork Topology\nFCFS-Random HEFT SAC PATD3 PSO-DQN HCDS\n(c)\nFig. 7 Scalability analysis. (a) Average task completion time, (b) scheduling success rate, (c) resource utilization rate\n5.2.3 Scalability analysis\nTo validate the applicability of CPN-HRL across networks of varying scales, we conducted tests under four distinct topologies: Abilene, GEANT, Switch, and ChinaNet. We maintained a fixed task arrival rate of λ = 10 to ensure testing under moderate system load conditions. As shown in Fig. 7(a), (b), and (c), the performance of all algo- rithms deteriorates as the network scale increases. However, CPN-HRL exhibits the smallest decline and consistently maintains robust performance. Regarding average task com- pletion time, CPN-HRL achieved the shortest average task completion time across all four network topologies, outper- forming the PSO-DQN algorithm by 9.8% – 12.3% and the PATD3 algorithm by 11.7% – 13.6%. The HEFT algorithm showed significant improvement over FCFS but still under- performed other DRL algorithms in dynamic environments. Regarding scheduling success rate, CPN-HRL maintained a rate of 80% – 90% even as network scale increased, demon- strating a clear advantage over other algorithms.\nRegarding resource utilization, the CPN-HRL algorithm maintains over 80% resource utilization even as network scale increases. This demonstrates its robust performance\nunder complex network topologies. The hierarchical archi- tecture of CPN-HRL effectively mitigates the curse of dimensionality, offering excellent scalability to meet the demands of large-scale computing networks.\n5.2.4 Urgent tasks\nWe specifically evaluated the algorithm’s scheduling perfor- mance for urgent tasks. Under the GEANT topology, with a fixed task arrival rate of λ = 10 and we have increased the proportion of emergency tasks from 0.1 to 0.5, as shown in Fig. 8 , CPN-HRL leverages its multi-level queueing mech- anism and reordering trigger mechanism to provide priority response for urgent tasks.Its regular task success rate reached 91.2% Its urgent task success rate reached 70.5%, with an average response time of only 18.5ms. In contrast, static priority-based algorithms like HEFT, as well as single-layer reinforcement learning algorithms such as SAC and PATD3, failed to guarantee timely scheduling for urgent tasks, result- ing in task failures.\nHowever, regarding the reliability of emergency task scheduling, we note that the current implementation’s suc- cess rate is constrained by simulation settings, such as\n0.1 0.2 0.3 0.4 0.5\n0.75\n0.80\n0.85\n0.90\nSuccess rate of regular tasks\nProportion of urgent tasks\nCPN-HRL PSO-DQN PATD3 SAC HEFT FCFS-Random\n(a)\n0.1 0.2 0.3 0.4 0.5 0.45\n0.50\n0.55\n0.60\n0.65\n0.70\n0.75\nSuccess rate of urgent tasks\nProportion of urgent tasks\nCPN-HRL PSO-DQN PATD3 SAC HEFT FCFS-Random\n(b)\n0.1 0.2 0.3 0.4 0.5 0\n10\n20\n30\n40\n50\nAverage compeletion time of urgent tasks(ms)\nProportion of urgent tasks\nCPN-HRL PSO-DQN PATD3 SAC HEFT FCFS-Random\n(c)\nFig. 8 Scheduling performance for urgent tasks. (a) Success rate of regular tasks, (b) Success rate of urgent tasks, (c) Average Task Completion Time of urgent tasks\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 19 of 22   290\nworkload composition, deadline distribution, and resource allocation, and may not directly meet the ultra-reliability requirements of specific industrial control or URLLC sce- narios. To enhance reliability under stricter constraints, the following extension approaches can be considered: (1) Implement reliability-aware reward mechanisms to impose heavier penalties for emergency task failures; (2) Enforce access control or load offloading for non-critical tasks dur- ing extreme congestion; (3) Reserve dedicated resources for emergency queues. A comprehensive reliability constraint evaluation remains an open research topic for future investi- gation.\n5.2.5 Ablation study\nTocomprehensivelyevaluatethecontributionofeachmodule in the proposed CPN-HRL framework, three ablation stud- ies are designed and conducted over the GEANT real-world network topology. A moderate task arrival rate is adopted to represent typical system load conditions, and all remaining hyperparameters are fixed to align with the baseline setting for fair comparison. Three controlled variants are imple- mented by individually substituting the key components of theproposedalgorithm,therebyenablingasystematicassess- ment of their impact on overall performance.\n(1) CPN-HRL-w/o-Hierarchy:Asingle-agentarchitecture\nis adopted, where an end-to-end Proximal Policy Opti- mization (PPO) algorithm jointly optimizes task priority ordering and computing node selection within a unified action space. Thisvariantisdesignedtoevaluatethe impact of hierarchical policy decomposition on solution space exploration efficiency and policy convergence stability. (2) CPN-HRL-w/o-Queue: The urgent-task priority han-\ndling mechanism is removed. Time-sensitive tasks and regular tasks are incorporated into a unified global pri- ority ranking framework, eliminating the preemptive scheduling privilege of urgent tasks. This setting aims to examine the role of the dedicated fast-response chan-\nnel in ensuring Quality of Service (QoS) and scheduling fairness. (3) CPN-HRL-w/o-LSTM (CNN): The LSTM module in\nthe high-level agent is replaced with a Convolutional Neural Network (CNN) for feature extraction. This vari- ant is intended to validate the necessity of long-term memory in handling dynamic task arrival patterns.\nAs illustrated in Fig. 9 , three performance metrics are evaluated under different ablation settings. Based on the experimental results, it can be observed that each core com- ponent of the proposed CPN-HRL algorithm contributes significantly to the overall system performance.Specifically, the single-agent joint optimization strategy leads to slower policy convergence and increased decision conflicts, thereby prolonging task response time. In contrast, the introduction of a hierarchical structure effectively decouples the decision- making process, reducing decision complexity, acceler- ating convergence, and improving task completion effi- ciency.When the urgent-task queue mechanism is removed, the success rate drops noticeably. This degradation can be attributed to the inability of delay-sensitive tasks to complete scheduling before their maximum deadlines. The dedicated urgent queue plays a critical role in guarantee- ing the Quality of Service (QoS) for low-latency tasks and maintaining scheduling reliability.Furthermore, replacing the LSTM module with a CNN as the feature extractor results in a slight performance decline. This outcome indicates that LSTM possesses significant advantages in modeling dynamic task arrival patterns and capturing long-term depen- dencies, thereby enhancing the adaptability of the algorithm in dynamic environments.\nOverall, under the experimental configuration adopted in this study, the proposed CPN-HRL framework achieves superior performance across multiple metrics, including task completion time and success rate, while maintaining high resource utilization. These results comprehensively validate the effectiveness of the architectural design and its synergis- tic advantages.\nw/o-LSTM w/o-queue w/o-Hierarchy CPN-HRL 0.0\n0.1\n0.2\n0.3\n0.4\nAverage Task Completion Time(s)\nAblation design\nw/o-LSTM w/o-Queue w/o-Hierarchy CPN-HRL 0.0\n0.2\n0.4\n0.6\n0.8\n1.0\nSuccess Rate\nAblation design\nw/o-LSTM w/o-Queue w/o-Hierarchy CPN-HRL 0.0\n0.2\n0.4\n0.6\n0.8\n1.0\nResource Utilization Rate\nAblation design\nFig. 9 Ablation study design. (a) Average task completion time, (b) scheduling success rate, (c) resource utilization rate\n123\n\n--- Page Break ---\n\n290  Page 20 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\n6 Summary and future work\n6.1 Technical contributions\nIn this paper, we proposed CPN-HRL, a hierarchical deep reinforcement learning framework for priority-aware task scheduling in computing power networks (CPN). The key contribution lies in decomposing a coupled combinatorial scheduling problem into two coordinated subproblems: (i) global dynamic task prioritization and (ii) topology-aware computing node selection. This hierarchical decomposition mitigates the curse of dimensionality encountered in con- ventional reinforcement learning approaches, while enabling structured coordination between long-term global objec- tives (e.g., success rate and load balance) and short-term local decisions (node-level feasibility and delay minimiza- tion).TheintegrationofLSTM-basedtemporalmodelingand GAT-based topology embedding further enhances the repre- sentation capacity of the scheduling agents under dynamic and heterogeneous environments.\nSimulation results across multiple network topologies indicate that the proposed framework improves scheduling efficiency and maintains stable performance under varying load conditions within the evaluated scenarios.\n6.2 Security boundary and deployment assumptions\nWhile the proposed framework focuses on QoS-aware scheduling optimization, practical deployment of centralized CPNcontrolmechanismsnecessitatesexplicitclarificationof security scope and operational assumptions.\n6.2.1 Threat model\nWe consider three categories of potential threats in CPN envi- ronments:\n(1) Task manipulation attacks,where malicious users sub-\nmit falsified task attributes (e.g., deadlines, bandwidth requirements, or priority flags) to gain unfair scheduling advantages or overload specific nodes; (2) Telemetry manipulation attacks:where node resource\nstates or link measurements are spoofed or partially cor- rupted, leading to incorrect state observations for the reinforcement learning agents; (3) Controller-centric attacks,including denial-of-service\n(DoS)targetingthecentralizedcontrolcenterorattempts to extract model parameters of the trained policies.\n6.2.2 Security assumptions\nInthiswork,weassumeauthenticatedtasksourcesandsecure communication channels between routing nodes and the cen-\ntralized controller. Under these assumptions, we focus on scheduling policy optimization rather than end-to-end net- work security protocol design.\n6.2.3 Security scope of DL-based scheduling\nThe high-level (LSTM-PPO) and low-level (GAT-PPO) agents operate on observed system states. Their robust- ness depends on the reliability of telemetry inputs and task descriptors. Therefore, the DL models themselves are not designed as intrusion detection mechanisms but as decision- making modules within a trusted control framework.\nRecent AI-based network threat detection frameworks (Paracha et al. 2024) demonstrate that machine learning mod- els can analyze traffic patterns and behavioral anomalies to proactively identify cyber attacks and support forensic investigation and mitigation strategies. Inspired by these approaches, a practical CPN deployment can integrate an AI- driven anomaly detection module as a front-end filter before the scheduling pipeline to detect abnormal task submissions or telemetryinconsistencies. Suchintegrationwouldenhance system resilience without altering the hierarchical scheduling design proposed in this paper.\n6.3 Future work\nFuture research can extend this work in several directions:\n(1) Security-awarescheduling:Integratinganomalydetec-\ntion outputs into the HRL state space and designing robust policies against adversarial perturbations; (2) Reliability-constrained optimization: Incorporating\nrisk-sensitive objectives (e.g., CVaR) to satisfy ultra- reliable low-latency service requirements; (3) Decentralized or federated control architectures:\nReducing centralized attack surfaces while maintaining global coordination. (4) Real-world deployment validation: Evaluating sche-\nduling overhead, telemetry delay, and imperfect moni- toring in operational CPN environments.\nAcknowledgements This work was supported by the National Key Research and Development Program of China under Grant 2023YFB29 06403.\nAuthor Contributions Q.Q.Y. :[Pleaseinsertintopreamble]Writing – original draft, Visualization, Validation, Methodology, Investigation, Formal analysis, Conceptualization. L.T. , Z.Y. : Writing – review & editing, Investigation, Supervision, Funding acquisition. X.F. : Data Curation, Validation, Software. S.W., J.Q.X. :[Pleaseinsertintopream- ble]Writing – review & editing, Project administration, Methodology, Investigation. B.C. , X.Y. S. : Validation, Investigation, Formal analysis. Y. Y., Y.L. :[Pleaseinsertintopreamble]Visualization, Data curation.\n123\n\n--- Page Break ---\n\nJournal of King Saud University Computer and Information Sciences          (2026) 38:290  Page 21 of 22   290\nData Availability No datasets were generated or analysed during the current study.\nDeclarations\nCompeting interests The authors declare no competing interests.\nOpen Access This article is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License, which permits any non-commercial use, sharing, distribution and repro- duction in any medium or format, as long as you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indicate if you modified the licensed mate- rial. You do not have permission under this licence to share adapted material derived from this article or parts of it. The images or other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory regula- tion or exceeds the permitted use, you will need to obtain permission directly from the copyright holder. To view a copy of this licence, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.\nReferences\nAlsaidy SA, Abbood AD, Sahib MA (2022) Heuristic initialization of\npso task scheduling algorithm in cloud computing. J King Saud Univ-Comput Inf Sci 34(6):2370–2382 Behera I, Sobhanayak S (2024) Task scheduling optimization in het-\nerogeneous cloud computing environments: A hybrid ga-gwo approach. J Parallel Distrib Comput 183:104766 Bo L, Zengyi L, Xuliang W, Mingchuan Y, Yunqing C (2019) A new\nedge computing solution based on the integration of cloud, net- work, and edge: Computing power network. Telecommun Sci 35(09):44–51 Cai Y, Li W, Meng X, Zheng W, Chen C, Liang Z (2024) Adaptive\ncontrastive learning based network latency prediction in 5g urllc scenarios. Comput Netw 240:110185 Cheng L, Kalapgar A, Jain A, Wang Y, Qin Y, Li Y, Liu C (2022) Cost-\naware real-time job scheduling for hybrid cloud using deep rein- forcement learning. Neural Comput Appl 34(21):18579–18593 Feng L, Xie R, Tang Q, Huang T (2024) Delay-prioritized task\nscheduling with load balancing in computing power networks. In: 2024 IEEE Wireless Communications and Networking Confer- ence (WCNC), pp 1–6. IEEE Feng L, Xie R, Tang Q, Huang T, Xiong Z, Chen T, Zhang R, Tan S, Fang\nZ (2025) Carcs: Joint optimization of computing-aware routing and collaborative scheduling in computing power networks. IEEE Network Gupta S, Iyer S, Agarwal G, Manoharan P, Algarni AD, Aldehim G,\nRaahemifar K (2022) Efficient prioritization and processor selec- tion schemes for heft algorithm: A makespan optimizer for task scheduling in cloud environment. Electronics 11(16):2557 Han Y, Zhao Z, Mo J, Shu C, Min G (2019) Efficient task offloading\nwithdependencyguaranteesinultra-denseedgenetworks.In:2019 IEEE Global Communications Conference (GLOBECOM), pp 1– 6. IEEE He G, Li X, Lv S, Zhou Y, Ni Z, Chen X (2024) Task scheduling\nalgorithm for heterogeneous computing power network. In: 2024 IEEE 99th Vehicular Technology Conference (VTC2024-Spring), pp 1–5. IEEE\nHuijuan Y, Lu L, Xiaodong D (2021) Computing power aware network:\nArchitecture and key technologies. ZTE Commun 27(3):7–11 Jamil SU, Khan MA, Rahman M, Paracha MA, Zia T, Rahman SS,\nAhmed SB (2025) How intelligence is reshaping today: Ioe edge networks? Internet Things 101717 Koslovski GP, Pereira K, Albuquerque PR (2024) Dag-based workflows\nscheduling using actor-critic deep reinforcement learning. Futur Gener Comput Syst 150:354–363 Li K, Zhang T, Wang R (2020) Deep reinforcement learning for multi-\nobjective optimization. IEEE Trans Cybern 51(6):3103–3114 Li J, Zhang X, Wei J, Ji Z, Wei Z (2022) Garlsched: Generative adver-\nsarial deep reinforcement learning task scheduling optimization for large-scale high performance computing systems. Futur Gener Comput Syst 135:259–269 Lin X, Yao Y, Hu B, Yang W, Zhou X, Li G, Zhang W (2025) A real-time\nanomaly detection method for industrial control systems based on long-short period deterministic finite automaton. IEEE Internet Things J 12(10):14599–14621 Liu L, Zhang Y (2025) Task offloading optimization for multi-objective\nbased on cloud-edge-end collaboration in maritime networks. Futur Gener Comput Syst 164:107588 Liu J, Yang P, Chen C (2023) Intelligent energy-efficient scheduling\nwith ant colony techniques for heterogeneous edge computing. J Parall Distrib Comput 172:84–96 Liu X, Li W, Cao B, Wang S, Lyu Z (2025) Large-scale multiobjec-\ntive vehicle task offloading optimization based on cloud-edge-end collaboration for 6g enabled transport systems. IEEE Trans Intell Transport Syst Mande X, Zhufang H, Hao S (2024) Multi-user fine-grained task\noffloading and scheduling strategy in cloud-edge-end collabora- tive computing. Telecommun Sci 40(04):107–121 Mousavi S, Mood SE, Souri A, Javidi MM (2022) Directed search: a\nnew operator in nsga-ii for task scheduling in iot based on cloud- fog computing. IEEE Trans Cloud Comput 11(2):2144–2157 Mustafa E, Shuja J, Rehman F, Namoun A, Bilal M, Iqbal A (2025)\nComputation offloading in vehicular communications using ppo- baseddeepreinforcementlearning:E.mustafaetal.JSupercomput 81(4):547 Pang S, Li W, He H, Shan Z, Wang X (2019) An eda-ga hybrid algo-\nrithm for multi-objective task scheduling in cloud computing. IEEE Access 7:146379–146389 ParachaMA,JamilSU,ShahzadK,KhanMA,RasheedA(2024)Lever-\naging ai for network threat detection—a conceptual overview. Electronics 13(23):4611 Rajak A, Tripathi R (2025) An attention-enhanced lstm model for effi-\ncient network slicing in beyond 5g networks. Ad Hoc Networks 104070 Sheng S, Chen P, Chen Z, Wu L, Yao Y (2021) Deep reinforcement\nlearning-based task scheduling in iot edge computing. Sensors 21(5):1666 Tang X, Cao C, Wang Y, Zhang S, Liu Y, Li M, He T (2021) Computing\npower network: The architecture of convergence of computing and networking towards 6g requirement. China Commun 18(2):175– 185 Wang T, Shen L, Fan Q, Xu T, Liu T, Xiong H (2023) Joint admission\ncontrol and resource allocation of virtual network embedding via hierarchical deep reinforcement learning. IEEE Trans Serv Com- put 17(3):1001–1015 Wang Z, Yu Y, Liu D, Li W, Xiong A, Song Y (2023) A resource\nallocation scheme with the best revenue in the computing power network. Electronics 12(9):1990 Wang Z, Zhan W, Duan H, Huang H (2025) Multiobjective optimization\ndeep reinforcement learning for dependent task scheduling based on spatio-temporal fusion graph neural network. Eng Appl Artif Intell 148:110337\n123\n\n--- Page Break ---\n\n290  Page 22 of 22 Journal of King Saud University Computer and Information Sciences          (2026) 38:290\nWang T, Fan Q, Wang C, Yang L, Ding L, Yuan NJ, Xiong H\n(2024) Flagvne: A flexible and generalizable reinforcement learn- ing framework for network resource allocation. arXiv:2404.12633 Wei D, Wen J, Xu P, Shi H, Pan C (2025) Dependent tasks joint\nscheduling and offloading for edge computing based on deep rein- forcement learning. Ad Hoc Networks 104111 Wu J, Zhu Z (2025) Intelligent routing optimization for sdn based on\nppo and gnn. J Netw Comput Appl 242:104249 Wu J, Cao Z, Zhang Y, Zhang X (2019) Edge-cloud collaborative\ncomputation offloading model based on improved partical swarm optimization in mec. In: 2019 IEEE 25th International Conference on Parallel and Distributed Systems (ICPADS), pp 959–962. IEEE Xia Y, He Q, Fang H, Wang X, Bi Y, Hawbani A, Yu K (2025)\nMprof: Multi-dimensional preference-driven resource optimiza- tion framework for cloud-edge-end collaboration. IEEE Trans Network 34:2701–2716 Xie R, Feng L, Tang Q, Zhu H, Huang T, Zhang R, Yu FR, Xiong\nZ (2025) Priority-aware task scheduling in computing power network-enabled edge computing systems. IEEE Trans Netw Sci Eng Xiong X, Li M, Yu FR, Zhang H, Wang K, Si P (2025) Cloud-edge-end\ncollaborative computing-enabled intelligent sharding blockchain for industrial iot based on ppo approach. IEEE Trans Mobile Com- put Yang J, Jiang B, Lv Z, Choo K-KR (2020) A task scheduling algorithm\nconsideringgametheorydesignedforenergymanagementincloud computing. Future Gener Comput Syst 105:985–992\nYin Y, Yang B, Wang S, Kang L, Peng Q (2026) A multi-layer dynamic\nproduction scheduling method for manufacturing systems with cloud-edge-end architecture. Adv Eng Inform 69:103961 Yukun S, Bo L, Junlin L, Haonan H, Xing Z, Jing P, Wenbo W (2024)\nComputing power network: A survey. China Commun 21(9):109– 145 Zhan S, Huo H (2012) Improved pso-based task scheduling algorithm\nin cloud computing. J Inf Computat Sci 9(13):3821–3829 Zhang Z.-Q., Huang T, Qian B, Hu R (2025) Mamhsan: A multi-\nagent deep reinforcement learning framework based on multi-head self-attention network with heterogeneous graph embedding for flexible job shop scheduling. Comput Indust Eng 111466 Zhao M, Zhang X, He Z, Chen Y, Zhang Y (2024) Dependency-aware\ntask scheduling and layer loading for mobile edge computing net- works. IEEE Internet Things J 11(21):34364–34381 Zhao F, Jia Y (2025) A multi-agent reinforcement learning with multi-\ntask learning and graph edge attention networks for dynamic flexible job shop scheduling. Applied Soft Comput 114277 Zhou Y, Li X, Luo J, Yuan M, Zeng J, Yao J (2022) Learning to optimize\ndag scheduling in heterogeneous environment. In: 2022 23rd IEEE International Conference on Mobile Data Management (MDM), pp 137–146. IEEE Zou Z, Xie R, Ren Y, Yu FR, Huang T (2022) Task scheduling for\nicn-based computing first network: A deep reinforcement learning approach. In: 2022 IEEE 8th International Conference on Com- puter and Communications (ICCC), pp 1615–1620. IEEE\nPublisher’s Note Springer Nature remains neutral with regard to juris- dictional claims in published maps and institutional affiliations.\nAuthors and Affiliations\nQiqiang Yue1 · Le Tian1,2,3,4 · Xu Feng1 · Zheng Yuan1,2,3,4 · Shuai Wei1 · Jiqiang Xia1 · Bo Chen1,2,3,4 · Xuanyan Song1,2,3,4 · Ying Yao1 · Yi Liu5\nB Zheng Yuan\nyq2_200130@126.com\nQiqiang Yue yqq_200130@163.com\nLe Tian xxgctianle@163.com\nXu Feng uxengf@126.com\nShuai Wei weis0906@163.com\nJiqiang Xia ndscxjq@outlook.com\nBo Chen daniel_0720@163.com\nXuanyan Song songxuanyan1@163.com\nYing Yao yao.2023@foxmail.com\nYi Liu liuyi4@ha.chinamobile.com\n1 Information Engineering University, Zhengzhou 450002, China\n2 National Key Laboratory of advanced communication networks, Zhengzhou 450002, China\n3 Key Laboratory of Cyberspace Security, Ministry of Education of China, Zhengzhou 450002, China\n4 Laboratory of Cyberspace Endogenous Security, Henan Province, China, Zhengzhou 450002, China\n5 China Mobile Communications Group Henan Co., Ltd., Zhengzhou 450002, China\n123",
+  "equations": [
+    {
+      "page": 4,
+      "raw_extracted": "DVFS (Liu et al. 2023) ✕ ✕ ✓ ✕ ✕",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ref (Alsaidy et al. 2022) ✕ ✕ ✕ ✓ ✕",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ref (Feng et al. 2024) ✕ ✕ ✓ ✓ ✕",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ref (Zou et al. 2022) ✓ ✕ ✓ ✓ ✕",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ref (Jamil et al. 2025) ✓ ✕ ✓ ✓ ✕",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Ref (Xie et al. 2025) ✓ ✓ ✓ ✓ ✕",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "CPN-HRL ✓ ✓ ✓ ✓ ✓",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": ", τk, bwk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": ", each parameter represents the total CPU, GPU, and memory resources required to complete the task, the task data volume, the arrival time at the system, the maximum tolerated delay, the minimum required bandwidth, the initialization prior- ity, and the queue identifier. Based on the sensitivity of computational tasks to delay, they are categorized into two types: delay-sensitive tasks and conventional tasks. We define xkj ∈{0, 1}, ∀k, j as the scheduling strategy of computing tasks: xkj = 1 indicates that computing task k is scheduled to execute on computing node v j; when xkj = 0 means the computing task is queued in the buffer queue. Summary of the key notations are listed in Table 2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Cloud-Edge-End (Yin et al. 2026; Xia et al. 2025; Liu and Zhang 2025; Liu et al. 2025) environment as an undirected weighted graph G = (V , E, W), where V = {v1, v2, . . . , vn} is the set of all nodes in the net- work, including network nodes vn and computing nodes v j. The computing node v j is composed of cloud-edge- end devices: Cloud nodes (Xiong et al. 2025) are remote large-scale server clusters with sufficient computing and storage resources; Edge nodes (Zhao et al. 2024) are hardware-based virtualized application platforms that can provide resources to process user tasks; End nodes are various terminal devices with limited computing resources, and are often used as the initiating end of computing tasks. Network nodes vn include regular network nodes vc and computing routing nodes vr: regular network nodes vc are responsible for forwarding computing tasks. Computing routing nodes vr handle computing tasks generated by terminals and transmitted to the computing network via base stations, then hand these tasks to agents for processing and scheduling. To meet the scheduling needs of high-urgency tasks, this node sets two task buffer queues based on FIFO: The urgent queue pro- cesses delay-sensitive tasks;The main queue processes regular tasks. Urgent Queue (UQ): Stores tasks with extreme delay sensitivity and the highest priority, whose maximum tol- erable delay τk is shorter than the scheduling time slot. Task timeout will cause severe losses (e.g., industrial real-time control systems Lin et al. 2025, 5G URLLC scenarios Cai et al. 2024). Tasks in this queue have high priority: after entrying, set the flag bit to 1, and the low- level agent allocates resources preferentially. Main Queue (MQ): Stores most regular tasks. Their priorities are dynamically determined by the high-level agent. Tasks in this queue have high priority: after entry- ing, set the flag bit to 0.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Let E = {ei j | vi, v j ∈V } denote the set of inter- node communication links, where link ei j exists if and only if nodes vi and v j are interconnected. Let W =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "{wi j | ei j ∈E} be the set of link weights, where wi j = (bwi j,lati j) represents the bandwidth and trans- mission delay of link ei j. Since multiple computing task",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "tarrive,k, τk The arrival time and maximum tolerable delay of computing task k",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "priork, ρ The initial priority and queue identifier of the k-th task",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "δcpu",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "j , δgpu",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "j , δmem",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "ηsuccess Scheduling success rate",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "requests may occupy the bandwidth of the same link during scheduling, we use ye ∈{0, 1} in this paper to indicate whether the bandwidth resource of link e is occupied at a certain moment. (3) Computing Power Network Control Center : com-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "control center. Once the agents have completed their train- ing, the learned strategies will be deployed in Algorithm 1 and will be triggered when new tasks arrive or when node resources are released, thereby enabling dynamic reordering and allocation decisions. Step 1: task queuing and classification In the computing power network, computing tasks generated by various termi- nals arrive at the system in a first-come-first-served (FCFS) mannerfollowingaPoissonprocesspertimeslot.Afterenter- ing the buffer space of the computing power routing node, each task is categorized based on its maximum tolerable delay τk: if τk < \u0006t, the task is placed into the urgent queue (UQ); otherwise, it is placed into the main queue (MQ).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Algorithm 1 CPN-HRL Hierarchical Scheduling Algorithm. Require: Task set←T , Network topology←G, Node resource states N Ensure: Task scheduling assignment result←A",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1: Initialize M Q ←∅, U Q ←∅ 2: for tk ∈T do 3: if Dmax",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "k ≤\u0006t then 4: U Q ←U Q ∪{tk} 5: else 6: M Q ←M Q ∪{tk} 7: end if 8: end for 9: shigh ←[T, N] 10: w ←πθhigh(shigh) 11: SQ ←U Q ⊕Sort(M Q, w) 12: for tk ∈SQ do 13: sk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "low ←[G, tk, w] 14: ak ←πθlow(sk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "low) 15: if Resource meets requirement(ak, tk) then 16: A ←A ∪(tk, ak) 17: end if 18: end for 19: return←A",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Step 4: state update and timeout handling At the end of a time slot, the system state is updated. Tasks that have not been scheduled remain in UQ or MQ and participate in the reordering process of the next time slot. Successfully sched- uled tasks are removed from the queue; unscheduled tasks are retained until the next time slot; tasks whose waiting time exceeds τk are discarded; tasks that exceed the queue length L will cause an overflow. Therefore, before the next task scheduling, the total number of tasks in the buffer queue",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "NQi (t + 1) = NQi (t) −N comp",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Qi (t) −N out",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Qi (t + 1) −N overflow",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "lmn∈li j",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0005",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0006",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Twait,k = tstart,k −tarrive,k (4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "exec,k + Twait,k, v j ∈vp T t",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "exec,k + Twait,k, v j ∈vq",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "the execution order of tasks \t(t) = {τ1, τ2, . . . , τN} in time slot t via a dynamic priority vector wt = (w1, . . . , wN). The priority weights are derived by a mapping φhigh : (S(t), { f j}) →wt, where S(t) denotes the system state and f j is the feature vector of task τ j; a higher wi corresponds to higher scheduling urgency of τi.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "subproblem allocates each τi to a node n j ∈N (the com- puting node set) via a mapping φlow : (G(t), wi, f j) → ai",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "max ηsuccess = Ncompleted",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where Ncompleted denotes the set of successfully completed tasks. Specifically, Ncompleted refers to the computing tasks successfully finished within the statistical period, which must satisfy two conditions simultaneously: (1) Tk ≤τk; (2) resource allocation is not interrupted during task execution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "N \u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "N \u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "⎛",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "⎝ωcpu ·",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ ωgpu ·",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ ωmem ·",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "⎞",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "⎠ (8)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "where N is the total number of computing power nodes; ωcpu, ωgpu, ωmem are resource weights, which reflect the importance of different types of resources.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "max J = αηsuccess −β  ̄T + γUavg (9)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "where α, β, and γ are non-negative preference weights.In practical CPN scheduling scenarios, reliability ηsuccess is pri- oritized,followed by minimizing average completion time  ̄T and improving resource utilization Uavg.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "k · xkj ≤rcpu v j · δcpu v j , ∀v j (10)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "k · xkj ≤rgpu v j · δgpu v j , ∀v j (11)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "k · xkj ≤rmem v j · δmem v j , ∀v j (12)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "C4 :Tk ≤τk, ∀k ∈Kcompleted (13)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "k∈K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "path · ye ≥bwk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "min · ye, ∀k (14)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "t = w1 · Rsuccess −w2 · Tk +w3 ·Uavg , where Rsuccess denotes the scheduling success rate, and this reward term is related to the number of successfully completed tasks; Tk denotes the average task completion time; Uavg denotes the average resource utilization; w1, w2, w3 are weight coef- ficients satisfying \u000e wi = 1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "each metric x(t) ∈{Rsuccess(t), T (t),Uavg(t)}, estimate on the observation set←BW of the most recent W episodes:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "k∈BW",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "k∈BW",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " ̃x(t) = x(t) −xmin(t) xmax(t) −xmin(t) + ε (16)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "whereε = 10−6 isanumericalstabilityterm.Thisensures  ̃x(t) ∈[0, 1], making the contributions of different metrics",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " ̃Xtask, ht−1, ct−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "where ht and ct represent the hidden state and cell state at time step t, respectively; ht−1 and ct−1 denote the hidden and cell states from the previous time step; and hN is the hidden state of the last time step, which serves as the task sequence representation zt.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "node features. Here, α and β are the weights of GPU and memory resources:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "capcpu, j + α · capgpu, j + β · capmem, j \u000eM",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "capcpu,k + α · capgpu,k + β · capmem,k",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u0003 , zn =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "M \u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "where capcpu, j, capgpu, j, and capmem, j denote the CPU, GPU, and memory capacity of node j, respectively; α and β are weighting coefficients used to balance heterogeneous resource types; M is the total number of computing nodes; and  ̃Xnode denotes the normalized node feature matrix.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "πθ = softmax",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "(19)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "where z is the intermediate feature representation gen- erated by the first fully connected layer; W f c1, W f c2 and b f c1, b f c2 are learnable parameters of the policy network; and πθ denotes the task priority probability distribution parameterized by θ.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "list O = ∅; (2) Select task j∗from J according to probability p, add it",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "J, and repeat until J = ∅; (4) Output the priority sorting sequence ah",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "t = O, and cal- culate the task priority weight β j = n−j+1 n(n+1)/2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "We design a value network to evaluate the quality of the action output by the above policy network, guide the agent to make optimal decisions, and ensure convergence stability. The value network is used to output the value estimation of the current computing-network state: Vφh(s) is a scalar valueestimation,representingtheexpectedcumulativereturn obtained by following the current priority sorting strategy under state s:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Vφh(s) = W (1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "where Vφh(s) denotes the state-value function parame- terized by φh, z′ is the fused feature representation of the current state, and W (1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u0010",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "t = {p1, p2, . . . , pK } , \u000eK",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "j=1 p j = 1, where p j is the probability of selecting node v j. When executing the action, the node with the maximum probability j∗= arg max j p j is selected; if the node meets the task requirements and the total delay constraint, resources are allocated. (3) Reward Rl: The low-level reward function focuses on",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Rlt = Rext + η · Rint",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Rext = −w′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "2 · Tk −Var(U), Rint = w′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Xedge(t)), where V denotes the set of computing nodes, E represents inter-node links, Xnode(t) ∈R|V |×d is the node feature matrix, and Xedge(t) is the edge feature matrix encoding bandwidth and transmission delay attributes. The adjacency matrix is denoted as A ∈{0, 1}|V |×|V |, where",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Task feature encoding Let fi denote the feature vector of the current task Ti (e.g., resource demand, delay tolerance τi, and bandwidth requirement). The task feature is mapped to a latent representation through a fully connected layer:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "et = σ (Wt fi + bt) , (22)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "where Wt and bt are learnable parameters and σ(·) denotes a nonlinear activation function.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Topological embedding via GAT To capture structural rela- tionships and heterogeneous resource interactions among nodes, a Graph Attention Network is employed. For each node v j ∈V , let x j denote its input feature vector (a row in",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "a⊤\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "hi∥h j",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "\u0010\u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "where a is a learnable attention parameter vector and ∥ denotes vector concatenation. Then, the normalized attention",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "weight is obtained through softmax over the neighborhood N(i):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "αi j = exp(ei j) \u000e",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "k∈N (i) exp(eik), (25)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "where αi j represents the relative importance of node v j to node vi.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "zi = σ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "⎛",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "⎝\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "j∈N (i)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "αi jh j",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "⎞",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "⎠. (26)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "ui = [zi∥tt∥Ttrans∥Texec] , (27)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "pi = exp(si) \u000e",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "k∈V exp(sk), (28)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t comprehensively considers the scheduling success rate, average task com- pletion time, and system resource utilization.The overall strategy of the system can be regarded as the combination of the high-level strategy πh(ah",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t ; θh) and the low-level strategy πl(al",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t; θl). According to the policy gradient theo- rem, the gradient of the total objective function J(θ) can be decomposed as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "∇θ J(θ) = E",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "\u0011\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "∇θh log πh(ah",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t ) + ∇θl log πl(al",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "\u0003\u0012",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "LCLI P(θ) = Et",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "min (rt(θ)At, clip (rt(θ), 1 −ε, 1 + ε) At)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "\u0010 (30)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where θ denotes the policy parameters;rt(θ) = πθ(at|st) πθold(at|st) is the probability ratio between the updated and old policies;",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "At denotes the advantage estimate at time step t; and ε is the PPO clipping coefficient. The advantage function At is calcu- lated via Generalized Advantage Estimation (GAE) (Mustafa et al. 2025):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "∞ \u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "(γ λ)lδt+l, δt = rt + γ V (st+1) −V (st) (31)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where γ is the discount factor, λ is the GAE smoothing parameter, and δt denotes the temporal-difference (TD) error.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "The value network is updated by minimizing (V (st) − Rt)2, and a policy entropy regularizer is introduced to pro- mote exploration.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "The offline hierarchical training process is divided into two stages (as shown in Algorithm 2): low-level pre-training and hierarchical joint training.Its output consists of the trained policy networks πθh (prioritization policy) and πθl (node selection policy). These trained policies are then deployed into (Algorithm 1) for runtime scheduling execu- tion.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Algorithm 2 Hierarchical Collaborative Training Algorithm. Require: Initial high/low-level policy parameters θh, φh, θl, φl; total",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "episodes E; time steps per episode T ; pre-training episodes E p Ensure: Optimized policy parameters θ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "h , θ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t+1) in replay buffer Dl 7: end for 8: Sample data from Dl, compute advantage estimates ˆAt using GAE 9: Update low-level policy θl and value network φl 10: end for 11: Phase 2: Hierarchical Joint Training 12: for e = 1 to E do 13: Initialize environment, get initial states sh",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t ∼πθh(sh",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t, select opti- mal node j∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t+1) in replay buffer Dh 23: end for 24: Sample from Dh and Dl respectively 25: Update high/low-level policies (θh, θl) and their value networks 26: end for",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": ". In practical CPN environments, Nq ≪M due to queue filtering and feasibility constraints, which limits the number of candidate tasks evaluated in each time slot. Consequently, the scheduling latency scales linearly with respect to Nq and",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Specific values are detailed in Tables 3 and 4, while train- ing parameter settings are shown in Table 5. Task arrival follows a Poisson distribution with λ ranging from 5 to 15",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Computing task arrival rate λ = 5 −15",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Link bandwidth resource 1∼10 Gbps",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Computing resource quantity of edge cloud node (CU) 8∼15",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "CPU resource required by computing task k (CU) 2∼10",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Urgent task delay U(10 −100) ms",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Regular task delay U(100 −500) ms",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "(corresponding to low to high load). Delay-sensitive tasks account for 10%-50% of the total tasks, with their maximum tolerable delay τk uniformly distributed between 10–100 ms; regular tasks have τk in the range of 100–500 ms. The resource requirements of tasks are generated as follows: CPU requirements follow U(2, 10) CU, GPU requirements are determined by Bernoulli(0.5) × U(1, 4) (simulating the randomness of GPU-dependent tasks), and memory require- ments follow U(2, 8) GB.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "The high-level advantage function At is calculated with γ = 0.99 and λ = 0.95, focusing on long-term benefits; the low-level advantage function is calculated with γ = 0.95 and λ = 0.90, focusing on immediate feedback.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Discount factor γ 0.99 0.95",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "GAE parameter λ 0.95 0.90",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Clipping coefficient ε 0.2 0.2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "To test the algorithm’s robustness under varying system loads, we conducted experiments on the ChinaNet topology. The task arrival rate λ was gradually increased from 5 tasks per time slot to 15 tasks per time slot. We observed changes in three core metrics, with detailed results shown in Fig. 6.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "To validate the applicability of CPN-HRL across networks of varying scales, we conducted tests under four distinct topologies: Abilene, GEANT, Switch, and ChinaNet. We maintained a fixed task arrival rate of λ = 10 to ensure testing under moderate system load conditions. As shown in Fig. 7(a), (b), and (c), the performance of all algo- rithms deteriorates as the network scale increases. However, CPN-HRL exhibits the smallest decline and consistently maintains robust performance. Regarding average task com- pletion time, CPN-HRL achieved the shortest average task completion time across all four network topologies, outper- forming the PSO-DQN algorithm by 9.8% – 12.3% and the PATD3 algorithm by 11.7% – 13.6%. The HEFT algorithm showed significant improvement over FCFS but still under- performed other DRL algorithms in dynamic environments. Regarding scheduling success rate, CPN-HRL maintained a rate of 80% – 90% even as network scale increased, demon- strating a clear advantage over other algorithms.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "We specifically evaluated the algorithm’s scheduling perfor- mance for urgent tasks. Under the GEANT topology, with a fixed task arrival rate of λ = 10 and we have increased the proportion of emergency tasks from 0.1 to 0.5, as shown in Fig. 8 , CPN-HRL leverages its multi-level queueing mech- anism and reordering trigger mechanism to provide priority response for urgent tasks.Its regular task success rate reached 91.2% Its urgent task success rate reached 70.5%, with an average response time of only 18.5ms. In contrast, static priority-based algorithms like HEFT, as well as single-layer reinforcement learning algorithms such as SAC and PATD3, failed to guarantee timely scheduling for urgent tasks, result- ing in task failures.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

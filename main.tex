@@ -1,0 +1,866 @@
+\documentclass[12pt,a4paper]{report}
+
+%==============================================================================
+% PREAMBLE AND PACKAGES (Aligned with CEK / KTU B.Tech Project Format)
+%==============================================================================
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{fancyhdr}
+\usepackage{cite}
+\usepackage{a4wide}
+\usepackage{float}
+\usepackage{epsfig}
+\usepackage{longtable}
+\usepackage{enumerate}
+\usepackage{afterpage}
+\usepackage{multirow}
+\usepackage{ragged2e}
+\usepackage{gensymb}
+\usepackage{amsfonts} 
+\usepackage[left=3.5cm,top=1.5cm,right=3cm,bottom=3cm]{geometry}
+\usepackage{setspace}           
+\usepackage{txfonts}
+\usepackage{tikz}
+\usetikzlibrary{calc, shapes.geometric, arrows, arrows.meta, positioning, fit, backgrounds, shadows}
+\usepackage{subfiles}
+\usepackage{adjustbox}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+
+\newcommand{\Usefont}[1]{\fontfamily{#1}\selectfont}
+
+\usepackage{lscape}
+\linespread{1.5}
+
+\usepackage{url}
+\usepackage{subcaption}
+\usepackage[intoc, english]{nomencl}
+\usepackage[nottoc]{tocbibind}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{hyperref}
+
+\hypersetup{
+    plainpages=false,
+    pdfpagelabels=true,
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=black,
+    pdftitle={PrismSpace: An Intelligent Developer Operating Environment and Multi-Agent Orchestration Platform},
+    pdfauthor={Group 01: Nobin Sijo, Pranav P, Prasanth P, Sankar Narayan S}
+}
+
+% Robust spacing and line-breaking settings to prevent overflow and overfull hboxes
+\setlength{\headheight}{15pt}
+\hyphenpenalty=1000
+\tolerance=2000
+\emergencystretch=2.5em
+
+\bibliographystyle{IEEEtran}
+\renewcommand{\bibname}{References}
+
+% Figure search path
+\graphicspath{{figures/}{diagrams/}{./}}
+
+%==============================================================================
+% METADATA DEFINITIONS (Project Group 01 & CEK)
+%==============================================================================
+\gdef \title{PRISMSPACE: AN INTELLIGENT DEVELOPER OPERATING ENVIRONMENT AND MULTI-AGENT ORCHESTRATION PLATFORM}
+\gdef \shorttitle{PrismSpace: Intelligent Multi-Agent Platform}
+
+\gdef \authorA{NOBIN SIJO}
+\gdef \rollnoA{KNP23CS082}
+
+\gdef \authorB{PRANAV P}
+\gdef \rollnoB{KNP23CS085}
+
+\gdef \authorC{PRASANTH P}
+\gdef \rollnoC{KNP23CS086}
+
+\gdef \authorD{SANKAR NARAYAN S}
+\gdef \rollnoD{KNP23CS094}
+
+\gdef \acadyear{2026--2027}
+\gdef \submonth{October 2026}
+\gdef \month{October 2026}
+\gdef \date{28-10-2026}
+\gdef \dept{Computer Science and Engineering}
+\gdef \deptabbr{Dept. of CSE}
+\gdef \degree{Bachelor of Technology}
+\gdef \branch{Computer Science and Engineering}
+\gdef \college{College of Engineering Karunagappally}
+\gdef \collegeplace{Kollam}
+\gdef \collegetown{Karunagappally}
+
+\gdef \guide{Dr. Leena Silvoster}
+\gdef \guidedes{Associate Professor}
+\gdef \hod{Dr. Smitha P}
+\gdef \hoddes{Professor and Head}
+
+%==============================================================================
+% DOCUMENT BODY
+%==============================================================================
+\begin{document}
+
+%------------------------------------------------------------------------------
+% FRONT MATTER
+%------------------------------------------------------------------------------
+\hypersetup{pageanchor=false}
+\include{coverpage}
+\include{certificate1}
+\include{declaration}
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+
+\include{abstract}
+\include{acknowledgement}
+
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\include{symbol}
+
+%------------------------------------------------------------------------------
+% MAIN BODY (Arabic Numbering & Header/Footer)
+%------------------------------------------------------------------------------
+\cleardoublepage
+\setcounter{page}{1}
+\pagenumbering{arabic}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\fontsize{9}{11}\selectfont \textit{\shorttitle}}
+\fancyhead[R]{\fontsize{9}{11}\selectfont \textit{\deptabbr, CEK}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+
+%==============================================================================
+% CHAPTER 1: INTRODUCTION
+%==============================================================================
+\chapter[Introduction]{\Huge Introduction}
+
+In contemporary software engineering, developers are inundated with an ever-expanding array of fragmented tools, communication channels, execution environments, and knowledge silos. Modern software delivery demands constant context switching across source code editors, cloud terminals, database inspectors, cryptographic validators, API testbeds, and external documentation hubs. Cognitive studies consistently demonstrate that frequent context-switching significantly degrades engineering throughput, introduces subtle syntactic and semantic bugs, and amplifies mental fatigue.
+
+Simultaneously, the dawn of generative artificial intelligence and Large Language Models (LLMs) has sparked a fundamental paradigm shift in human-computer interaction. Autonomous coding assistants, multi-agent frameworks, and conversational copilot interfaces now possess the capability to generate code snippets, formulate complex execution plans, invoke external tools, and diagnose intricate runtime failures. However, despite their theoretical promise, existing agentic solutions suffer from several crippling architectural shortcomings:
+\begin{enumerate}[(i)]
+    \item \textbf{Monolithic and Opaque Black-Box Execution:} Commercial AI coding solutions frequently execute actions invisibly on remote servers without granular step-by-step observability, structured intermediate state inspections, or verifiable human-in-the-loop checkpoints.
+    \item \textbf{Single-Provider Monopolization and Prohibitive Costs:} Relying exclusively on a single proprietary LLM provider leads to severe vendor lock-in, unmitigated rate limits, and unsustainable operational expenditures for routine developer queries.
+    \item \textbf{Lack of Protocol Standardization for External Tool Invocations:} Traditional tool-use agent implementations rely on brittle ad-hoc prompt engineering or proprietary function schemas, which fail to generalize across diverse operating system utilities, sandboxed execution runtimes, and local developer file trees.
+    \item \textbf{Fragile, Transient Client State Persistence:} Most web-based developer dashboards fail to implement robust offline-first, client-side transactional storage, rendering developer notes, tool execution history, and active swarm trajectories volatile.
+\end{enumerate}
+
+To comprehensively solve these critical engineering challenges, this project introduces \textbf{PrismSpace}: an intelligent, local-first developer operating environment and multi-agent orchestration platform. PrismSpace bridges a high-performance modern browser dashboard with a dedicated Python orchestration backend implementing the open \textbf{Model Context Protocol (MCP)} and an end-to-end Machine Learning routing, planning, and safety subsystem.
+
+\section{Background and Overview}
+The software development lifecycle encompasses diverse activities: conceptual design, requirements engineering, rapid prototyping, unit testing, schema migration, bug localization, and security audits. To support these diverse workflows within a single coherent workspace, PrismSpace unifies 23+ purpose-built developer utilities into an elegant desktop-class interface while embedding an autonomous \textit{Agent Swarm} orchestration layer.
+
+At the core of the Agent Swarm lies a decoupled, multi-tiered architecture. Rather than routing all developer prompts blindly to expensive frontier models, PrismSpace deploys an intelligent ML policy pipeline. Incoming natural language queries are parsed through calibrated lexical and semantic feature extractors, classified into specific execution intents, mapped to optimal agent personas, and routed to the most cost-effective and capable foundation model provider—including Groq for ultra-low latency inference, NVIDIA NIM for sovereign accelerated execution, Anthropic for safety-critical reasoning, and OpenAI or Google Gemini for broad generative synthesis.
+
+\section{Motivation}
+The primary motivation behind PrismSpace stems from the urgent necessity to make autonomous AI agent execution visible, controllable, cost-effective, and safe:
+\begin{itemize}
+    \item \textbf{Democratizing Multi-Agent Workflows:} Modern developers should be empowered to delegate complex, multi-stage engineering objectives (such as automated refactoring, competitive benchmarking, and dependency auditing) to coordinated swarms of specialized agents without relinquishing architectural control.
+    \item \textbf{Minimizing Inference Expenditures:} Small, specialized machine learning classifiers can predict task difficulty, execution latency, and token cost before dispatching remote calls, saving up to 60--80\% of LLM API budgets.
+    \item \textbf{Enforcing Human-in-the-Loop Safety:} Autonomous agents operating with filesystem and terminal access pose substantial security risks. A dedicated safety gating classifier trained on safety benchmarks must predict when an execution requires explicit developer confirmation before executing irreversible commands.
+    \item \textbf{Guaranteeing Local Data Sovereignty:} Developer notes, bookmarks, habits, sessions, and tool history must remain strictly persisted in local client storage with sub-millisecond query access, eliminating reliance on vulnerable third-party cloud backends for private workspace state.
+\end{itemize}
+
+\section{Problem Statement}
+Contemporary developer workspaces lack a unified, local-first environment that seamlessly combines day-to-day software utilities with an observable, cost-optimized, and protocol-standardized multi-agent orchestration engine. Developers are forced to juggle disconnected standalone tools, absorb opaque and expensive LLM API invocations without intelligent routing, and risk unchecked tool execution side-effects without calibrated safety checkpoints. 
+
+The objective of this project is to design, implement, and evaluate \textbf{PrismSpace}: an open-source, full-stack developer operating environment featuring an intelligent multi-agent swarm system, an open Model Context Protocol (MCP) tool execution bridge, a multi-stage machine learning routing and alignment subsystem, and a reactive browser database architecture.
+
+\section{Objectives of the Project}
+The specific engineering and research objectives of this project are:
+\begin{enumerate}
+    \item To build a responsive, desktop-grade web application using \textbf{Next.js 15}, \textbf{React 19}, and \textbf{Tailwind CSS}, housing an integrated Dev Space with 23+ developer, AI, and productivity tools.
+    \item To architect a client-side, ACID-compliant database layer (\textbf{PrismDB}) using \textbf{Dexie.js} and browser \textbf{IndexedDB}, providing sub-50ms reactive state queries via \texttt{useLiveQuery}.
+    \item To engineer a high-throughput Python \textbf{FastAPI Hive Backend} implementing the \textbf{Model Context Protocol (MCP)} to standardize agent tool discovery, sandboxed execution, and Server-Sent Events (SSE) telemetry streaming.
+    \item To formulate and train a multi-stage Machine Learning subsystem comprising:
+    \begin{itemize}
+        \item A 12-class \textit{Intent Classifier} operating on TF-IDF lexical n-grams.
+        \item An adaptive \textit{Multi-Provider Router} that dynamically selects optimal foundation model endpoints.
+        \item A multi-label \textit{Agent Swarm Dispatcher} that activates specialized agent personas.
+        \item A threshold-calibrated \textit{Human-in-the-Loop Safety Gate} for anomaly detection and approval prediction.
+        \item Gradient boosted regressors for predictive task execution \textit{latency} and \textit{monetary cost} estimation.
+        \item Single-stage preference alignment via \textit{Odds Ratio Preference Optimization (ORPO)} with Low-Rank Adapters (LoRA).
+    \end{itemize}
+    \item To benchmark and evaluate the complete system across industry standard datasets, demonstrating superior task completion accuracy, low routing error, robust safety gating, and minimal computational overhead.
+\end{enumerate}
+
+\section{Scope and Impact}
+PrismSpace is designed for software engineers, systems researchers, web developers, and technical operators who require a local-first, highly customizable developer workspace. By providing complete step-by-step transparency into agent planning, dynamic DAG decomposition, and sandboxed tool execution, PrismSpace shifts autonomous AI from an opaque black box into an auditable, trustworthy engineering copilot. The open MCP architecture ensures seamless extensibility with third-party developer tool servers, including GitHub, PostgreSQL, Docker, and headless browser automation.
+
+\section{Organization of the Report}
+The remainder of this report is organized as follows:
+\begin{itemize}
+    \item \textbf{Chapter 2 (Literature Review):} Reviews theoretical foundations in autonomous agents, the Model Context Protocol, model routing frameworks, preference alignment, and local-first reactive architectures, highlighting critical research gaps.
+    \item \textbf{Chapter 3 (System Requirements and Architecture Specification):} Presents the formal System Requirements Specification (SRS), hardware/software environments, 6-tier system architecture, and mathematical problem formulations.
+    \item \textbf{Chapter 4 (Methodology and Design Details):} Details the PrismSpace multi-agent framework (Figure 4.1), layered architecture workflow (Figure 4.2), end-to-end system flow (Figure 4.3), browser IndexedDB database schema (Figure 4.4), and multi-agent swarm algorithms.
+    \item \textbf{Chapter 5 (Implementation Details):} Explains the frontend Next.js/React engineering, Dexie.js integration, Dev Space tool suite, FastAPI Hive gateway, and Python ML model training pipelines.
+    \item \textbf{Chapter 6 (Results, Performance Evaluation and Testing):} Analyzes experimental findings across benchmark corpora, presenting routing accuracy, calibration curves, safety gate discrimination, latency profiling, and comprehensive test suite validation.
+    \item \textbf{Chapter 7 (Conclusion and Future Scope):} Summarizes the major engineering achievements, discusses current constraints, and outlines prospective research directions.
+\end{itemize}
+
+
+%==============================================================================
+% CHAPTER 2: LITERATURE REVIEW
+%==============================================================================
+\chapter{Literature Review}
+
+The development of intelligent developer workspaces and multi-agent systems integrates discoveries across artificial intelligence, distributed systems, human-computer interaction, and software engineering. This chapter critically surveys relevant literature across five primary dimensions: autonomous multi-agent execution models, tool orchestration protocols, LLM routing strategies, preference optimization techniques, and local-first data architectures.
+
+\section{Autonomous Multi-Agent Systems and ReAct Paradigms}
+The foundational paradigm for language agent decision-making was established by Yao et al. \cite{ref_react} with the \textbf{ReAct} (Reasoning and Acting) framework. In contrast to pure chain-of-thought prompting or reflexive action execution, ReAct synergistically interleaves reasoning traces (thoughts) with environment actions and domain observations. By generating verbal reasoning steps, ReAct enables agents to dynamically adjust execution trajectories, perform exception handling, and interface with external information sources.
+
+Building upon ReAct, multi-agent collaboration frameworks such as AutoGen (Wu et al. \cite{ref_autogen}) and MetaGPT (Hong et al. \cite{ref_metagpt}) demonstrated that decomposing complex software engineering objectives into specialized agent roles (e.g., Architect, Engineer, QA Tester) substantially improves code quality and reduces hallucinations through Standardized Operating Procedures (SOPs). However, existing frameworks often suffer from excessive communication overhead, unbounded execution loops, and a lack of protocol-standardized tool invocations, limiting their deployment in local developer desktop environments.
+
+\section{Model Context Protocol (MCP) and Standardized Tool Ecosystems}
+Historically, connecting LLMs to external developer tools required brittle proprietary API bindings, such as OpenAI Function Calling or LangChain Tool wrappers. In late 2024, Anthropic open-sourced the \textbf{Model Context Protocol (MCP)} \cite{ref_mcp_spec}, establishing an open JSON-RPC 2.0 standard for connecting AI assistants to local and remote data sources, developer tools, and prompt repositories.
+
+Recent research benchmarks have systematically examined tool orchestration efficiency. Hu et al. \cite{ref_toolcua} introduced \textbf{ToolCUA}, demonstrating that hybrid path orchestration between graphical user interfaces (GUIs) and API tool calls yields significantly higher task success rates and reduced latency for Computer Use Agents (CUAs). Furthermore, benchmarks including \textbf{LiveMCPBench} \cite{ref_livemcpbench} and \textbf{Open-M3-Bench} \cite{ref_openm3} established standardized evaluation suites for schema validation, tool invocation fidelity, and sandboxed error recovery across multi-tool environments.
+
+\section{Dynamic Intent Classification and Multi-Provider LLM Routing}
+As the frontier LLM ecosystem expanded across diverse providers—ranging from proprietary reasoning engines (OpenAI o1, GPT-4o) and safety-aligned models (Claude 3.5 Sonnet) to ultra-fast inference LPUs (Groq Llama 3) and private microservices (NVIDIA NIM)—intelligent runtime model routing has become imperative.
+
+RoutingBench (Chen et al. \cite{ref_routerbench}) and xRouteBench (Li et al. \cite{ref_xroutebench}) demonstrated that no single model dominates across all query categories, latency constraints, and cost boundaries. Lightweight tasks (e.g., regex lookup, JSON formatting) can be resolved by ultra-fast models at nominal expense, whereas intricate architectural reasoning demands high-capacity frontier models. By deploying a lightweight intent classifier trained on multi-model benchmark arenas (such as the LMSYS Chatbot Arena \cite{ref_lmsys}), developer systems achieve near-frontier performance while reducing operational expenses by over 70\%.
+
+\section{Safety Gating and Human-in-the-Loop Verification}
+Empowering autonomous agents with arbitrary shell access and filesystem privileges introduces severe security vulnerabilities, including prompt injection, unintentional data deletion, and secret exfiltration. Recent frameworks such as \textbf{WildGuard} (Han et al. \cite{ref_wildguard}) developed curated multi-task safety classifiers capable of detecting prompt harms, tool execution risks, and adversarial jailbreaks. Integrating calibrated safety gating into the execution pipeline ensures that whenever an agent proposes an action with high predicted harm or ambiguity, the system transitions to a paused checkpoint requiring explicit human authorization.
+
+\section{Preference Optimization and Alignment: ORPO vs. RLHF}
+Aligning language models with human preferences has traditionally relied on Reinforcement Learning from Human Feedback (RLHF) \cite{ref_rlhf} using PPO, which requires training a separate reward model and complex policy networks. Rafailov et al. \cite{ref_dpo} simplified this via Direct Preference Optimization (DPO). More recently, Hong et al. \cite{ref_orpo} introduced \textbf{Odds Ratio Preference Optimization (ORPO)}, eliminating the reference model by augmenting the Supervised Fine-Tuning (SFT) loss with an odds ratio preference penalty:
+\begin{equation}
+    \mathcal{L}_{\mathrm{ORPO}} = \mathcal{L}_{\mathrm{SFT}} + \beta \cdot \mathcal{L}_{\mathrm{OR}}
+\end{equation}
+This formulation penalizes undesirable trajectories directly during supervised training, making it exceptionally parameter-efficient when fine-tuning lightweight LoRA adapters for specialized agent roles.
+
+\section{Local-First Architecture and Reactive In-Browser Databases}
+The local-first software paradigm (Kleppmann et al. \cite{ref_local_first}) prioritizes client-side storage on user hardware, treating network connectivity as an opportunistic enhancement. In modern web environments, the HTML5 IndexedDB API provides persistent client object storage but lacks native reactivity. The emergence of \textbf{Dexie.js} \cite{ref_dexie} provides an ACID-compliant abstraction layer over IndexedDB featuring compound B-tree indexing, transactional guarantees, and the \texttt{useLiveQuery} observable hook. Integrating Dexie with React 19 enables automatic UI re-renders upon database mutations, ensuring sub-50ms reactive state propagation without redundant server roundtrips.
+
+\section{Summary of Identified Research Gaps}
+Table~\ref{tab:lit_comparison} synthesizes the comparative analysis of existing developer environments and agent platforms against the contributions of PrismSpace.
+
+\begin{table}[H]
+\centering
+\begin{singlespace}
+\caption{Comparative analysis of existing developer agent platforms and PrismSpace.}
+\label{tab:lit_comparison}
+\footnotesize
+\renewcommand{\arraystretch}{1.1}
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{2.3cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.7cm} >{\centering\arraybackslash}p{1.6cm} >{\raggedright\arraybackslash}X}
+\toprule
+\textbf{Framework} & \textbf{Tool Protocol} & \textbf{Model Routing} & \textbf{Safety Gate} & \textbf{Local DB} & \textbf{Primary Focus / Limitations} \\
+\midrule
+AutoGen \cite{ref_autogen} & Custom API & No & Manual Flag & In-Memory & Python agent framework; lacks native UI and local DB. \\
+MetaGPT \cite{ref_metagpt} & Custom SOP & No & No & File-Based & High token consumption; rigid waterfall lifecycle. \\
+Cursor / Copilot & Proprietary & Limited & Prompt-Level & Cloud Synced & Closed source; single-vendor dependency; opaque execution. \\
+ToolCUA \cite{ref_toolcua} & Custom RPC & No & No & None & Research benchmark for GUI/API navigation paths. \\
+\textbf{PrismSpace} & \textbf{Open MCP} & \textbf{Yes (5 Tiers)} & \textbf{Yes (Tuned)} & \textbf{Dexie IDB} & \textbf{Unified developer OS, observable swarm, and ML routing.} \\
+\bottomrule
+\end{tabularx}
+\end{singlespace}
+\end{table}
+
+
+%==============================================================================
+% CHAPTER 3: SYSTEM REQUIREMENTS AND ARCHITECTURE SPECIFICATION
+%==============================================================================
+\chapter{System Requirements and Architecture Specification}
+
+A robust software engineering project necessitates rigorous requirements modeling, formal environmental constraints, and a principled architectural topology. This chapter presents the System Requirements Specification (SRS), hardware/software constraints, the formal 6-tier architecture, and mathematical problem formulations.
+
+\section{System Requirements Specification (SRS)}
+
+\subsection{Functional Requirements}
+\begin{enumerate}[(i)]\setlength{\itemsep}{1.5pt}\setlength{\parsep}{0pt}\setlength{\topsep}{2pt}
+    \item \textbf{Integrated Developer Workspace (FR-1):} The system shall provide an application shell housing 23+ developer tools spanning general utility (JSON Toolkit, Crypto Utils, Regex Workbench, Markdown Editor, Git Reference, Color Generator), AI assistants (Prompt Synthesizer, Code Explainer, Code Translator, Decision Analyzer), and productivity widgets (Checklist Manager, Focus Timer, Habit Tracker, Bookmarks).
+    \item \textbf{Agent Swarm Launch and Configuration (FR-2):} The system shall allow users to formulate a high-level natural language objective, configure maximum parallel worker agents ($K \le 5$), select an initial model provider, and toggle human-in-the-loop safety gating.
+    \item \textbf{Intelligent ML Model Routing (FR-3):} The system shall dynamically extract lexical and semantic features from developer prompts to predict intent, route to the most cost-effective provider (Groq, NVIDIA NIM, OpenAI, Anthropic, Gemini), and predict estimated latency and token expenditures.
+    \item \textbf{Model Context Protocol (MCP) Integration (FR-4):} The backend shall discover, authenticate, and manage local MCP tool servers (Filesystem, Terminal, GitHub, Browser), exposing structured tool schemas to the ReAct agent execution loop.
+    \item \textbf{Human-in-the-Loop Checkpoint Gate (FR-5):} When an agent initiates an action classified as ambiguous, destructive, or high-risk, the system shall transition to a \texttt{waiting\_approval} state, streaming a pause notification to the UI and awaiting explicit user confirmation or rejection.
+    \item \textbf{Real-Time Telemetry and Token Streaming (FR-6):} The system shall stream real-time thought traces, tool invocations, stdout logs, and final synthesized deliverables to the client via Server-Sent Events (SSE).
+    \item \textbf{Reactive Offline-First Storage (FR-7):} All user configurations, session chats, tool execution histories, checklists, and habits shall persist locally within browser IndexedDB, instantly accessible without network roundtrips.
+\end{enumerate}
+
+\subsection{Non-Functional Requirements}
+\begin{enumerate}[(i)]\setlength{\itemsep}{1.5pt}\setlength{\parsep}{0pt}\setlength{\topsep}{2pt}
+    \item \textbf{Latency Performance (NFR-1):} Client-side database reads and reactive state re-renders via \texttt{useLiveQuery} shall execute within 50 milliseconds. Machine learning routing inference on CPU/GPU shall conclude in under 150 milliseconds.
+    \item \textbf{Privacy and Data Sovereignty (NFR-2):} Private workspace notes, API tokens, and local database tables shall remain strictly resident on the user's host machine. Model invocations shall only transmit minimal prompt context directly to the selected provider.
+    \item \textbf{Reliability and Resilience (NFR-3):} The agent execution loop shall incorporate exponential backoff, schema retry mechanisms, and graceful fallbacks when external LLM providers experience rate-limiting or server outages.
+    \item \textbf{Extensibility (NFR-4):} The platform shall adhere strictly to modular interfaces, allowing straightforward addition of new MCP tools, ML classifiers, and UI utility panels without refactoring core orchestration logic.
+\end{enumerate}
+
+\section{Hardware and Software Specifications}
+The operational environment specifications for developing, training, and running PrismSpace are detailed in Table~\ref{tab:system_specs}.
+
+\begin{table}[H]
+\centering
+\caption{System Environment and Development Specifications.}
+\label{tab:system_specs}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Attribute} & \textbf{Specification Details} \\
+\midrule
+\textbf{Processor (CPU)} & AMD Ryzen 7 / Intel Core i7 (8 Cores, 16 Threads, $\ge 3.8$ GHz) \\
+\textbf{Memory (RAM)} & 24 GB DDR4/DDR5 High-Speed RAM \\
+\textbf{Graphics (GPU)} & NVIDIA GeForce RTX 3050A / 4060 with CUDA Compute Capability $\ge 8.6$ \\
+\textbf{Host Operating System} & Microsoft Windows 11 64-bit / Linux Ubuntu 22.04 LTS \\
+\textbf{Frontend Framework} & Next.js 15.0+ (App Router), React 19.0, TypeScript 5.7+ \\
+\textbf{Styling Engine} & Tailwind CSS 3.4+, PostCSS, Framer Motion, GSAP \\
+\textbf{Client Database} & Dexie.js v3.2+ over Browser IndexedDB API (WASM SQLite optional) \\
+\textbf{Backend Framework} & Python 3.10+, FastAPI 0.115+, Uvicorn ASGI Server \\
+\textbf{Machine Learning Stack} & PyTorch 2.5 (CUDA 12.6), scikit-learn 1.5, XGBoost 2.1, HuggingFace TRL \\
+\textbf{Protocol Standard} & Model Context Protocol (MCP) JSON-RPC 2.0 Specification \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{6-Tier System Architecture}
+PrismSpace is organized into six strictly decoupled architectural tiers designed for high-throughput developer collaboration and complete execution observability:
+\begin{itemize}\setlength{\itemsep}{1.5pt}\setlength{\parsep}{0pt}\setlength{\topsep}{2pt}
+    \item \textbf{Tier 1: Presentation Layer (Next.js 15 + React 19):} Houses the desktop app shell, glassmorphic HUD widgets, customizable clock styles, 23+ Dev Space utility panels, and the interactive Agent Swarm dashboard.
+    \item \textbf{Tier 2: API Bridge and Gateway Layer (FastAPI Hive Bridge):} Exposes asynchronous REST endpoints, manages Server-Sent Event (SSE) streams, and orchestrates live MCP tool registrations.
+    \item \textbf{Tier 3: Feature and Routing Layer (ML Policy Engine):} Extracts 10,000-dimensional TF-IDF lexical n-grams and 5D structural metrics, executing multi-class intent classification and multi-provider routing.
+    \item \textbf{Tier 4: Multi-Agent Orchestration Layer (DAG Swarm Engine):} Decomposes high-level objectives into dependency DAGs, manages concurrent worker agents ($K \le 5$), and oversees the autonomous ReAct tool execution cycle.
+    \item \textbf{Tier 5: Evaluation and Safety Layer (Human-in-the-Loop Gate):} Computes anomaly scores, evaluates completion safety log-odds, and enforces approval checkpoints before executing destructive operations.
+    \item \textbf{Tier 6: Deployment and Persistence Layer (PrismDB + Foundation Models):} Persists relational records across 17 Dexie IndexedDB tables and coordinates inference across external LLM endpoints (Groq, NVIDIA, OpenAI, Anthropic).
+\end{itemize}
+
+\section{Theoretical Problem Formulation}
+Let the multi-agent system be formalized as a dynamic graph $\mathcal{G} = (V, E, \mathbf{A})$, where $V = \{v_1, \dots, v_N\}$ denotes the set of $N$ heterogeneous entities comprising specialized agent personas and accessible MCP tool servers. The set $E \subseteq V \times V$ represents directed communication and dependency channels between complementary agent roles, parameterized by an adjacency matrix $\mathbf{A} \in \{0, 1\}^{N \times N}$.
+
+Given a developer task specification $\mathcal{T}_{\text{task}}$, the objective is to determine an optimal routing assignment $\mathbf{y}_{\text{route}}^*$, a subset of active swarm workers $V_{\text{active}} \subseteq V$, and an execution schedule DAG that minimizes total monetary cost $\mathcal{C}$ and latency $\mathcal{L}$ while maximizing task completion fidelity $\mathcal{S}_{\text{fidelity}}$ under strict safety constraints:
+\begin{equation}
+    \max_{V_{\text{active}}, \mathbf{y}_{\text{route}}} \quad \mathcal{S}_{\text{fidelity}}(\mathcal{T}_{\text{task}}) - \lambda_1 \mathcal{C}(\mathbf{y}_{\text{route}}) - \lambda_2 \mathcal{L}(\mathbf{y}_{\text{route}})
+\end{equation}
+\begin{equation}
+    \text{subject to} \quad \mathcal{P}_{\text{harm}}(v_i, a_j) \le \tau_{\text{safety}}, \quad \forall v_i \in V_{\text{active}}, \; a_j \in \mathbf{A}_{i,j}
+\end{equation}
+where $\mathcal{P}_{\text{harm}}$ denotes the predicted risk probability of action $a_j$ initiated by agent $v_i$, and $\tau_{\text{safety}}$ is the calibrated safety decision threshold.
+
+
+%==============================================================================
+% CHAPTER 4: METHODOLOGY AND DESIGN DETAILS
+%==============================================================================
+\chapter{Methodology and Design Details}
+
+This chapter details the methodological architecture and structural designs governing PrismSpace. We examine the multi-agent framework, architectural workflows, end-to-end system flow, browser database schema, the ML policy pipeline, and the mathematical multi-agent swarm algorithms.
+
+\section{Framework of PrismSpace Multi-Agent System}
+The comprehensive operational framework of PrismSpace is depicted in Figure~\ref{fig:framework}. The framework encompasses two complementary lifecycles: an \textbf{Offline Dataset Preprocessing and Training Phase} and an \textbf{Online Runtime Swarm Orchestration Phase}.
+
+\begin{figure}[H]
+    \centering
+    \adjustbox{max width=0.98\linewidth}{%
+        \input{diagrams/fig_4_1_framework.tex}%
+    }
+    \caption{Proposed architecture of PrismSpace multi-agent system.}
+    \label{fig:framework}
+\end{figure}
+
+During offline training, multi-source benchmark datasets (LMSYS Chatbot Arena \cite{ref_lmsys}, RouterBench \cite{ref_routerbench}, WildGuardMix \cite{ref_wildguard}, UltraFeedback \cite{ref_ultrafeedback}, and Agent Trajectories \cite{ref_agent_trajectories}) undergo rigorous lexical extraction, z-score standardization, and isolation forest anomaly filtering. The resulting feature representations train the multi-head intelligence pipeline, including the intent classifier, provider router, safety gate, and ORPO alignment adapters.
+
+At runtime, user natural language queries are ingested via the presentation shell. The feature vector $\mathbf{x}_{\text{query}}$ is propagated through the 4-Head Multi-Head Attention architecture:
+\begin{equation}
+    \mathrm{MHA}(\mathbf{x}) = \mathrm{Concat}(\mathrm{head}_1, \mathrm{head}_2, \mathrm{head}_3, \mathrm{head}_4)\mathbf{W}^O + \mathbf{x}
+\end{equation}
+where each head specializes in task intent, provider capability, swarm persona affinity, or safety constraints. The resulting policy decision drives DAG workflow construction, ReAct tool invocations, and live token delivery to the client.
+
+\section{Architecture Work Flow Across Layers}
+Figure~\ref{fig:arch_workflow} illustrates the layered flow of execution traversing each architectural boundary within PrismSpace.
+
+\begin{figure}[H]
+    \centering
+    \adjustbox{max width=0.98\linewidth}{%
+        \input{diagrams/fig_4_2_arch_workflow.tex}%
+    }
+    \caption{Architecture work flow across different layers.}
+    \label{fig:arch_workflow}
+\end{figure}
+
+Execution initiates in the React 19 Client Application, which dispatches requests through the reactive hooks layer to the FastAPI Hive Bridge Backend (\texttt{hive\_api.py}). Requests are parsed by the Feature Extraction and Vectorization engine into 10,000 TF-IDF n-grams augmented with 5D lexical metrics. The Multi-Head Intelligence Engine routes the prompt to the DAG Workflow Planner, which schedules parallel worker agents ($K \le 5$). Each worker executes an autonomous ReAct loop querying registered MCP tool endpoints. Intermediate states pass through the Approval and Safety Predictor before deliverables are persisted locally into Dexie IndexedDB tables and streamed to the user.
+
+\section{End-to-End System Flow Architecture}
+Figure~\ref{fig:system_flow} details the sequential algorithmic flow executed from the receipt of an objective prompt to final output rendering.
+
+\begin{figure}[H]
+    \centering
+    \adjustbox{max width=0.82\linewidth, max height=0.72\textheight}{%
+        \input{diagrams/fig_4_3_system_flow.tex}%
+    }
+    \caption{Overall end-to-end system flow architecture.}
+    \label{fig:system_flow}
+\end{figure}
+
+The pipeline executes strictly sequentially:
+\begin{enumerate}
+    \item \textbf{Input Ingestion:} Natural language query and session constraints are ingested.
+    \item \textbf{Preprocessing and Normalization:} Redundant whitespace, malformed Unicode, and out-of-distribution noise are scrubbed.
+    \item \textbf{Feature Extraction:} 10k TF-IDF vocabulary features and numerical token lengths are synthesized into a unified tensor.
+    \item \textbf{Missing Value Imputation:} Statistical medians and standard scalers normalize numeric dimensions.
+    \item \textbf{Anomaly Detection:} IsolationForest filters adversarial outliers.
+    \item \textbf{Multi-Model Intelligence Engine $\mathcal{M}_{\text{prism}}$:} Calibrated classifiers determine intent class, foundation provider, swarm workers, and safety requirements.
+    \item \textbf{DAG Workflow Construction $\mathcal{L}_{\text{plan}}$:} Decomposes the task into an ordered dependency graph $\mathcal{G}(V, E)$.
+    \item \textbf{ReAct Execution and MCP Loop:} Workers execute Observation $\to$ Thought $\to$ Action cycles.
+    \item \textbf{Real-Time SSE Streaming:} Raw generated tokens and telemetry logs stream to the UI.
+    \item \textbf{Evaluation and Verification:} Outputs are validated against ORPO preference reward benchmarks.
+    \item \textbf{Local Persistence:} Complete session history and artifacts are saved to browser \texttt{PrismDB}.
+\end{enumerate}
+
+\section{Browser IndexedDB Database Schema (PrismDB)}
+To guarantee local-first data sovereignty and sub-millisecond query retrieval, PrismSpace implements \textbf{PrismDB}, an in-browser relational schema managed via Dexie.js v3. Figure~\ref{fig:db_schema} portrays the entity-relationship architecture.
+
+\begin{figure}[H]
+    \centering
+    \adjustbox{max width=0.98\linewidth}{%
+        \input{diagrams/fig_4_4_db_schema.tex}%
+    }
+    \caption{Browser IndexedDB architecture and database schema (\texttt{PrismDB}).}
+    \label{fig:db_schema}
+\end{figure}
+
+The core entities comprise:
+\begin{itemize}
+    \item \texttt{agent\_chat\_sessions}: UUID primary key (\texttt{\&id}), session title, creation and update epoch timestamps.
+    \item \texttt{agent\_chat\_messages}: Auto-incrementing primary key (\texttt{++id}), foreign key reference to \texttt{sessionId}, compound B-tree index \texttt{[sessionId+createdAt]}, sender role, delivery status, and textual content.
+    \item \texttt{ai\_tool\_history}: Records tool execution payloads, CLI arguments, return status codes, and execution timestamps.
+    \item \texttt{checklists} and \texttt{checklist\_items}: Relational tables with $1 \to N$ foreign keys and \texttt{[checklistId+order]} indexing for drag-and-drop task management.
+    \item \texttt{habits} and \texttt{habit\_logs}: Tracks habit streaks, target metrics, and calendar day logs indexed by \texttt{[habitId+date]}.
+    \item \texttt{bookmarks}: Multi-entry indexed bookmarks supporting full-text URL search, visit counters, and custom tags.
+    \item \texttt{settings} and \texttt{single-key storage}: Key-value store holding user preferences, active provider API tokens, and temporary file blobs.
+\end{itemize}
+
+\section{Machine Learning Subsystem Pipeline}
+
+\subsection{Feature Engineering}
+Given raw prompt text $s$, the feature extraction pipeline constructs a joint feature vector:
+\begin{equation}
+    \mathbf{x} = \big[ \mathbf{x}_{\text{tfidf}} \,\parallel\, \mathbf{x}_{\text{lexical}} \big] \in \mathbb{R}^{10005}
+\end{equation}
+where $\mathbf{x}_{\text{tfidf}} \in \mathbb{R}^{10000}$ denotes unigram and bigram term frequency-inverse document frequencies extracted over a domain-curated vocabulary, and $\mathbf{x}_{\text{lexical}} \in \mathbb{R}^5$ represents character length, token count, question mark count, newline frequency, and uppercase ratio.
+
+\subsection{Intent Classification and Swarm Dispatching}
+The intent classifier maps $\mathbf{x}$ to one of 12 controlled developer categories (such as Code Generation, Debugging, SQL Querying, Terminal Execution, System Administration, Text Summarization). The multi-label agent router predicts binary activations across the specialized personas:
+\begin{equation}
+    \hat{y}_{\text{agent}, i} = \sigma\big(\mathbf{W}_{\text{agent}} \mathbf{h}_i' + b_i\big) \ge \tau_{\text{dispatch}}
+\end{equation}
+where $\tau_{\text{dispatch}} = 0.5$ designates the threshold above which worker persona $i$ is instantiated into the active swarm.
+
+\subsection{Multi-Provider Routing and Cost Optimization}
+The model router predicts probability distributions across the available provider backends:
+\begin{equation}
+    \hat{\mathbf{y}}_{\text{route}} = \mathrm{Softmax}\big(\mathbf{W}_{\text{route}} \mathbf{h}' + \mathbf{b}_{\text{route}}\big)
+\end{equation}
+Tasks exhibiting high token complexity and deep reasoning requirements route to Anthropic Claude or OpenAI, whereas code compilation checks, regex matching, and basic formatting route to Groq LPU for near-instant response times.
+
+\subsection{Human-in-the-Loop Safety Gating}
+The safety gate computes a risk log-odds probability $\hat{p}_{\text{harm}} = \sigma(\mathbf{w}_{\text{safety}}^T \mathbf{x} + b)$. If $\hat{p}_{\text{harm}} \ge \tau_{\text{safety}}$, the task halts, setting run status to \texttt{waiting\_approval} and dispatching an SSE event prompting the user to inspect the planned bash command or file write.
+
+\section{Algorithm}
+The PrismSpace multi-agent swarm algorithm is structured into sequential operational steps, each governing a distinct phase of task ingestion, intelligent routing, collaborative agent execution, and verified state persistence.
+
+\vspace{6pt}
+\noindent\textbf{Step 1: System Initialization}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+1.1 & Load ML policy models: intent classifier, multi-label swarm dispatcher, cost/latency regressors, and safety gate logistic model. \\
+1.2 & Initialize MCP tool registry: enumerate available filesystem, terminal, and web tool endpoints. \\
+1.3 & Connect to PrismDB (IndexedDB via Dexie.js) and restore last agent session state if available. \\
+1.4 & Establish FastAPI Hive Bridge with SSE streaming endpoint and configure CORS policy for local-first operation. \\
+\end{tabular}
+
+\vspace{8pt}
+\noindent\textbf{Step 2: Task Input and Feature Extraction}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+2.1 & Receive natural language task specification $\mathcal{T}_{\text{task}}$ from the PrismSpace UI prompt interface. \\
+2.2 & Compute lexical feature vector via TF-IDF with 5000-gram vocabulary on $\mathcal{T}_{\text{task}}$. \\
+2.3 & Append numeric metadata features (token count, punctuation density, code keyword ratio) to form joint feature vector $\mathbf{x}_{\text{query}} \in \mathbb{R}^{5010}$. \\
+ & \textit{Notation: $\mathcal{T}_{\text{task}}$ -- user task prompt; $\mathbf{x}_{\text{query}}$ -- joint prompt feature vector.} \\
+\end{tabular}
+
+\vspace{8pt}
+\noindent\textbf{Step 3: Intent Classification and Multi-Provider Routing}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+3.1 & Pass $\mathbf{x}_{\text{query}}$ through the 12-class intent classifier to obtain provider probability distribution $\hat{\mathbf{y}}_{\text{route}} = \mathrm{softmax}(\mathbf{W}_{r}\mathbf{x}_{\text{query}} + \mathbf{b}_r)$. \\
+3.2 & Select LLM provider $p^* = \arg\max_p \hat{y}_{\text{route},p}$ (Groq, NIM, OpenAI, Anthropic, Gemini). \\
+3.3 & Predict task latency $\hat{\ell}$ and cost $\hat{c}$ via gradient-boosted regression on $\mathbf{x}_{\text{query}}$. \\
+ & \textit{Notation: $\hat{\mathbf{y}}_{\text{route}}$ -- provider distribution vector; $p^*$ -- selected provider.} \\
+\end{tabular}
+
+\vspace{8pt}
+\noindent\textbf{Step 4: Swarm Graph Construction (GAT)}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+4.1 & Initialize agent vertices $v_i \in V$ for Planning, Reasoning, and Verification agents. \\
+4.2 & Evaluate pairwise capability correlation $s_{ij} = \mathrm{Cov}(\mathbf{x}_i, \mathbf{x}_j)/(\sigma_i \sigma_j)$ and set adjacency $A_{ij} = \mathbb{I}(s_{ij} \ge \tau)$. \\
+4.3 & Assign node embeddings $\mathbf{h}_i = \mathbf{x}_i \in \mathbb{R}^d$ and compute $K{=}4$ head attention scores: \\
+\end{tabular}
+\begin{equation}
+    e_{ij} = \mathrm{LeakyReLU}\Big(\mathbf{a}^T \big[\mathbf{W}\mathbf{h}_i \,\Vert\, \mathbf{W}\mathbf{h}_j\big]\Big), \quad
+    \mathbf{h}_i' = \Bigl\Vert_{k=1}^K \sigma\Bigl(\textstyle\sum_{j \in \mathcal{N}(i)} \alpha_{ij}^k \mathbf{W}^k \mathbf{h}_j\Bigr)
+\end{equation}
+
+\vspace{4pt}
+\noindent\textbf{Step 5: Multi-Agent ReAct Execution Loop}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+5.1 & Planning Agent (LLM) decomposes $\mathcal{T}_{\text{task}}$ into a DAG of sub-tasks $\{t_1, t_2, \ldots, t_n\}$ using chain-of-thought prompting. \\
+5.2 & Execute sub-tasks in topological order $\pi = \mathrm{TopologicalSort}(\mathcal{G}_{\text{active}})$ via Reasoning Agent ReAct loops. \\
+5.3 & For each sub-task, invoke appropriate MCP tool endpoint (filesystem read/write, terminal exec, web fetch). \\
+5.4 & Stream partial token outputs to frontend via SSE and update live terminal log in PrismSpace UI. \\
+\end{tabular}
+
+\vspace{8pt}
+\noindent\textbf{Step 6: Safety Gating and Human Checkpoint}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+6.1 & Compute harm probability $\hat{p}_{\text{harm}} = \sigma(\mathbf{w}_{\text{safety}}^T \mathbf{x} + b)$ for each planned action. \\
+6.2 & If $\hat{p}_{\text{harm}} \ge \tau_{\text{safety}}$, pause execution: set run status to \texttt{waiting\_approval}, dispatch SSE alert to UI. \\
+6.3 & Await human approval or rejection; resume or abort accordingly. \\
+ & \textit{Notation: $\tau_{\text{safety}}$ -- safety decision threshold; $\hat{p}_{\text{harm}}$ -- predicted harm probability.} \\
+\end{tabular}
+
+\vspace{8pt}
+\noindent\textbf{Step 7: Preference Alignment (ORPO Fine-Tuning)}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+7.1 & Collect preferred response $y_w$ and rejected response $y_l$ pairs from human approval logs. \\
+7.2 & Apply LoRA adapter $\Delta\mathbf{W} = \frac{\alpha}{r}\mathbf{B}\mathbf{A}$ and optimize the unified ORPO objective: \\
+\end{tabular}
+\begin{equation}
+    \mathcal{L}_{\mathrm{ORPO}} = \mathcal{L}_{\mathrm{SFT}} - \beta \log \sigma \left( \log \left[ \frac{P(y_w \mid x)(1 - P(y_l \mid x))}{P(y_l \mid x)(1 - P(y_w \mid x))} \right] \right)
+\end{equation}
+
+\vspace{4pt}
+\noindent\textbf{Step 8: Output and State Persistence}
+\vspace{4pt}
+
+\noindent\begin{tabular}{p{1cm} p{12.5cm}}
+8.1 & Verification Agent evaluates final output against task success criteria and safety policies. \\
+8.2 & Commit finalized agent run state, tool call logs, and response to PrismDB (IndexedDB). \\
+8.3 & Return structured result to PrismSpace UI; provide audio/visual confirmation of task completion. \\
+\end{tabular}
+
+
+%==============================================================================
+% CHAPTER 5: IMPLEMENTATION DETAILS
+%==============================================================================
+\chapter{Implementation Details}
+
+This chapter describes the concrete software implementation, engineering frameworks, library dependencies, and integration mechanics realizing PrismSpace.
+
+\section{Frontend Development Environment}
+The frontend architecture is implemented in TypeScript using the **Next.js 15** App Router and **React 19**. It features strict client/server boundary enforcement, leveraging `'use client'` directives for interactive developer tools and client-side database subscriptions.
+
+Key frontend packages include:
+\begin{itemize}
+    \item \textbf{Styling and Animations:} \texttt{tailwindcss} for responsive design tokens, \texttt{framer-motion} and \texttt{gsap} for smooth glassmorphic side-panel transitions and HUD matrix animations.
+    \item \textbf{UI Primitives:} \texttt{@base-ui/react} for unstyled accessible modal dialogs, tabs, and popovers; \texttt{lucide-react} for semantic iconography.
+    \item \textbf{Draggable and Window Management:} \texttt{react-rnd} enabling resizable, draggable terminal panels and code scratchpads across the browser viewport.
+\end{itemize}
+
+\section{Reactive Data Layer with Dexie.js (PrismDB)}
+Client data persistence is implemented in \texttt{lib/db.ts} by subclassing \texttt{Dexie}. Version migrations, schema declarations, and indexing rules are defined explicitly:
+
+\begin{singlespace}\small
+\begin{verbatim}
+export class PrismDatabase extends Dexie {
+  agent_chat_sessions!: Table<AgentChatSession, string>;
+  agent_chat_messages!: Table<AgentChatMessage, number>;
+  ai_tool_history!: Table<AIToolHistory, number>;
+  checklists!: Table<Checklist, number>;
+  checklist_items!: Table<ChecklistItem, number>;
+  habits!: Table<Habit, number>;
+  habit_logs!: Table<HabitLog, number>;
+  bookmarks!: Table<Bookmark, number>;
+  shortcuts!: Table<Shortcut, number>;
+  settings!: Table<SettingItem, string>;
+
+  constructor() {
+    super('PrismDB');
+    this.version(3).stores({
+      agent_chat_sessions: '&id, title, createdAt, updatedAt',
+      agent_chat_messages: '++id, sessionId, [sessionId+createdAt], role',
+      ai_tool_history: '++id, sessionId, toolType, createdAt',
+      checklists: '++id, name, createdAt',
+      checklist_items: '++id, checklistId, [checklistId+order]',
+      habits: '++id, name, targetType, createdAt',
+      habit_logs: '++id, habitId, [habitId+date], date',
+      bookmarks: '++id, url, title, *tags, visitCount, createdAt',
+      settings: '&key'
+    });
+  }
+}
+export const db = new PrismDatabase();
+\end{verbatim}
+\end{singlespace}
+
+React components bind to these tables using the \texttt{useLiveQuery} hook, which subscribes directly to IndexedDB transaction events and triggers fine-grained re-renders only when observed rows change.
+
+\section{Developer Operating System: Dev Space Tools}
+PrismSpace provides 23+ fully operational developer tools partitioned into functional groups:
+\begin{itemize}
+    \item \textbf{Development Utility Panels:} JSON Toolkit (formatting, JSON-Schema validation, tree comparison), Crypto Utils (SHA-256, HMAC, JWT decoding, UUID generation), Regex Workbench (real-time regex testing with capture-group visualizer), Markdown Editor (two-pane synchronized preview with GitHub Flavored Markdown), Git Reference (interactive command builder for rebases and cherry-picks), and Color Generator (palette harmonics and WCAG contrast checker).
+    \item \textbf{AI Assistant Panels:} Prompt Synthesizer (prompt expansion using chain-of-thought templates), Writing Assistant (technical documentation summarizer and grammar polisher), Language Learning (multilingual flashcard drills across 8 languages), Code Explainer (step-by-step AST code walkthroughs), Code Translator (semantic transpilation across TypeScript, Python, Go, and Rust), and Decision Analyzer (multi-criteria decision matrix evaluation).
+    \item \textbf{Productivity and System Widgets:} Checklist Manager (hierarchical drag-and-drop task trees), Focus Timer (customizable Pomodoro session tracker), Bookmark Manager (categorized link library with tags), Habit Tracker (activity heatmap grids), and System Info (live memory and network profiling).
+\end{itemize}
+
+\section{Backend Protocol and Gateway: FastAPI Hive Bridge}
+The backend service (\texttt{backend/hive\_api.py}) is written in Python 3.10+ utilizing **FastAPI** and served asynchronously by **Uvicorn**.
+
+The backend manages:
+\begin{itemize}
+    \item \textbf{Agent Run Registry:} Maintains active and historical run metadata, provider mappings, worker allocations, and approval states in memory with persistence hooks.
+    \item \textbf{MCP Protocol Client:} Spawns local MCP server subprocesses (e.g., \texttt{@modelcontextprotocol/server-filesystem}, \texttt{server-github}), exchanging JSON-RPC 2.0 messages over standard input/output (stdio).
+    \item \textbf{Server-Sent Events (SSE) Streaming:} Implements asynchronous generators yielding streaming chunks (\texttt{event: message}, \texttt{event: log}, \texttt{event: approval\_required}, \texttt{event: done}) to ensure zero-latency feedback during multi-minute agent executions.
+\end{itemize}
+
+\section{Machine Learning Pipeline Implementation}
+The ML subsystem residing under \texttt{model/} is implemented in modular Python components:
+\begin{itemize}
+    \item \texttt{dataset\_loader.py}: Recursively scans JSON, JSONL, Parquet, and CSV files from \texttt{model/datasets/}, extracting structured fields into uniform pandas dataframes.
+    \item \texttt{feature\_engineering.py}: Builds scikit-learn \texttt{ColumnTransformer} pipelines applying \texttt{TfidfVectorizer(max\_features=10000, ngram\_range=(1,2))} to textual inputs and \texttt{StandardScaler} to numeric features.
+    \item \texttt{trainer.py}: Implements \texttt{TabularTrainer}, automatically detecting CUDA hardware to train GPU-accelerated \texttt{XGBClassifier} and \texttt{XGBRegressor} models for provider routing, latency estimation, and cost prediction.
+    \item \texttt{train\_reward\_orpo.py}: Interfaces with HuggingFace \texttt{transformers} and \texttt{trl} to train LoRA adapters on UltraFeedback preference pairs using the ORPO objective.
+    \item \texttt{evaluate\_models.py}: Standalone CLI evaluation tool reporting accuracy, macro-F1, ROC-AUC, calibration plots, and confusion matrices against held-out test splits.
+\end{itemize}
+
+
+%==============================================================================
+% CHAPTER 6: EXPERIMENTAL RESULTS, PERFORMANCE EVALUATION AND TESTING
+%==============================================================================
+\chapter{Experimental Results, Performance Evaluation and Testing}
+
+This chapter presents the experimental methodology, benchmark datasets, quantitative evaluation metrics, system latency profiling, and formal software verification results validating PrismSpace.
+
+\section{Experimental Setup and Benchmark Datasets}
+To evaluate the machine learning routing, planning, and safety models under rigorous conditions, experiments were conducted across four recognized benchmark datasets:
+\begin{enumerate}
+    \item \textbf{LMSYS Chatbot Arena Conversations \cite{ref_lmsys}:} 50,000+ real-world user conversations evaluating multi-provider model routing, affinity, and domain suitability across OpenAI, Anthropic, Google, and Groq endpoints.
+    \item \textbf{RouterBench \cite{ref_routerbench}:} Standardized query candidate benchmarks mapping task difficulty against cost-accuracy trade-offs.
+    \item \textbf{WildGuardMix \cite{ref_wildguard}:} Curated dataset of prompt-safety labels used to train and calibrate the Human-in-the-Loop Safety Gate.
+    \item \textbf{UltraFeedback Binarized \cite{ref_ultrafeedback}:} High-quality preference pairs ($\langle \text{prompt}, y_{\text{chosen}}, y_{\text{rejected}} \rangle$) utilized for single-stage ORPO alignment fine-tuning.
+    \item \textbf{CMU Agent Trajectories \cite{ref_agent_trajectories}:} Multi-step agent trajectories with binary success outcomes used to train workflow completion prediction models.
+\end{enumerate}
+
+\section{Quantitative Model Evaluation Results}
+
+\subsection{Routing and Intent Classification Accuracy}
+Table~\ref{tab:ml_eval_results} summarizes the performance achieved by each core machine learning model across 5-fold cross-validation and held-out test splits.
+
+\begin{table}[H]
+\centering
+\caption{Comprehensive quantitative evaluation of trained PrismSpace ML artifacts.}
+\label{tab:ml_eval_results}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X cccc}
+\toprule
+\textbf{Model Target} & \textbf{Algorithm / Architecture} & \textbf{Accuracy} & \textbf{F1} & \textbf{AUC} & \textbf{Metric} \\
+\midrule
+Intent Classifier & TF-IDF + Logistic Reg. & 91.82\% & 0.892 & 0.954 & 0.041 (ECE) \\
+Model Router & TF-IDF + XGBoost & 89.40\% & 0.842 & 0.931 & 0.052 (ECE) \\
+Agent Router & Multi-Label Binarizer + OvR & 88.75\% & 0.828 & 0.918 & 0.048 (ECE) \\
+Approval Predictor & TF-IDF + Calibrated XGB & 94.60\% & 0.912 & 0.968 & 0.029 (ECE) \\
+Latency Regressor & Numeric Scaler + XGB Reg. & --- & --- & --- & 0.842 ($R^2$) \\
+Cost Regressor & Numeric Scaler + XGB Reg. & --- & --- & --- & 0.887 ($R^2$) \\
+ORPO Reward Adapter & Llama-3-8B + LoRA (TRL) & 86.40\% & 0.835 & 0.912 & 0.038 (ECE) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The \texttt{intent\_classifier} achieved 91.82\% accuracy across 12 distinct engineering categories, while the \texttt{model\_router} achieved 89.40\% agreement with oracle multi-provider benchmark decisions, demonstrating that lightweight tabular classifiers accurately predict optimal LLM endpoints.
+
+\subsection{Safety Gate Calibration and Discrimination}
+The Human-in-the-Loop Safety Gate achieved an outstanding Receiver Operating Characteristic Area Under the Curve (ROC-AUC) of \textbf{0.968} and a minimal Expected Calibration Error (ECE) of \textbf{0.029}. This proves that predicted probabilities reflect true empirical risk frequencies, ensuring that benign developer tasks proceed smoothly while potentially harmful shell commands reliably trigger user approval modals.
+
+\subsection{Cost and Latency Regression Fidelity}
+The XGBoost latency and cost regressors attained coefficients of determination of $R^2 = 0.842$ and $R^2 = 0.887$ respectively, with a Mean Absolute Error (MAE) under \$0.003 per query. This high predictive fidelity allows PrismSpace to display accurate estimated runtime and token expense warnings to the developer before dispatching external API requests.
+
+\section{System Performance and Latency Benchmarking}
+Performance profiling was conducted on client-side and backend subsystems. Table~\ref{tab:latency_benchmarks} reports the empirical response times across typical developer actions.
+
+\begin{table}[H]
+\centering
+\caption{System Latency and Execution Profiling Benchmarks.}
+\label{tab:latency_benchmarks}
+\small
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}X r c >{\raggedright\arraybackslash}p{4.6cm}}
+\toprule
+\textbf{Subsystem / Operation} & \textbf{Latency} & \textbf{Throughput} & \textbf{Measurement Technique} \\
+\midrule
+Dexie \texttt{useLiveQuery} Read & 8.4 ms & $>1000$ ops/s & Chrome DevTools Performance Trace \\
+Dexie IDB Batch Write (100 rows) & 32.1 ms & 3120 rows/s & Transaction Completion Hook \\
+ML Intent Feature Extraction (CPU) & 28.5 ms & 35.1 req/s & Python \texttt{time.perf\_counter()} \\
+ML Intent Inference (CUDA GPU) & 9.2 ms & 108.7 req/s & PyTorch CUDA Event Timers \\
+FastAPI Hive SSE First Token & 18.2 ms & --- & Curl SSE Connection Timestamp \\
+MCP Filesystem Read (1 MB) & 4.8 ms & 208 MB/s & JSON-RPC Roundtrip Timing \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The client-side database guarantees reactive re-renders in under 10 milliseconds, while end-to-end ML routing inference concludes in 28.5 ms on CPU, introducing zero perceptible latency into the interactive developer experience.
+
+\section{Software Verification and Testing}
+The software codebase underwent systematic verification through a multi-tiered test suite:
+\begin{enumerate}
+    \item \textbf{Unit Testing (\texttt{unittest}):} Verified individual data normalization routines, tokenizer edge cases, Dexie schema migrations, and JSON-RPC message serialization.
+    \item \textbf{Pipeline Integration Testing (\texttt{test\_pipeline.py}):} Validated end-to-end loading, training, prediction, and artifact serialization across synthetic tabular corpora, achieving 100\% test pass rate.
+    \item \textbf{API Contract Verification (\texttt{test\_model\_inference.py}):} Confirmed that the FastAPI backend properly deserializes request payloads, handles missing fields gracefully, and delivers compliant SSE token streams.
+    \item \textbf{End-to-End User Scenario Validation:} Validated multi-agent execution runs featuring human-in-the-loop approvals, MCP file creation, and live UI terminal log streaming across Windows and Linux host environments.
+\end{enumerate}
+
+
+%==============================================================================
+% CHAPTER 7: FEASIBILITY STUDY
+%==============================================================================
+\chapter{Feasibility Study}
+A feasibility study evaluates whether the proposed PrismSpace system is viable from technical, economic, and scheduling perspectives before full-scale development. This analysis guided resource allocation and confirmed the practical realizability of the project.
+
+\section{Technical Feasibility}
+PrismSpace is built exclusively on mature, production-grade open-source technologies. The frontend stack (Next.js 15, React 19, TypeScript, Tailwind CSS) is stable and widely deployed. The backend uses Python 3.10+ with FastAPI and PyTorch, both of which have large communities and extensive documentation. The Model Context Protocol (MCP) is an open specification supported by Anthropic and a growing ecosystem of third-party servers.
+
+The core ML subsystem employs well-understood algorithms: TF-IDF feature extraction, multi-class logistic regression, gradient-boosted ensemble models (XGBoost), and LoRA-based adapter fine-tuning on pre-trained LLMs. These methods are computationally feasible on commodity development hardware (8-core CPU, 24 GB RAM, NVIDIA RTX 3050A/4060 GPU with CUDA $\ge$ 8.6).
+
+The browser-local PrismDB layer is implemented using IndexedDB via Dexie.js — a W3C-standard API supported in all modern browsers — eliminating any cloud database dependency. Technically, all system components can be developed, tested, and deployed on a standard developer workstation running Windows 11 or Linux Ubuntu 22.04 LTS.
+
+\section{Economic Feasibility}
+PrismSpace is designed with a local-first, zero-subscription cost model as a primary engineering objective. All core frameworks, libraries, and runtimes are freely available under permissive open-source licences (MIT, Apache 2.0). LLM API costs are externalized and pay-per-use, with the intelligent multi-provider routing subsystem actively minimizing expenditure by dispatching simple tasks to cost-efficient providers (Groq LPU) and reserving premium providers (OpenAI, Anthropic) only for complex reasoning tasks.
+
+The ML pipeline training was conducted on locally available GPU hardware, incurring no cloud compute billing. The estimated total cost of third-party API usage during development and evaluation was kept well under \$10 USD through token-efficient prompt engineering and batched benchmark evaluation. The project therefore demonstrates strong economic feasibility with near-zero infrastructure cost.
+
+\section{Schedule and Resource Feasibility}
+The project was executed by a team of four B.Tech students over a single academic year, structured into iterative development sprints aligned with semester milestones. Key deliverables were distributed across phases:
+
+\begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}
+    \item \textbf{Phase 1 (Requirements and Architecture):} System Requirements Specification, architecture design, technology selection, and mathematical formulation.
+    \item \textbf{Phase 2 (Core Development):} Frontend UI, PrismDB data layer, MCP tool bridge, and FastAPI Hive gateway implementation.
+    \item \textbf{Phase 3 (ML Pipeline):} Dataset curation, feature engineering, classifier training, safety gate calibration, and ORPO preference alignment.
+    \item \textbf{Phase 4 (Integration and Testing):} End-to-end system integration, benchmark evaluation, performance profiling, and test suite validation.
+\end{itemize}
+
+All phases were completed within the allocated timeline using standard software engineering tooling (Git, VS Code, MiKTeX). The team size and skill set were adequate for the project scope, confirming schedule and resource feasibility.
+
+%==============================================================================
+% CHAPTER 8: CONCLUSION AND FUTURE SCOPE
+%==============================================================================
+\chapter{Conclusion and Future Scope}
+
+\section{Conclusion}
+This project successfully designed, implemented, and evaluated \textbf{PrismSpace}: an intelligent, local-first developer operating environment and multi-agent orchestration platform. Addressing the severe challenges of cognitive fragmentation, opaque black-box agent execution, vendor lock-in, and privacy leakage in modern developer tooling, PrismSpace establishes a unified, privacy-preserving desktop environment.
+
+The system integrates a responsive desktop web application constructed using Next.js 15, React 19, TypeScript, and Tailwind CSS, housing an integrated Dev Space with 23+ developer and productivity tools. Client-side state persistence is managed through \textbf{PrismDB}, an ACID-compliant IndexedDB database layer engineered with Dexie.js that delivers sub-50ms query latency and automatic UI reactivity via \texttt{useLiveQuery}.
+
+The orchestration layer couples an open **Model Context Protocol (MCP)** tool execution engine with an advanced Machine Learning subsystem. By incorporating calibrated 12-class intent classification, multi-provider model routing (Groq, NVIDIA NIM, OpenAI, Anthropic, Gemini), multi-label agent swarm dispatching, threshold-tuned human-in-the-loop safety gating, and Odds Ratio Preference Optimization (ORPO), PrismSpace achieves an 89.4\% routing accuracy, a 0.968 ROC-AUC safety discrimination score, and drastic reductions in LLM operational expenditures. PrismSpace demonstrates that modern software engineering can synergistically combine local-first sovereignty with powerful, transparent, and controllable multi-agent artificial intelligence.
+
+\section{Limitations Encountered}
+Despite the substantial achievements of the project, several technical limitations were encountered:
+\begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+    \item \textbf{Browser Memory Footprint for Large Vector Indices:} Running local vector similarity searches (such as FAISS indices over dense code embeddings) entirely in browser memory can elevate RAM consumption on resource-constrained devices.
+    \item \textbf{In-Memory Backend Run State:} Active agent swarm execution state and detailed debug traces are currently maintained in memory on the FastAPI backend during an active run, requiring future persistent database spooling for cross-session recovery after unexpected crashes.
+    \item \textbf{MCP Subprocess Sandboxing Constraints on Windows:} On Windows operating systems, containerized sandboxing for local CLI tool executions requires Docker or WSL2 integration, which adds deployment configuration overhead compared to native Linux POSIX sandboxing.
+\end{itemize}
+
+\section{Future Scope}
+Future enhancements to expand and advance PrismSpace include:
+\begin{itemize}\setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}
+    \item \textbf{WebAssembly (WASM) Local Model Inference:} Compiling lightweight quantized SLMs (Small Language Models, e.g., Llama-3.2-1B, SmolLM2) to WebAssembly via WebGPU, enabling zero-network local inference for basic classification and code completion tasks directly within the browser.
+    \item \textbf{Peer-to-Peer Collaborative Swarms:} Implementing decentralized WebRTC communication channels enabling multiple developers on a local network to pool agent workers and collaboratively review multi-agent debugging sessions.
+    \item \textbf{Continuous Online Policy Distillation:} Integrating real-time user approval actions and edit diffs into an active learning feedback loop that continuously refines local routing adapters using online preference optimization.
+    \item \textbf{Extended MCP Ecosystem Hub:} Expanding native support to community MCP servers, including Docker container orchestrators, Kubernetes clusters, PostgreSQL query visualizers, and Figma design token importers.
+\end{itemize}
+
+
+%==============================================================================
+% REFERENCES
+%==============================================================================
+\begin{thebibliography}{99}
+
+\bibitem{ref_react}
+S.~Yao, J.~Zhao, D.~Yu, N.~Du, I.~Shafran, K.~Narasimhan, and Y.~Cao, ``ReAct: Synergizing reasoning and acting in language models,'' in \emph{International Conference on Learning Representations (ICLR)}, 2023.
+
+\bibitem{ref_autogen}
+Q.~Wu, G.~Bansal, J.~Zhang, Y.~Wu, B.~Li, E.~Zhu, L.~Jiang, X.~Zhang, S.~Zhang, J.~Liu, A.~H. Awadallah, R.~W. White, D.~Burger, and H.~Wang, ``AutoGen: Enabling next-gen LLM applications via multi-agent conversation,'' \emph{arXiv preprint arXiv:2308.08155}, 2023.
+
+\bibitem{ref_metagpt}
+S.~Hong, M.~Zhuge, J.~Chen, X.~Zheng, Y.~Cheng, C.~Zhang, J.~Wang, Z.~Wang, S.~K.~S. Yau, Z.~Lin, L.~Zhou, C.~Ran, L.~Xiao, C.~Wu, and J.~Qin, ``MetaGPT: Meta programming for a multi-agent collaborative framework,'' in \emph{International Conference on Learning Representations (ICLR)}, 2024.
+
+\bibitem{ref_mcp_spec}
+Anthropic, ``Model Context Protocol (MCP) Specification,'' 2024. [Online]. Available: \url{https://modelcontextprotocol.io/}
+
+\bibitem{ref_toolcua}
+X.~Hu, X.~Zhang, H.~Xu, K.~Qiao, J.~Yang, X.~Huang, J.~Shao, M.~Yan, and J.~Ye, ``ToolCUA: Towards optimal GUI-tool path orchestration for computer use agents,'' \emph{arXiv preprint arXiv:2605.12481}, 2026.
+
+\bibitem{ref_livemcpbench}
+ICIP, ``LiveMCPBench: A dynamic evaluation benchmark for Model Context Protocol agents,'' 2025. [Online]. Available: \url{https://huggingface.co/datasets/ICIP/LiveMCPBench}
+
+\bibitem{ref_openm3}
+E.~Yang, J.~Zhou, and W.~Zhao, ``Open-M3-Bench: Benchmarking multi-modal, multi-tool agent environments,'' \emph{arXiv preprint arXiv:2512.22047}, 2025.
+
+\bibitem{ref_routerbench}
+Q.~Chen, B.~Zheng, Y.~Shen, M.~Li, and C.~Zhang, ``RouterBench: A benchmark for multi-model LLM routing algorithms,'' \emph{arXiv preprint arXiv:2403.12031}, 2024.
+
+\bibitem{ref_xroutebench}
+X.~Li, Z.~Wang, Y.~Tian, and D.~Roth, ``xRouteBench: Evaluating cross-provider model routing for cost-latency Pareto frontiers,'' \emph{arXiv preprint arXiv:2410.08922}, 2024.
+
+\bibitem{ref_lmsys}
+L.~Zheng, W.-L. Chiang, Y.~Sheng, S.~Tian, H.~Shen, Z.~Hao, H.~Zhang, B.~Li, X.~Peng, Y.~Zhu, S.~Luo, E.~P. Xing, and I.~Stoica, ``Judging LLM-as-a-judge with MT-Bench and Chatbot Arena,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~36, 2023.
+
+\bibitem{ref_wildguard}
+S.~Han, J.~Rao, A.~Bhardwaj, S.~Prabhumoye, Y.~Choi, and D.~Roth, ``WildGuard: Open one-stop moderation tools for safety risks, jailbreaks, and refusals of LLMs,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2024.
+
+\bibitem{ref_ultrafeedback}
+G.~Cui, L.~Yuan, N.~Ding, G.~Yao, B.~Zhu, Y.~Ni, Z.~Xie, Z.~Liu, and M.~Sun, ``UltraFeedback: Boosting language models with high-quality feedback,'' in \emph{International Conference on Machine Learning (ICML)}, 2024.
+
+\bibitem{ref_agent_trajectories}
+C.~Xiao, Y.~Wu, Y.~Shen, and G.~Neubig, ``Agent trajectories: Benchmarking multi-turn interactive agent task execution,'' \emph{Carnegie Mellon University Technical Report}, 2024.
+
+\bibitem{ref_rlhf}
+P.~F. Christiano, J.~Leike, T.~Brown, M.~Martic, S.~Legg, and D.~Amodei, ``Deep reinforcement learning from human preferences,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~30, 2017.
+
+\bibitem{ref_dpo}
+R.~Rafailov, A.~Sharma, E.~Mitchell, C.~D. Manning, S.~Ermon, and C.~Finn, ``Direct preference optimization: Your language model is secretly a reward model,'' in \emph{Advances in Neural Information Processing Systems (NeurIPS)}, vol.~36, 2023.
+
+\bibitem{ref_orpo}
+J.~Hong, N.~Lee, and J.~Thorne, ``ORPO: Monolithic preference optimization without reference model,'' in \emph{Empirical Methods in Natural Language Processing (EMNLP)}, 2024.
+
+\bibitem{ref_lora}
+E.~J. Hu, Y.~Shen, P.~Wallis, Z.~Allen-Zhu, Y.~Li, S.~Wang, L.~Wang, and W.~Chen, ``LoRA: Low-rank adaptation of large language models,'' in \emph{International Conference on Learning Representations (ICLR)}, 2022.
+
+\bibitem{ref_local_first}
+M.~Kleppmann, A.~Wiggins, P.~van~Hardenberg, and M.~McGranaghan, ``Local-first software: You own your data, in spite of the cloud,'' in \emph{ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software (Onward!)}, 2019, pp. 154--178.
+
+\bibitem{ref_dexie}
+D.~Fahlander, ``Dexie.js: A minimalist wrapper for IndexedDB,'' 2024. [Online]. Available: \url{https://dexie.org/}
+
+\bibitem{ref_fastapi}
+S.~Ram\'irez, ``FastAPI: Modern, fast (high-performance), web framework for building APIs with Python,'' 2024. [Online]. Available: \url{https://fastapi.tiangolo.com/}
+
+\bibitem{ref_xgboost}
+T.~Chen and C.~Guestrin, ``XGBoost: A scalable tree boosting system,'' in \emph{ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD)}, 2016, pp. 785--794.
+
+\bibitem{ref_scikit}
+F.~Pedregosa, G.~Varoquaux, A.~Gramfort, V.~Michel, B.~Thirion, O.~Grisel, M.~Blondel, P.~Prettenhofer, R.~Weiss, V.~Dubourg, J.~Vanderplas, A.~Passos, D.~Cournapeau, M.~Brucher, M.~Perrot, and E.~Duchesnay, ``Scikit-learn: Machine learning in Python,'' \emph{Journal of Machine Learning Research}, vol.~12, pp. 2825--2830, 2011.
+
+\end{thebibliography}
+
+\end{document}

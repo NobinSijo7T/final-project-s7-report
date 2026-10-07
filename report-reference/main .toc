@@ -1,0 +1,46 @@
+\contentsline {chapter}{Abstract}{i}{chapter*.1}%
+\contentsline {chapter}{Acknowledgement}{ii}{chapter*.2}%
+\contentsline {chapter}{List of Figures}{v}{chapter*.4}%
+\contentsline {chapter}{List of Tables}{vi}{chapter*.5}%
+\contentsline {chapter}{List of Symbols and Abbreviations}{vii}{chapter*.6}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Background and Overview}{2}{section.1.1}%
+\contentsline {section}{\numberline {1.2}The Real-World Edge Trilemma}{2}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Objectives of the Seminar}{3}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Organization of the Report}{4}{section.1.4}%
+\contentsline {chapter}{\numberline {2}Literature Review}{5}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Foundations of Federated Learning}{5}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Personalized Federated Learning (PFL)}{6}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Comparative Analysis of Existing Frameworks}{7}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Research Gaps in the Literature}{7}{section.2.4}%
+\contentsline {chapter}{\numberline {3}Motivation and Problem Formulation}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Cross-Domain vs. Cross-Location Heterogeneity}{9}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Communication Overhead and Model Sharing Schemes}{10}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Mathematical Problem Formulation}{11}{section.3.3}%
+\contentsline {chapter}{\numberline {4}Proposed Methodology}{12}{chapter.4}%
+\contentsline {section}{\numberline {4.1}System Architecture and Workflow Pipeline}{12}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Signal Preprocessing via Fast Fourier Transform (FFT)}{13}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Cell-Based Modular Neural Topology}{14}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Cell-Wise Alignment Mechanism}{15}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Operator-Level Cell-Based Aggregation Algorithm}{15}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Confidence-Aware Hybrid Loss}{15}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Algorithmic Execution Procedure}{16}{section.4.7}%
+\contentsline {chapter}{\numberline {5}Theoretical Analysis and Guarantees}{17}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Multi-Source Domain Adaptation Foundations}{17}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Federated Generalization Error Bound}{17}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Fairness Guarantee via Disparity Minimization}{18}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Convergence Analysis}{18}{section.5.4}%
+\contentsline {chapter}{\numberline {6}Performance Evaluation And Results}{20}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Experimental Setup and Prototype Testbed}{20}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Benchmark Dataset Description}{21}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Diagnostic Accuracy Across Sensor Locations}{22}{section.6.3}%
+\contentsline {section}{\numberline {6.4}Communication Bandwidth Savings}{22}{section.6.4}%
+\contentsline {section}{\numberline {6.5}Client Fairness and Convergence Acceleration}{23}{section.6.5}%
+\contentsline {section}{\numberline {6.6}Ablation Study and Hyperparameter Sensitivity}{23}{section.6.6}%
+\contentsline {section}{\numberline {6.7}Feature Representation Visualization}{25}{section.6.7}%
+\contentsline {chapter}{\numberline {7}Conclusion}{26}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Summary of Contributions}{26}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Limitations and Practical Deployment Challenges}{27}{section.7.2}%
+\contentsline {section}{\numberline {7.3}Future Research Directions}{27}{section.7.3}%
+\contentsline {chapter}{References}{28}{chapter*.20}%
+\contentsline {chapter}{References}{28}{chapter*.20}%

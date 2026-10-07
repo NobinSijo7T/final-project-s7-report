@@ -1,0 +1,734 @@
+{
+  "source_file": "s40747-023-01137-w.pdf",
+  "num_pages": 12,
+  "full_text": "Complex & Intelligent Systems (2023) 9:7337–7348 https://doi.org/10.1007/s40747-023-01137-w\nORIGINAL ARTICLE\nDecision variable contribution based adaptive mechanism for evolutionary multi-objective cloud workflow scheduling\nJun Li1 · Lining Xing2 · Wen Zhong3 · Zhaoquan Cai4,5 · Feng Hou6\nReceived: 6 December 2022 / Accepted: 8 May 2023 / Published online: 29 June 2023 © The Author(s) 2023\nAbstract Workflow scheduling is vital to simultaneously minimize execution cost and makespan for cloud platforms since data depen- dencies among large-scale workflow tasks and cloud workflow scheduling problem involve large-scale interactive decision variables. So far, the cooperative coevolution approach poses competitive superiority in resolving large-scale problems by transforming the original problems into a series of small-scale subproblems. However, the static transformation mechanisms cannot separate interactive decision variables, whereas the random transformation mechanisms encounter low efficiency. To tackle these issues, this paper suggests a decision-variable-contribution-based adaptive evolutionary cloud workflow schedul- ing approach (VCAES for short). To be specific, the VCAES includes a new estimation method to quantify the contribution of each decision variable to the population advancement in terms of both convergence and diversity, and dynamically classi- fies the decision variables according to their contributions during the previous iterations. Moreover, the VCAES includes a mechanism to adaptively allocate evolution opportunities to each constructed group of decision variables. Thus, the decision variables with a strong impact on population advancement are assigned more evolution opportunities to accelerate popula- tion to approximate the Pareto-optimal fronts. To verify the effectiveness of the proposed VCAES, we carry out extensive numerical experiments on real-world workflows and cloud platforms to compare it with four representative algorithms. The numerical results demonstrate the superiority of the VCAES in resolving cloud workflow scheduling problems.\nKeywords Cloud computing · Workflow scheduling · Multi-objective · Evolutionary optimization · Large-scale\nB Lining Xing\nlnxing@xidian.edu.cn B Wen Zhong\nzhongwen_nudt@163.com\n1 School of Management, Hunan Institute of Engineering, Xiangtan 411104, Hunan, People’s Republic of China\n2 School of Electronic Engineering, Xidian University, Xi’an 710071, Shaanxi, People’s Republic of China\n3 Department of Traffic Management, Hunan Police Academy, Changsha 410138, Hunan, People’s Republic of China\n4 Shanwei Institute of Technology, Shanwei 516600, Guangdong, People’s Republic of China\n5 School of Computer Science and Engineering, Huizhou University, Huizhou 516007, Guangdong, People’s Republic of China\n6 School of Mathematical and Computational Sciences, Massey University, Albany 4442, New Zealand\nIntroduction\nWorkflows have been commonly used to describe data pro- cessing applications from diversified fields, such as the Internet of Things and bio-informatics [1–3]. These work- flows often comprise of large-scale data-dependent tasks, which are computation and data intensive. Then, execut- ing various workflow applications calls for powerful high- performance infrastructures. With substantial advantages, such as economies of scale, on demand supply of resources, high elasticity, and reliability, cloud computing is attracting more and more enterprises or individuals to deploy their big data processing workflows [4, 5].\nWorkflow scheduling in cloud computing is a key tech- nology for achieving the reduction of both execution cost and makespan to gain more profits for cloud providers and ensure the quality of service for cloud consumers [6]. Work- flow scheduling problem involves determining the mappings from tasks to resources and the task order on each resource, and is a classic NP-complete [7, 8]. Also, the execution cost\n123\n\n--- Page Break ---\n\n7338 Complex & Intelligent Systems (2023) 9:7337–7348\nand makespan of workflow scheduling are two conflicting optimization objectives [9]. So far, multi-objective evolu- tionary algorithms have become popular to search a set of compromise solutions within an acceptable time [10–12]. To solve the workflow scheduling problem in cloud computing, some studies design new evolution and selection operators to improve the classical multi-objective evolutionary algo- rithms.\nOver the past decade or so, designing efficient evolu- tion operators to reproduce new solutions for multi-objective workflow scheduling problem has attracted considerable research interest [13]. First of all, the popular list-based workflow scheduling methods were embedded into the multi- objective evolutionary optimization framework as evolution operators [14–16]. Secondly, bio-inspired evolution opera- tors, such as artificial neural network [17–19], ant colony optimization [20], firefly algorithm [21], particle swarm opti- mization [22–24], and grey wolf optimization [25], were modified as evolution operators to solve the multi-objective workflow scheduling problem. Thirdly, integrating heuristic rules and bio-inspired optimization techniques to reproduce offspring populations has become a popular technological path. For instance, Choudhary et al. [26] combined the gravitational search method and the list-based workflow scheduling method to solve bi-objective workflow schedul- ing problem in cloud computing. Hosseini et al. [27] merged the simulated annealing and a task duplication strategy to optimize the makespan and execution cost of workflows. Mohammadzadeh et al. [28] integrated the antlion and grasshopper optimization algorithms to balance throughput, makespan, cost, and energy consumption of executing work- flows in cloud platforms. Zhang et al. [29] enhanced the list-based workflow scheduling method with a local search mechanism to balance the makespan and energy consump- tion of workflow execution.\nAt the same time, some studies went into designing selec- tion operators to balance multiple conflicting objectives of workflow execution in cloud computing. For example, Zhou et al. [30] merged a fuzzy-dominance-based environmental selection and a list-based workflow scheduling method to minimizeexecutioncost andmakespanof workflows incloud computing. Kumar et al. [31] integrated the entropy weight mechanism into a multi-criteria decision-making framework to balance makespan, execution cost, reliability, and energy consumption. Ye et al. [32] improved a knee point driven evo- lutionary method to balance makespan, reliability, execution cost, and the mean durations of all workflow tasks. Pham et al. [33] focused on the volatility of spot cloud resources and improved the multi-objective evolutionary algorithm to make a trade-off between makespan and execution cost for workflows in cloud computing.\nIn the evolutionary optimization community, a multi- objectiveoptimizationproblemisgenerallyconsideredlarge-\nscale if it has at least one hundred decision variables [34]. The multi-objective cloud workflow scheduling involves hun- dreds or even thousands of decision variables, and is a typical large-scale multi-objective optimization problem. However, the existing relevant studies evolve all decision variables as a whole and allocate evolution opportunities to each variable equally. This results in the low efficiency of these existing studies.\nThe recent research results in the evolutionary compu- tation community demonstrate that cooperative coevolution [34, 35] has become a crucial and effective way to solve large-scale multi-objective optimization problems. In coop- erative coevolution approaches, all the decision variables are classified into multiple groups, and decision variables in different groups are evolved in a round-robin manner [36, 37]. These static classification techniques work well when problems’ decision variables are fully or partially separable. However, this is not the case for multi-objective cloud work- flow scheduling with nonseparable decision variables caused by data dependencies among tasks.\nBesides, multi-objective cloud workflow scheduling poses an imbalance feature among decision variables regarding their contributions to optimization objectives. For instance, delaying the completion of a workflow task on the critical paths [38] often successively delays the completion of many tasks, including its successor tasks and other tasks being executed after the delayed tasks and their successor tasks. Whereas slightly delaying other tasks on the non-critical paths may not cause this chain reaction. The imbalance feature means that we should equip different decision vari- ables with different evolution opportunities. This motivates us to design a decision variable contribution based adaptive mechanism to dynamically adjust the variable grouping and allocate evolution opportunities during the evolution process. Our main contributions in this paper are as follows.\n• We define the contribution of a decision variable as the fitness improvement of the solution generated by perturb- ing this decision variable. Then, we try to dynamically measure the contribution of each decision variable and classify them according to their contributions. • We design an adaptive mechanism to dynamically allo- cate more evolution opportunities for the variable groups with more contributions to generate offspring solutions efficiently. • In the context of fifteen real-world workflows and the Amazon Elastic Compute Cloud, we compare the pro- posal with four state-of-the-art multi-objective cloud workflow scheduling algorithms. The results demon- strate the competitive performance of the proposal in simultaneously optimizing execution cost and makespan.\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2023) 9:7337–7348 7339\n1t\n4t\n3t\n2t\n5t\n6t 7t\nFig. 1 An example workflow of seven tasks\nThis paper is organized as follows. In the second section formulates the multi-objective workflow scheduling prob- lem. In the third section designs the proposed VCAES, followed by experimental verifications in the fourth section. In the final section concludes this paper.\nProblem formulation\nThis section first describes the models of workflows and cloud resources, and then formulates the model for multi- objective workflow scheduling in cloud computing.\nWorkflow model\nWithout loss of generality, a workflow application is described by a Directed Acyclic Graph (DAG), whose vertices and directed edges represent workflow tasks and data dependencies, respectively. Formally, we construct the directed acyclic graph for a workflow application as Ψ = {T , D}, where T = {t1, t2, . . . , tn} denotes the vertex set corresponding to task set, D ⊆T × T denotes the edge set corresponding to data dependencies among tasks. The exis- tence of an edge di, j ∈D means that t j’s start demands ti’s output results. Generally, task ti is referred to as an direct predecessor of task t j, and t j is referred to as an direct suc- cessor of ti. Regarding a task ti, all its direct predecessors is expressed as a set P(ti), and all its direct successors is expressed as a set S(ti).\nFigure 1 gives a visual example of a directed acyclic graph for a workflow with seven tasks, i.e., T = {t1, t2, . . . , t7}. An edge d1,2 denotes the data dependency from t1 to t2, meaning that t2’s start have to wait for t1’s output results. In Fig. 1, regarding task t6, the set of its direct predecessors is P(t6) = {t3, t4}, and the set of its direct successors is S(t6) = {t7}.\nCloud resource model\nThis paper targets the popular cloud paradigm, i.e., Infras- tructure as a Service (IaaS). In this paradigm, cloud providers offer multiple types of cloud resources on demand [39, 40].\nThe differences between different types of cloud resources mainly lie in their charging prices and performance con- figurations, such as number of CPU cores, memory size, and network bandwidth. Assuming that cloud platforms offer m types of resources, then we model them as Γ = {1, 2, . . . , m}, where τ ∈Γ denotes the τ-th resource type. Regarding a type τ, we employ pr(τ) and con(τ) to represent its price and configurations. Then, a cloud resource of type τ is modeled as rτ\nk = {k, pr(τ), con(τ)}, where k denotes the index of resource rτ\nk . Refer to well-known cloud providers (e.g., Amazon EC21\nand Alibaba Cloud ECS2), this study follows the resource charging basis of pay-as-you-use. Under this rule, any con- sumer can rent any number of resources on demand and is charged according to the real usage time. In general, cloud resources are charged based on the number of billing peri- ods, and the partial period will be rounded up to one more. In case that the period length is 60.0min, the number of billing periods for 60.01min is two.\nMulti-objective scheduling cloud workflows\nSince cloud resources are available on demand, we build a resource pool based on the maximum resource requirements for running a workflow. Assuming the maximum parallelism of the workflow is p, the resource pool includes p resources of each type. Then, we describe the resource pool as: R = \u0002\nr1\n1,r1 2, . . . ,r1 p,r2\np+1,r2\np+1, . . . ,r2\n2·p, . . . ,rm m·p\n\u0003\n. The decision vector x = {x1, x2, . . . , xn} is used to repre- sent the mappings from workflow tasks to cloud resources, where the value of decision variable xi is decoded as the index of the cloud resource mapped to the i-th task. It is worth noting that the value range of each decision variable is an integer from 1 to m · p.\nGiven a decision vector, assume that the task ti is mapped to resource rτ\nk . The start time sti,k of task ti refers to the max- imum time of receiving all the input data and the available time of the mapping resource.\nOn resource rτ\nk , we assume the set of tasks being executed before task ti as follows:\nBi =\n\u0004\ntp|I(tp) < I(ti)\n\u0005\n, (1)\nwhere I(tp) indicates tp’s order number on resource rτ\nk . Then, the start time sti,k of task ti on cloud resource rτ\nk can be described as follows:\nsti,k = max\n\u0006\nmax tb∈Bi\nftb,k, max\ntp∈P(ti)\n\u0004\nftp,∗+ dtp,i\n\u0005\u0007\n, (2)\n1 https://aws.amazon.com/ec2/?nc2=h_ql_prod_fs_ec2.\n2 https://www.aliyun.com/.\n123\n\n--- Page Break ---\n\n7340 Complex & Intelligent Systems (2023) 9:7337–7348\nwhere ftb,k indicates tb’s finish time on resource rτ\nk , ftp,∗ indicates the finish time of task tp, and dtp,i indicates the data transfer time from tp to ti.\nBefore scheduling, task ti’s execution time eti,k on cloud resource rτ\nk can be predicted by the computation length of task ti and the CPU frequency of the mapped resource rτ\nk . The relationship among sti,k, eti,k, and fti,k is described as follows:\nfti,k = sti,k + eti,k. (3)\nGiven a decision vector, the set of all tasks mapped to cloud resource rτ\nk can be formulated as:\nTk = {ti|xi = k, i ∈{1, 2, . . . , n}}. (4)\nWith the task set Tk, the start time utk and end time ntk of renting resource rτ\nk can be computed as follows:\nutk = min\nti∈Tk\n\u0006\nsti,k −max\ntp∈P(ti) dtp,i\n\u0007\n,\nntk = max\nti∈Tk\n\u0006\nfti,k + max\nts∈S(ti) dti,s\n\u0007\n.\n(5)\nBased on the above analysis, the first optimization objec- tive, i.e., minimizing the execution cost, can be formulated as follows:\nMin f1(x) =\n\b\nrτ\nk ∈R\npr(τ) ×\nntk −utk\nC\n\n, (6)\nwhere C indicates the length of a billing period for cloud resources.\nThe second optimization objective of this paper is to min- imize the workflow’s makespan, which corresponds to the maximum finish time of all the tasks in this workflow. The second optimization objective can be formulated as follows:\nMin f2(x) = max\nti∈T fti,∗. (7)\nThus, the model for multi-objective workflow scheduling problem in cloud computing can be summarised as follows:\n⎧ ⎨\n⎩\nMin f (x) = [ f1(x), f2(x)] , S.t.\nx ∈{1, 2, . . . , m · p}n.\n(8)\nPareto-dominance has been widely employed to compare solutions in the multi-objective optimization field.\nPareto-dominance: Assuming x1 and x2 are two feasible solutions. x1 is regarded to dominate x2 (denoted as x1 ≺x2) if and only if the two objectives of x1 are not inferior to that of\nx2 (i.e., f j(x1) ≤f j(x2), ∀j ∈{1, 2})andx1 isbetterthanx2 on at least one objective (i.e., f j(x1) < f j(x2), ∃j ∈{1, 2}).\nPareto-optimal solution: Solution x∗∈{1, 2, . . . , m· p}n is regarded as Pareto-optimal if there exist no feasible solution dominating it.\nPareto Set/Front: All the Pareto-optimal solutions are defined as Pareto-Set (PS) in the decision space and Pareto- Front (PF) in the objective space.\nAlgorithm design\nGiven a workflow scheduling solution, the importance of each workflow task varies greatly. For instance, adjusting the mapping from a critical task to a resource often successively affects the execution of many tasks, including its successors and other tasks being executed after these tasks and their suc- cessors. Whereas adjusting the mapping from a non-critical task to a resource may have no impact on the execution cost and makespan of the workflow. Also, the importance of each workflow task varies from solution to solution. Then, decision variables corresponding to different workflow tasks pose an imbalance feature to optimization objectives. To deal with the large-scale decision variables in cloud workflow scheduling, the VCAES incorporates a novel cooperative coevolution (CC) mechanism to dynamically measure the contributions of decision variables and adaptively allocate evolution opportunities for each group of decision variables based on their contributions. The proposed VCAES follows the framework of traditional multi-objective evolutionary optimization, including initialization, reproduction operator, and selection operator, as shown in Algorithm 1.\nAlgorithm 1 The overall framework of VCAES\nInput: The problem in (8); population size N; memory length l; group\nsize of decision variables s Output: A final population P 1: P ←Randomly generate a population 2: M ←Ol×n 3: V ←Generate a set of reference vectors 4: g ←Initialize the number of generations for CC 5: while does not reach termination condition do 6: [P, K] ←AdaptiveCoEvolution(P, M, V , g) 7: for j = 1 →l −1 do 8: for i = 1 →n do 9: M( j, i) ←M( j + 1, i) 10: end for 11: end for 12: for i = 1 →n do 13: M(l, i) ←K(i) 14: end for 15: Q ←Generate a new population 16: P ←EnvironmentalSelection(P \u000e Q, N) 17: end while\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2023) 9:7337–7348 7341\nAs illustrated in Algorithm 1, the inputs of the proposed VCAES are the multi-objective cloud workflow scheduling problem, the population size, memory length for recording the variable contributions, the number of decision variables in one group. Once the VCAES reaches the termination con- dition, it will output an up-to-date population.\nIn the initialization stage, one population is generated ran- domly (Line 1). Next, an l × n matrix M is initialized to collect the contribution of each variable over the past l itera- tions (Line 2). The element in row j and column i represents the contribution of the i-th variable in the previous j-th iter- ation. Also, a set of uniformly distributed reference vectors are initialized to assist in calculating variable contributions (Line 3). In addition, the number of iterations for cooperative co-evolution during each generation is initialized (Line 4). These iterations will be allocated to each group of variables in proportion to the overall contribution of variables in the corresponding group.\nAfter the initialization stage, the VCAES enters the main loop. During each generation, the proposed adaptive coop- erative coevolution mechanism is triggered to distribute the decision variables into many groups and allocate evo- lution opportunities to each group according to variable contributions (Line 6). Next, the memory matrix of variable contributions is updated (Lines 7–14). It is worth noting that the decision variables in the cloud workflow scheduling are related to each other. The VCAES generates a new popula- tion by evolving all variables in each generation (Line 15). After that, the non-dominated sorting and elitist-preserving method in NSGA-II [41] is employed to select an offspring population P from the combined population P \u000e Q (Line 16). Before introducing the proposed adaptive cooperative co- evolution mechanism, we define and illustrate the variable contributions.\nSuppose Q is a population that generated by evolving the decision variables in group G(i) and fixing other decision variables, the contribution of each variable in G(i) is defined as:\nK( j) =\n\b\nq∈Q\nFI(q), ∀j ∈G(i), (9)\nwhere FI(q) denotes the fitness improvement of solution q.\nFor a set of reference vector V , the one associated with solution q is defined as v∗= argv∈V min⟨f (q), v⟩, where ⟨f (q), v⟩represents the acute angle between two vectors. Suppose p is the associated solution of the reference vec- tor v∗, then the fitness improvement of solution q can be calculated as follows:\nFI(q) = max{0, Fit( p, v∗) −Fit(q, v∗)}, (10)\n1f\n2f\n( ) (1.3,1.0) = f p\no\n( ) (0.7,0.8) = f q\n=(0.5, 0.5) v\nFig. 2 An example workflow of seven tasks\nwhere Fit(q, v) denotes the fitness value of solution q with respect to the reference vector v, which can be calculated as\nFit(q, v) = ∥f ′∥· (cos < f ′, v > + sin < f ′, v >), (11)\nwhere f ′ = f (q)−z denotes the translated objective vector, and z denotes the ideal point.\nAn intuitive example on calculating contribution is given in Fig. 2. Suppose previous solution p and the new solution q are associated to the reference vector v = (0.5, 0.5), and their objective vectors are f ( p) = (1.3, 1.0) and f (q) = (0.7, 0.8), respectively. The ideal point is supposed to be z = (0, 0). Based on the definition in (11), we can obtain the fitness of these two solutions as Fit( p, v) = 1.8385 and Fit(q, v) = 1.1314. Then, the fitness improvement of solu- tion q is FI(q) = max{0, 1.8385 −1.1314} = 0.7071. If the solution q is generated by evolving variables {1, 3, 5}, then the contribution of these variables are defined as K(1) =\nK(3) = K(5) = 0.7071.\nAlgorithm 2 gives the pseudo-code of the proposed adap- tive cooperative coevolution mechanism, which dynamically distributes the variables with higher contributions into the same groups and assigns more evolution opportunities to accelerate the population convergence.\nAs illustrated in Algorithm 2, the inputs of the function AdaptiveCoEvolution() are the current population, the con- tribution of each variable during the previous l generations, the set of reference vectors, the population size, and the num- ber of generations for cooperative coevolution search. Then, the outputs of this function are the updated population and the contribution of each variable.\nAt first, function AdaptiveCoEvolution() calculates the total contribution of each variable during the previous gen- erations (Lines 1–4), where the notation H(i) represents the total contribution of the i-th variable during the previous l generations. Then, it sorts the variables in a non-ascending\n123\n\n--- Page Break ---\n\n7342 Complex & Intelligent Systems (2023) 9:7337–7348\nAlgorithm 2 Function AdaptiveCoEvolution()\nInput: Current population P; contribution matrix M; reference vec- tors V ; population size N; number of generations g\nOutput: A new population P; Contribution for each variable K 1: H ←O1×n 2: for i = 1 →n do 3: H(i) ←\u000fl\nj=1 M( j, i) + \u0005 4: end for 5: Sort variables by their contributions H in a non-ascending order 6: G ←Divide decision variables into ⌈n s ⌉groups 7: K ←O1×n 8: for j = 1 →| G | do\n9: g′ ←g ·\n\u000f\ni∈G( j) H(i) \u000fn\ni=1 H(i) 10: for k = 1 →g′ do 11: Q ←Generate an offspring population by evolving variables in G( j) 12: P ←EnvironmentalSelection(P \u000e Q, N) 13: end for 14: c ←Calculate the contributions of variables in G( j) as (9) 15: for i = 1 →n do 16: K(i) ←c\ng′ 17: end for 18: end for\norder according to their total contributions (Line 5) and dis- tributes the variables into a series of groups (Line 6). In this way, the variables with similar contributions are distributed into the same group, which is helpful to distribute variables with larger contributions into the same groups to gain more evolution opportunities.\nAfter that, function AdaptiveCoEvolution() successively evolves each group of variables, and measure their contribu- tions. For a group of variables, the number of evolutionary iterations is calculated based on the sum of their contribu- tions (Line 9). During each iteration, this function performs the reproduction operator on the corresponding variables to generate a new population (Line 11), and performs the selec- tion operator to select the offspring population (Line 12). After evolving a group of variables, this function measures their contributions (Line 14). Also, it updates the contribution of the corresponding variables (Lines 15–17), where notation\nK(i) represents the contribution of the i-th variable.\nRegarding Function AdaptiveCoEvolution(), it costs O(n·l) to calculate the contribution of each decision variable (Lines 1–4, Algorithm 2). The time complexity of sorting decision variables is O(n log n) (Line 5, Algorithm 2). This function takes O(N · n) to reproduce an offspring popula- tion (Line 11, Algorithm 2). According to the analysis [41], the time complexity of the environmental selection is O(N 2) (Line 12, Algorithm 2). Then, it takes O(n ·(N ·n + N 2)) =\nO(n · N · (n + N)) = O(n2 · N) to adaptively each group of decision variables (Lines 8–18, Algorithm 2). Then, the time complexity of Function AdaptiveCoEvolution() is\nO\n\u0010\nn · l + n log n + n2 · N\n\u0011\n= O(n2 · N), since l is often less than n.\nRegarding the algorithm VCAES, the time complexity of updating the memory matrix is O(n · l) (Lines 7–11, Algo- rithm 1). The time complexities of reproducing an offspring population and selecting elitist solutions are O(N · n) and\nO(N 2) (Lines 15-16, Algorithm 1), respectively. Thus, the time complexity of the VCAES during one generation is\nO\n\u0010\nn2 · N + n · l + N · n + N 2\u0011\n= O(n2 · N).\nNumerical experiments\nTo investigate the performance of the proposed VCAES, we compare it with four representative multi-objective cloud workflow scheduling algorithms: MOELS [42], EMS-C [9], WOF[43],LSMOF[44].TheMOELSandEMS-Cfollowthe framework of NSGA-II [41] and incorporate new reproduc- tion operators to generate offspring populations by evolving all the variables. The WOF and LSMOF are representative large-scale multi-objective evolutionary algorithms based on problem transformation.\nExperimental setting\nThe eight types of workflows from different application domains, i.e., Inspiral (Gravitational physics), CyberShake (Earthquake), EpiGenomics (Biology), Montage (Astron- omy), Sipht (Bioinformatics), BLAST (bioinformatics), Cycles (agroecosystems), and Seismology (seismology), have been widely used in evaluating cloud workflow schedul- ing algorithms. We select multiple task sizes from each workflow in the experiments. Besides, the DAG diagrams of some workflow instances with around 30 tasks are illus- trated in Fig.3. It is clear that these workflow instances cover various complicated structures, including in-tree, out-tree, fork-join, pipeline, and mixture. For more details on these workflows, please refer to the Pegasus repository.3\nFive types of resources instances, i.e., t3.nano, t3.micro, t3.small, t3.medium, t3.medium, and t3.large, from Ama- zon EC24 are employed to simulate the cloud environments. We summarize the parameters of the five resource types in Table 1. Besides, we set the length of a billing period to 60s and the bandwidth among resource instances to 5.0 Gbps.\nHypervolume [45] metric is designed to measure the quality of a population concerning both convergence and diversity, and has been frequently used to evaluate the perfor- mance of multi-objective evolutionary algorithms. Assume r = {r1,r2} is a reference point. The hypervolume value of a population P, corresponding to the volume between the reference point and the objective vectors of the solutions in\n3 https://confluence.pegasus.isi.edu/display/pegasus.\n4 https://aws.amazon.com/cn/ec2/pricing/on-demand/.\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2023) 9:7337–7348 7343\nFig. 3 DAG diagrams of workflows with about 30 tasks\n(a) Montage\n(b) Cybershake\n(c) LIGO\n(d) Epigenomics\n(e) SIPHIT\nTable 1 Parameters for five types of cloud resource\nType Price ($/h) vCPU Memory (GB)\nt3.nano 0.0062 2 0.5\nt3.micro 0.0125 2 1.0\nt3.small 0.025 2 2.0\nt3.medium 0.0499 2 4.0\nt3.large 0.0998 2 8.0\nP, can be calculated as follows.\nHV (P) = L\n\u0012\u000e\np∈P[ f1(p),r1] × [ f2(p),r2]\n\u0013\n, (12)\nwhere L(△) represents the Lebesgue measure.\nReferringtothesettingsinMOELSandEMS-C,wesetthe population size of the five algorithms as 100. The maximum number of fitness evaluations is set as the stop condition for all the five algorithms and is set as 500,000.\nThe five algorithms are independently repeated 31 times on each workflow instance to mitigate random effects. We run all the experiments on a PC with two Cores i7-6500U CPU @ 2.50 GHz 2.59 GHz, 8.00 GB RAM, Windows 10.\nComparison result\nTables 2 and 3 report the average and standard deviation (in brackets) of the hypervolume values for the algorithms MOELS, EMS-C, WOF, LSMOF, and VCAES in scheduling the 27 workflow instances to cloud resources. For each work- flow instance, the largest hypervolume value among the five algorithms is highlighted in bold. Besides, the Wilcoxon’s rank-sum test with α = 0.05 is used to examine the sig- nificant differences between the comparison algorithm and the proposed VCAES in terms of hypervolume metric. The marks −, +, and ≈represent that the comparison algorithm is significantly worse than, better than, and similar to VCAES.\nThe comparison results in Tables 2 and 3 show that the proposed VCAES performs significantly better than the four baseline algorithms. Specifically, the proposal gener- ates larger hypervolume values than MOELS, EMS-C, WOF, and LSMOF on 20, 22, 26, and 25 out of the 27 workflow instances respectively.\nAn interesting phenomenon is that the more decision vari- ables, the more pronounced the advantages of the proposed VCAES. For example, in workflow instances with about 30 tasks, the VCAES obtains larger hypervolume values than algorithm LSMOF on 3 out of 5. Whereas, in workflow\n123\n\n--- Page Break ---\n\n7344 Complex & Intelligent Systems (2023) 9:7337–7348\nTable 2 Comparison results for the five algorithms on 15 workflows in terms of the hypervolume metric\nWorkflows n MOELS EMS-C WOF LSMOF VCAES\nCyberShake 50 8.8926e−1 − 8.8903e−1 − 8.6131e−1 − 9.0899e−1 + 8.9113e−1\n(3.49e−3) (2.83e−3) (8.28e−3) (2.98e−3) (2.21e−3)\n100 9.3101e−1 − 9.3105e−1 − 9.1743e−1 − 9.2054e−1 − 9.3232e−1\n(4.43e−3) (2.67e−3) (6.42e−3) (2.00e−4) (2.83e−3)\n1000 9.2383e−1 − 9.2341e−1 − 9.1956e−1 − 9.1274e−1 − 9.2764e−1\n(3.19e−3) (2.05e−3) (7.85e−3) (6.11e−4) (5.59e−3)\nEpigenomics 46 7.3227e−1 − 7.3273e−1 − 6.1543e−1 − 7.3249e−1 − 7.3318e−1\n(1.22e−3) (8.57e−4) (2.24e−3) (2.95e−3) (6.68e−4)\n100 7.4749e−1 ≈ 7.4785e−1 ≈ 5.1569e−1 − 7.4067e−1 − 7.4792e−1\n(3.61e−3) (2.66e−3) (9.38e−3) (4.30e−3) (4.07e−3)\n997 6.4607e−1 ≈ 6.4565e−1 − 6.3796e−1 − 4.1166e−1 − 6.4618e−1\n(5.75e−3) (5.45e−3) (1.94e−3) (2.43e−2) (4.61e−3)\nInspiral 50 7.3357e−1 − 7.3415e−1 − 5.7999e−1 − 7.2639e−1 − 7.3735e−1\n(2.76e−3) (2.91e−3) (1.23e−3) (3.23e−3) (1.64e−3)\n100 7.1702e−1 − 7.1315e−1 − 6.1620e−1 − 6.8122e−1 − 7.2373e−1\n(4.29e−3) (4.57e−3) (1.02e−2) (6.72e−3) (6.20e−3)\n1000 6.0665e−1 ≈ 6.0641e−1 ≈ 6.0958e−1 ≈ 3.1438e−1 − 6.0681e−1\n(2.21e−3) (4.00e−3) (5.40e−3) (1.87e−2) (3.90e−3)\nMontage 50 7.5877e−1 ≈ 7.5419e−1 ≈ 6.7955e−1 − 7.7480e−1 + 7.6251e−1\n(5.51e−3) (1.03e−2) (2.96e−2) (7.20e−3) (1.02e−2)\n100 7.0910e−1 − 7.0575e−1 − 6.8191e−1 − 6.9895e−1 − 7.1334e−1\n(7.42e−3) (9.27e−3) (1.73e−2) (9.76e−3) (7.98e−3)\n1000 4.4897e−1 − 4.8142e−1 − 5.6040e−1 − 5.2911e−1 − 5.7057e-1\n(2.24e−1) (2.13e−1) (5.82e−3) (4.40e−2) (1.77e−1)\nSipht 50 6.1120e−1 − 6.1129e−1 − 5.2895e−1 − 6.1273e−1 − 6.1469e−1\n(4.47e−4) (2.68e−4) (2.47e−3) (1.09e−4) (3.34e−4)\n100 6.6995e−1 − 6.6972e−1 − 5.4832e−1 − 5.7389e−1 − 6.7067e−1\n(6.25e−4) (6.01e−4) (3.03e−3) (5.76e−4) (9.73e−4)\n1000 5.6588e−1 − 5.6763e−1 − 5.1232e−1 − 4.0689e−1 − 5.7396e−1\n(3.19e−3) (5.44e−3) (6.95e−2) (3.10e−2) (4.47e−3)\ninstances with 100 and 1000 tasks, the algorithm proposed in this paper significantly outperforms all the four compari- son algorithms. Similar to the baseline algorithms MOELS and EMS-C, the proposed VCAES also follows the frame- work of NSGA-II. Different from MOELS and EMS-C, the VCAES integrates a new adaptive strategy based on vari- able contribution. Although two large-scale multi-objective evolutionary algorithms based on problem transformation, i.e., WOF and LSMOF, exhibit competitive performance in solving continuous problems, their performance in multi- objective scheduling workflows is far inferior to the proposed VCAES. The above comparison results demonstrate that the proposed adaptive mechanism in this paper can effec- tively improve the performance of evolutionary algorithms in solving multi-objective cloud workflow scheduling prob- lems with large-scale variables.\nTo intuitively compare the convergence and diversity of the five multi-objective workflow scheduling algorithms, Fig. 4 illustrates the distribution of their output populations on workflow instances Inspiral, Montage, Sipht, and Cycles with large-scale tasks.\nAs illustrated in Fig. 4a, in the context of Inspiral with 100 tasks, the distribution of VCAES’s output population is better than that of three baseline algorithms, i.e., MOELS, EMS-C, and WOF. More specifically, the output solutions of VCAES dominate that of the three algorithms. Although the diversity of solutions obtained by algorithm LSMOF is superior to that of the VCAES when the cost is less than 10, it is far inferior to algorithm VCAES during other range. To sum up, the proposed VCAES is superior to each baseline algorithm in terms of convergence and diversity. In the context of Montage with 100 tasks, the proposed VCAES has similar advantages\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2023) 9:7337–7348 7345\nTable 3 Comparison results for the five algorithms on 15 workflows in terms of the hypervolume metric\nWorkflows n MOELS EMS-C WOF LSMOF VCAES\nBLAST 103 6.6608e−1 − 6.6692e−1 − 6.2747e−1 − 5.9458e−1 − 6.6844e−1\n(3.21e−3) (1.21e−3) (6.54e−3) (1.13e−2) (1.74e−3)\n303 7.2511e−1 ≈ 7.2531e−1 + 7.2039e-1 − 4.3433e−1 − 7.2375e−1\n(1.55e−3) (1.59e−3) (1.93e−3) (1.04e−2) (1.89e−3)\nCycles 134 6.2794e−1 6.2718e−1 − 5.6875e−1 − 6.0116e−1 − 6.3257e−1\n(7.06e−3) (6.64e−3) (7.54e−3) (7.40e−3) (5.95e−3)\n219 5.5909e−1 − 5.5495e−1 − 5.2102e−1 − 4.9570e−1 − 5.6454e−1\n(4.12e−3) (4.31e−3) (9.82e−3) (6.49e−3) (6.29e−3)\n438 5.7681e−1 ≈ 5.7292e−1 − 5.7542e−1 − 4.8407e−1 − 5.7840e−1\n(5.04e−3) (3.60e−3) (3.62e−3) (1.04e−2) (4.99e−3)\n657 4.8531e−1 − 4.7824e−1 − 4.8592e−1 − 3.6563e−1 − 4.9047e−1\n(7.96e−3) (4.97e−3) (5.93e−3) (1.81e−2) (5.93e−3)\n874 4.9787e−1 − 4.9839e−1 − 4.9265e−1 − 3.1602e−1 − 5.0310e−1\n(3.82e−3) (4.17e−3) (3.94e−3) (1.32e−2) (3.16e−3)\nSeismology 101 8.0189e−1 − 8.0238e−1 − 7.5080e−1 − 7.9124e−1 − 8.0762e−1\n(4.66e−3) (5.39e−3) (1.02e−2) (7.67e−3) (4.71e−3)\n301 6.3724e−1 − 6.2538e−1 − 5.5509e−1 − 6.5746e−1 − 6.8670e−1\n(6.67e−3) (6.39e−3) (2.22e−2) (4.20e−3) (3.75e−3)\n501 6.0699e−1 − 6.0807e−1 − 5.2099e−1 − 5.9846e−1 − 6.1478e−1\n(5.44e−3) (6.20e−3) (3.07e−2) (6.66e−3) (5.95e−3)\n701 6.4371e−1 ≈ 6.4375e−1 ≈ 3.6973e−1 − 6.2789e−1 − 6.4346e−1\n(5.11e−3) (5.34e−3) (6.34e−2) (1.44e−2) (4.57e−3)\n901 6.0329e−1 − 6.0284e−1 − 3.0147e−1 − 5.2011e−1 − 6.3154e−1\n(5.25e−3) (6.72e−3) (8.49e−2) (1.25e−2) (5.78e−3)\nover the comparison algorithms in terms of convergence and diversity, as shown in Fig. 4b.\nAs can be observed from Fig. 4c, in the context of Sipht with 100 tasks, the solutions obtained by algorithm VCAES dominate most solutions obtained by comparison algorithms. This means that the VCAES outperforms all the four baseline algorithms in both convergence and diversity. In the context of Cycles with 657 tasks, the proposed VCAES has slight advantages over the comparison algorithms in terms of con- vergence and diversity, as shown in Fig. 4d.\nPerformance influence of different mechanisms\nThe VCAES mainly contains two new mechanisms to dynamically classify the decision variables and adaptively allocate evolution opportunities to each constructed group of decision variables. To measure the respective contributions of the two mechanisms to the overall performance, we con- struct three variants of the VCAES for comparison. The first variant, denoted as Variant 1, is constructed by replacing the decision variable classification mechanism with a ran- dom one and iterating each group of decision variables in a round-robin manner. The second variant, denoted as Variant 2, is constructed by replacing the decision variable classifica-\ntion mechanism with a random one and adaptively allocating evolution opportunities to each group of decision variables. The third variant, denoted as Variant 3, is constructed by removing the evolution opportunity allocation mechanism.\nThe main difference between the VCAES and its Variant 3 is that Variant 3 does not have the adaptive evolution oppor- tunity allocation mechanism. Then, the improvement in the hypervolume value of the VCAES relative to Variant 3 can be attributed to the performance contribution of the adap- tive evolution opportunity allocation mechanism. Similarly, the improvement in the hypervolume value of the VCAES relative to Variant 3 can be attributed to the performance con- tribution of the decision variable classification mechanism. The comparison results in Fig. 5 illustrate that the two pro- posed mechanisms contribute to the overall performance of the VCAES, with the decision variable classification mech- anism contributing more. The performance improvement of the VCAES for Variant 1 can be attributed to the performance contribution of mixing the two proposed mechanisms. As shown in Fig. 5, in most workflow instances, the performance contribution of mixing the two mechanisms is better than that of any one. An exception is shown in Fig. 5b, where we can see that the overall performance contribution of mixing the two mechanisms is not as good as the contribution of the\n123\n\n--- Page Break ---\n\n7346 Complex & Intelligent Systems (2023) 9:7337–7348\nFig. 4 Population distributions of the five algorithms on solving different workflow scheduling problems\n10 15 20 25 30 35  f1\n5\n10\n15\nf2\n103 Inspiral 100\nMOELS EMS-C WOF LSMOF VCAES\n(a)\n1 2 3 4 5  f1\n2\n4\n6\n8\n10\nf2\n102 Montage 100\nMOELS EMS-C WOF LSMOF VCAES\n(b)\n10 20 30 40 50  f1\n3\n4\n5\n6\n7\n8\n9\nf2\n103 Sipht 100\nMOELS EMS-C WOF LSMOF VCAES\n(c)\n10 20 30 40 50 60  f1\n2\n4\n6\n8\n10\nf2\n103 Cycles 657\nMOELS EMS-C WOF LSMOF VCAES\n(d)\ndecision variable classification mechanism. This is because a mechanism cannot be efficient in any scenario. Instead, it has certain advantages in some scenarios and inevitably has its disadvantages in other scenarios.\nConclusions\nThis paper focuses on two challenges in multi-objective cloud workflow scheduling: (1) large-scale decision vari- ables; (2) and imbalance feature among variables regarding their contributions to objectives. To deal with these two challenges, this paper suggests a variable-contribution-based adaptive evolutionary cloud workflow scheduling approach\nthat dynamically classifies the variables and adaptively allo- cates evolution opportunities to each constructed group of variables. Finally, in the context of real-world workflows and cloud platforms, this paper conducts comparison exper- iments to verify the effectiveness of the proposed adaptive mechanism in enhancing the population to approximate the Pareto-fronts of multi-objective cloud workflow scheduling problems.\nCloud workflow scheduling is a representative grey-box problem, and it is interesting to mine the knowledge on the workflows and cloud resources to derive efficient scheduling algorithms. Another potential direction is to design a parallel evolutionary framework to shorten the time overhead of evo- lution optimization to support cloud workflow scheduling in real-time and uncertain situations.\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2023) 9:7337–7348 7347\nFig. 5 Performance influence of the two proposed components\nVariant 1 Variant 2 Variant 3 VCAES Variants\n0.7\n0.71\n0.72\n0.73\nHV\nInspiral 100\n(a)\nVariant 1 Variant 2 Variant 3 VCAES Variants\n0.69\n0.7\n0.71\n0.72\n0.73\nHV\nMontage 100\n(b)\nVariant 1 Variant 2 Variant 3 VCAES Variants\n0.666\n0.667\n0.668\n0.669\n0.67\n0.671\n0.672\n0.673\nHV\nSipht 100\n(c)\nVariant 1 Variant 2 Variant 3 VCAES Variants\n0.47\n0.48\n0.49\n0.5\n0.51\nHV\nCycles 657\n(d)\nAcknowledgements This work is supported by the Science and Tech- nology Innovation Team of Shaanxi Province (2023-CX-TD-07), and the Special Project in Major Fields of Guangdong Universi- ties (2021ZDZX1019), the Major Projects of Guangdong Educa- tion Department for Foundation Research and Applied Research (2017KZDXM081, 2018KZDXM066), Guangdong Provincial Univer- sity Innovation Team Project (2020KCXTD045) and the Hunan Key Laboratory of Intelligent Decision-making Technology for Emergency Management (2020TP1013).\nFunding The funding has been received from National Natural Sci- ence Foundation of China with Grant no. 61773120; Hunan Provincial Innovation Foundation for Postgraduate with Grant no. CX20200585.\nData availability Data available on request from the authors.\nOpen Access This article is licensed under a Creative Commons Attribution 4.0 International License, which permits use, sharing, adap- tation, distribution and reproduction in any medium or format, as long as you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indi- cate if changes were made. The images or other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory regulation or exceeds the permitteduse,youwillneedtoobtainpermissiondirectlyfromthecopy- right holder. To view a copy of this licence, visit http://creativecomm ons.org/licenses/by/4.0/.\nReferences\n1. Bugingo E, Zhang D, Chen Z, Zheng W (2021) Towards decom- position based multi-objective workflow scheduling for big data processing in clouds. Clust Comput 24(1):115–139 2. Lv Z, Lou R, Li J, Singh AK, Song H (2021) Big data analytics for 6G-enabled massive internet of things. IEEE Internet Things J 8(7):5350–5359 3. Lv Z, Qiao L, Hossain MS, Choi BJ (2021) Analysis of using blockchain to protect the privacy of drone big data. IEEE Netw 35(1):44–49 4. Cong P, Li L, Zhou J, Cao K, Wei T, Chen M, Hu S (2018) Devel- oping user perceived value based pricing models for cloud markets. IEEE Trans Parallel Distrib Syst 29(12):2742–2756 5. Wang S, Sheng H, Zhang Y, Yang D, Shen J, Chen R (2023) Blockchain-empowered distributed multi-camera multi- target tracking in edge computing. IEEE Trans Ind Inf 2022:896 6. Farid M, Latip R, Hussin M, Hamid NAWA (2020) Scheduling scientific workflow using multi-objective algorithm with fuzzy resource utilization in multi-cloud environment. IEEE Access 8:24309–24322 7. Masdari M, ValiKardan S, Shahi Z, Azar SI (2016) Towards work- flow scheduling in cloud computing: a comprehensive analysis. J Netw Comput Appl 66:64–82 8. Cao B, Sun Z, Zhang J, Gu Y (2021) Resource allocation in 5G IoV architecture based on SDN and fog-cloud computing. IEEE Trans Intell Transp Syst 22(6):3832–3840 9. Zhu Z, Zhang G, Li M, Liu X (2016) Evolutionary multi-objective workflow scheduling in cloud. IEEE Trans Parallel Distrib Syst 27(5):1344–1357\n123\n\n--- Page Break ---\n\n7348 Complex & Intelligent Systems (2023) 9:7337–7348\n10. Hosseinzadeh M, Ghafour MY, Hama HK, Vo B, Khoshnevis A (2020) Multi-objective task and workflow scheduling approaches in cloud computing: a comprehensive review. J Grid Comput 18(3):327–356 11. Xiao Z, Shu J, Jiang H, Lui JC, Min G, Liu J, Dustdar S (2022) Multi-objective parallel task offloading and content caching in D2D-aided MEC networks. IEEE Trans Mob Comput 2022:896 12. Cao B, Yan Y, Wang Y, Liu X, Lin JC-W, Sangaiah AK, Lv Z (2022) A multiobjective intelligent decision-making method for multi- stage placement of PMU in power grid enterprises. IEEE Trans Ind Inf 2022:87 13. Zhan Z-H, Liu X-F, Gong Y-J, Zhang J, Chung HS-H, Li Y (2015) Cloud computing resource scheduling and a survey of its evolu- tionary approaches. ACM Comput Surv 47(4):1–33 14. Durillo JJ, Nae V, Prodan R (2014) Multi-objective energy-efficient workflow scheduling using list-based heuristics. Futur Gener Com- put Syst 36:221–236 15. Fard HM, Prodan R, Fahringer T (2014) Multi-objective list scheduling of workflow applications in distributed computing infrastructures. J Parall Distrib Comput 74(3):2152–2165 16. Han P, Du C, Chen J, Ling F, Du X (2021) Cost and makespan scheduling of workflows in clouds using list multiobjective opti- mization technique. J Syst Architect 112:101837 17. Ismayilov G, Topcuoglu HR (2020) Neural network based multi- objective evolutionary algorithm for dynamic workflow scheduling in cloud computing. Futur Gener Comput Syst 102:307–322 18. Li X, Sun Y (2021) Application of RBF neural network opti- mal segmentation algorithm in credit rating. Neural Comput Appl 33:8227–8235 19. Qin X, Liu Z, Liu Y, Liu S, Yang B, Yin L, Liu M, Zheng W (2022) User OCEAN personality model construction method using a BP neural network. Electronics 11(19):3022 20. Chen Z-G, Zhan Z-H, Lin Y, Gong Y-J, Gu T-L, Zhao F, Yuan H- Q, Chen X, Li Q, Zhang J (2019) Multiobjective cloud workflow scheduling: a multiple populations ant colony system approach. IEEE Trans Cybern 49(8):2912–2926 21. Adhikari M, Amgoth T, Srirama SN (2020) Multi-objective scheduling strategy for scientific workflows in cloud environment: a firefly-based approach. Appl Soft Comput 93:106411 22. Gupta R, Gajera V, Jana PK et al (2016) An effective multi- objective workflow scheduling in cloud computing: a PSO based approach. In: 2016 Ninth International Conference on Contempo- rary Computing, pp 1–6, IEEE 23. Yu H (2021) Evaluation of cloud computing resource schedul- ing based on improved optimization algorithm. Compl Intell Syst 7(4):1817–1822 24. Wang Y, Zuo X (2021) An effective cloud workflow schedul- ing approach combining PSO and idle time slot-aware rules. IEEE/CAA J Autom Sin 8(5):1079–1094 25. Abed-Alguni BH, Alawad NA (2021) Distributed grey wolf opti- mizer for scheduling of workflow applications in cloud environ- ments. Appl Soft Comput 102:107113 26. Choudhary A, Gupta I, Singh V, Jana PK (2018) A GSA based hybrid algorithm for bi-objective workflow scheduling in cloud computing. Futur Gener Comput Syst 83:14–26 27. Hosseini Shirvani M, Noorian Talouki R (2022) Bi-objective scheduling algorithm for scientific workflows on cloud computing platformwithmakespanandmonetarycostminimizationapproach. Compl Intell Syst 8(2):1085–1114 28. Mohammadzadeh A, Masdari M, Gharehchopogh FS (2021) Energy and cost-aware workflow scheduling in cloud computing data centers using a multi-objective optimization algorithm. J Netw Syst Manage 29(3):1–34 29. Zhang H, Wu Y, Sun Z (2022) EHEFT-R: multi-objective task scheduling scheme in cloud computing. Compl Intell Syst 8(6):4475–4482\n30. Zhou X, Zhang G, Sun J, Zhou J, Wei T, Hu S (2019) Minimizing cost and makespan for workflow scheduling in cloud using fuzzy dominance sort based HEFT. Futur Gener Comput Syst 93:278– 289 31. Kumar MS, Tomar A, Jana PK (2021) Multi-objective workflow scheduling scheme: a multi-criteria decision making approach. J Ambient Intell Hum Comput 2021:1–20 32. Ye X, Liu S, Yin Y, Jin Y (2017) User-oriented many-objective cloud workflow scheduling based on an improved knee point driven evolutionary algorithm. Knowl-Based Syst 135:113–124 33. Pham T-P, Fahringer T (2020) Evolutionary multi-objective work- flow scheduling for volatile resources in the cloud. IEEE Trans Cloud Comput 2020:36 34. Tian Y, Si L, Zhang X, Cheng R, He C, Tan KC, Jin Y (2021) Evo- lutionary large-scale multi-objective optimization: a survey. ACM Comput Surv 54(8):1–34 35. Coello CAC, Brambila SG, Gamboa JF, Tapia MGC, Gómez RH (2020) Evolutionary multiobjective optimization: open research areasandsomechallengeslyingahead.ComplIntellSyst6(2):221– 236 36. Chen H, Cheng R, Wen J, Li H, Weng J (2020) Solving large- scale many-objective optimization problems by covariance matrix adaptation evolution strategy with scalable small subpopulations. Inf Sci 509:457–469 37. Zhang X, Tian Y, Cheng R, Jin Y (2018) A decision variable clustering-based evolutionary algorithm for large-scale many- objective optimization. IEEE Trans Evol Comput 22(1):97–112 38. Chen H, Zhu X, Liu G, Pedrycz W (2021) Uncertainty-aware online scheduling for real-time workflows in cloud service environment. IEEE Trans Serv Comput 14(4):1167–1178 39. De Maio V, Kimovski D (2020) Multi-objective scheduling of extreme data scientific workflows in fog. Futur Gener Comput Syst 106:171–184 40. Lv Z, Xiu W (2019) Interaction of edge-cloud computing based on SDN and NFV for next generation IoT. IEEE Internet Things J 7(7):5706–5712 41. Deb K, Pratap A, Agarwal S, Meyarivan T (2002) A fast and eli- tist multiobjective genetic algorithm: NSGA-II. IEEE Trans Evol Comput 6(2):182–197 42. Wu Q, Zhou M, Zhu Q, Xia Y, Wen J (2020) MOELS: multiobjec- tive evolutionary list scheduling for cloud workflows. IEEE Trans Autom Sci Eng 17(1):166–176 43. Zille H, Ishibuchi H, Mostaghim S, Nojima Y (2018) A frame- work for large-scale multiobjective optimization based on problem transformation. IEEE Trans Evol Comput 22(2):260–275 44. He C, Li L, Tian Y, Zhang X, Cheng R, Jin Y, Yao X (2019) Accelerating large-scale multiobjective optimization via problem reformulation. IEEE Trans Evol Comput 23(6):949–961 45. Zitzler E, Thiele L (1999) Multiobjective evolutionary algorithms: a comparative case study and the strength Pareto approach. IEEE Trans Evol Comput 3(4):257–271\nPublisher’s Note Springer Nature remains neutral with regard to juris- dictional claims in published maps and institutional affiliations.\n123",
+  "equations": [
+    {
+      "page": 3,
+      "raw_extracted": "Without loss of generality, a workflow application is described by a Directed Acyclic Graph (DAG), whose vertices and directed edges represent workflow tasks and data dependencies, respectively. Formally, we construct the directed acyclic graph for a workflow application as Ψ = {T , D}, where T = {t1, t2, . . . , tn} denotes the vertex set corresponding to task set, D ⊆T × T denotes the edge set corresponding to data dependencies among tasks. The exis- tence of an edge di, j ∈D means that t j’s start demands ti’s output results. Generally, task ti is referred to as an direct predecessor of task t j, and t j is referred to as an direct suc- cessor of ti. Regarding a task ti, all its direct predecessors is expressed as a set P(ti), and all its direct successors is expressed as a set S(ti).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "The differences between different types of cloud resources mainly lie in their charging prices and performance con- figurations, such as number of CPU cores, memory size, and network bandwidth. Assuming that cloud platforms offer m types of resources, then we model them as Γ = {1, 2, . . . , m}, where τ ∈Γ denotes the τ-th resource type. Regarding a type τ, we employ pr(τ) and con(τ) to represent its price and configurations. Then, a cloud resource of type τ is modeled as rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k = {k, pr(τ), con(τ)}, where k denotes the index of resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Since cloud resources are available on demand, we build a resource pool based on the maximum resource requirements for running a workflow. Assuming the maximum parallelism of the workflow is p, the resource pool includes p resources of each type. Then, we describe the resource pool as: R = \u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Given a decision vector, assume that the task ti is mapped to resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "On resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0005",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "where I(tp) indicates tp’s order number on resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "k . Then, the start time sti,k of task ti on cloud resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0006",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "max tb∈Bi",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "tp∈P(ti)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0004",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "ftp,∗+ dtp,i",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0005\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "where ftb,k indicates tb’s finish time on resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k , ftp,∗ indicates the finish time of task tp, and dtp,i indicates the data transfer time from tp to ti.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Before scheduling, task ti’s execution time eti,k on cloud resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k can be predicted by the computation length of task ti and the CPU frequency of the mapped resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Given a decision vector, the set of all tasks mapped to cloud resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Tk = {ti|xi = k, i ∈{1, 2, . . . , n}}. (4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "With the task set Tk, the start time utk and end time ntk of renting resource rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "ti∈Tk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\u0006",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "sti,k −max",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "tp∈P(ti) dtp,i",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "ti∈Tk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\u0006",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "ts∈S(ti) dti,s",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\u0007",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "\b",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "rτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "k ∈R",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "pr(τ) ×",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "ntk −utk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "ti∈T fti,∗. (7)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "⎧ ⎨",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "⎩",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "x ∈{1, 2, . . . , m · p}n.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Pareto-dominance: Assuming x1 and x2 are two feasible solutions. x1 is regarded to dominate x2 (denoted as x1 ≺x2) if and only if the two objectives of x1 are not inferior to that of",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "x2 (i.e., f j(x1) ≤f j(x2), ∀j ∈{1, 2})andx1 isbetterthanx2 on at least one objective (i.e., f j(x1) < f j(x2), ∃j ∈{1, 2}).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Pareto-optimal solution: Solution x∗∈{1, 2, . . . , m· p}n is regarded as Pareto-optimal if there exist no feasible solution dominating it.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "size of decision variables s Output: A final population P 1: P ←Randomly generate a population 2: M ←Ol×n 3: V ←Generate a set of reference vectors 4: g ←Initialize the number of generations for CC 5: while does not reach termination condition do 6: [P, K] ←AdaptiveCoEvolution(P, M, V , g) 7: for j = 1 →l −1 do 8: for i = 1 →n do 9: M( j, i) ←M( j + 1, i) 10: end for 11: end for 12: for i = 1 →n do 13: M(l, i) ←K(i) 14: end for 15: Q ←Generate a new population 16: P ←EnvironmentalSelection(P \u000e Q, N) 17: end while",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "After the initialization stage, the VCAES enters the main loop. During each generation, the proposed adaptive coop- erative coevolution mechanism is triggered to distribute the decision variables into many groups and allocate evo- lution opportunities to each group according to variable contributions (Line 6). Next, the memory matrix of variable contributions is updated (Lines 7–14). It is worth noting that the decision variables in the cloud workflow scheduling are related to each other. The VCAES generates a new popula- tion by evolving all variables in each generation (Line 15). After that, the non-dominated sorting and elitist-preserving method in NSGA-II [41] is employed to select an offspring population P from the combined population P \u000e Q (Line 16). Before introducing the proposed adaptive cooperative co- evolution mechanism, we define and illustrate the variable contributions.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "\b",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "q∈Q",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "FI(q), ∀j ∈G(i), (9)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "For a set of reference vector V , the one associated with solution q is defined as v∗= argv∈V min⟨f (q), v⟩, where ⟨f (q), v⟩represents the acute angle between two vectors. Suppose p is the associated solution of the reference vec- tor v∗, then the fitness improvement of solution q can be calculated as follows:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "FI(q) = max{0, Fit( p, v∗) −Fit(q, v∗)}, (10)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Fit(q, v) = ∥f ′∥· (cos < f ′, v > + sin < f ′, v >), (11)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "where f ′ = f (q)−z denotes the translated objective vector, and z denotes the ideal point.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "An intuitive example on calculating contribution is given in Fig. 2. Suppose previous solution p and the new solution q are associated to the reference vector v = (0.5, 0.5), and their objective vectors are f ( p) = (1.3, 1.0) and f (q) = (0.7, 0.8), respectively. The ideal point is supposed to be z = (0, 0). Based on the definition in (11), we can obtain the fitness of these two solutions as Fit( p, v) = 1.8385 and Fit(q, v) = 1.1314. Then, the fitness improvement of solu- tion q is FI(q) = max{0, 1.8385 −1.1314} = 0.7071. If the solution q is generated by evolving variables {1, 3, 5}, then the contribution of these variables are defined as K(1) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Output: A new population P; Contribution for each variable K 1: H ←O1×n 2: for i = 1 →n do 3: H(i) ←\u000fl",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "i∈G( j) H(i) \u000fn",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "i=1 H(i) 10: for k = 1 →g′ do 11: Q ←Generate an offspring population by evolving variables in G( j) 12: P ←EnvironmentalSelection(P \u000e Q, N) 13: end for 14: c ←Calculate the contributions of variables in G( j) as (9) 15: for i = 1 →n do 16: K(i) ←c",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "\u0010",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "\u0011",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "\u0010",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "n2 · N + n · l + N · n + N 2\u0011",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "\u0012\u000e",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "p∈P[ f1(p),r1] × [ f2(p),r2]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "\u0013",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Tables 2 and 3 report the average and standard deviation (in brackets) of the hypervolume values for the algorithms MOELS, EMS-C, WOF, LSMOF, and VCAES in scheduling the 27 workflow instances to cloud resources. For each work- flow instance, the largest hypervolume value among the five algorithms is highlighted in bold. Besides, the Wilcoxon’s rank-sum test with α = 0.05 is used to examine the sig- nificant differences between the comparison algorithm and the proposed VCAES in terms of hypervolume metric. The marks −, +, and ≈represent that the comparison algorithm is significantly worse than, better than, and similar to VCAES.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "CyberShake 50 8.8926e−1 − 8.8903e−1 − 8.6131e−1 − 9.0899e−1 + 8.9113e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(3.49e−3) (2.83e−3) (8.28e−3) (2.98e−3) (2.21e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "100 9.3101e−1 − 9.3105e−1 − 9.1743e−1 − 9.2054e−1 − 9.3232e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(4.43e−3) (2.67e−3) (6.42e−3) (2.00e−4) (2.83e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "1000 9.2383e−1 − 9.2341e−1 − 9.1956e−1 − 9.1274e−1 − 9.2764e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(3.19e−3) (2.05e−3) (7.85e−3) (6.11e−4) (5.59e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Epigenomics 46 7.3227e−1 − 7.3273e−1 − 6.1543e−1 − 7.3249e−1 − 7.3318e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(1.22e−3) (8.57e−4) (2.24e−3) (2.95e−3) (6.68e−4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "100 7.4749e−1 ≈ 7.4785e−1 ≈ 5.1569e−1 − 7.4067e−1 − 7.4792e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(3.61e−3) (2.66e−3) (9.38e−3) (4.30e−3) (4.07e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "997 6.4607e−1 ≈ 6.4565e−1 − 6.3796e−1 − 4.1166e−1 − 6.4618e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(5.75e−3) (5.45e−3) (1.94e−3) (2.43e−2) (4.61e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Inspiral 50 7.3357e−1 − 7.3415e−1 − 5.7999e−1 − 7.2639e−1 − 7.3735e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(2.76e−3) (2.91e−3) (1.23e−3) (3.23e−3) (1.64e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "100 7.1702e−1 − 7.1315e−1 − 6.1620e−1 − 6.8122e−1 − 7.2373e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(4.29e−3) (4.57e−3) (1.02e−2) (6.72e−3) (6.20e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "1000 6.0665e−1 ≈ 6.0641e−1 ≈ 6.0958e−1 ≈ 3.1438e−1 − 6.0681e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(2.21e−3) (4.00e−3) (5.40e−3) (1.87e−2) (3.90e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Montage 50 7.5877e−1 ≈ 7.5419e−1 ≈ 6.7955e−1 − 7.7480e−1 + 7.6251e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(5.51e−3) (1.03e−2) (2.96e−2) (7.20e−3) (1.02e−2)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "100 7.0910e−1 − 7.0575e−1 − 6.8191e−1 − 6.9895e−1 − 7.1334e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(7.42e−3) (9.27e−3) (1.73e−2) (9.76e−3) (7.98e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "1000 4.4897e−1 − 4.8142e−1 − 5.6040e−1 − 5.2911e−1 − 5.7057e-1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(2.24e−1) (2.13e−1) (5.82e−3) (4.40e−2) (1.77e−1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Sipht 50 6.1120e−1 − 6.1129e−1 − 5.2895e−1 − 6.1273e−1 − 6.1469e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(4.47e−4) (2.68e−4) (2.47e−3) (1.09e−4) (3.34e−4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "100 6.6995e−1 − 6.6972e−1 − 5.4832e−1 − 5.7389e−1 − 6.7067e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(6.25e−4) (6.01e−4) (3.03e−3) (5.76e−4) (9.73e−4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "1000 5.6588e−1 − 5.6763e−1 − 5.1232e−1 − 4.0689e−1 − 5.7396e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(3.19e−3) (5.44e−3) (6.95e−2) (3.10e−2) (4.47e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "BLAST 103 6.6608e−1 − 6.6692e−1 − 6.2747e−1 − 5.9458e−1 − 6.6844e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(3.21e−3) (1.21e−3) (6.54e−3) (1.13e−2) (1.74e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "303 7.2511e−1 ≈ 7.2531e−1 + 7.2039e-1 − 4.3433e−1 − 7.2375e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(1.55e−3) (1.59e−3) (1.93e−3) (1.04e−2) (1.89e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Cycles 134 6.2794e−1 6.2718e−1 − 5.6875e−1 − 6.0116e−1 − 6.3257e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(7.06e−3) (6.64e−3) (7.54e−3) (7.40e−3) (5.95e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "219 5.5909e−1 − 5.5495e−1 − 5.2102e−1 − 4.9570e−1 − 5.6454e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(4.12e−3) (4.31e−3) (9.82e−3) (6.49e−3) (6.29e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "438 5.7681e−1 ≈ 5.7292e−1 − 5.7542e−1 − 4.8407e−1 − 5.7840e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(5.04e−3) (3.60e−3) (3.62e−3) (1.04e−2) (4.99e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "657 4.8531e−1 − 4.7824e−1 − 4.8592e−1 − 3.6563e−1 − 4.9047e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(7.96e−3) (4.97e−3) (5.93e−3) (1.81e−2) (5.93e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "874 4.9787e−1 − 4.9839e−1 − 4.9265e−1 − 3.1602e−1 − 5.0310e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(3.82e−3) (4.17e−3) (3.94e−3) (1.32e−2) (3.16e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Seismology 101 8.0189e−1 − 8.0238e−1 − 7.5080e−1 − 7.9124e−1 − 8.0762e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(4.66e−3) (5.39e−3) (1.02e−2) (7.67e−3) (4.71e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "301 6.3724e−1 − 6.2538e−1 − 5.5509e−1 − 6.5746e−1 − 6.8670e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(6.67e−3) (6.39e−3) (2.22e−2) (4.20e−3) (3.75e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "501 6.0699e−1 − 6.0807e−1 − 5.2099e−1 − 5.9846e−1 − 6.1478e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(5.44e−3) (6.20e−3) (3.07e−2) (6.66e−3) (5.95e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "701 6.4371e−1 ≈ 6.4375e−1 ≈ 3.6973e−1 − 6.2789e−1 − 6.4346e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(5.11e−3) (5.34e−3) (6.34e−2) (1.44e−2) (4.57e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "901 6.0329e−1 − 6.0284e−1 − 3.0147e−1 − 5.2011e−1 − 6.3154e−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(5.25e−3) (6.72e−3) (8.49e−2) (1.25e−2) (5.78e−3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

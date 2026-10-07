@@ -1,0 +1,566 @@
+{
+  "source_file": "s10458-025-09729-1.pdf",
+  "num_pages": 25,
+  "full_text": "Received: 29 January 2024 / Accepted: 19 December 2025 / Published online: 10 January 2026 © The Author(s) 2026\nFenghui Ren, Jun Yan, Guoxin Su, Wen Gu, and Shohei Kato contributed equally to this work.\nExtended author information available on the last page of the article\nImproving scalability of multi-agent deep reinforcement  learning with suboptimal human knowledge\nDingbang Liu1,2 · Fenghui Ren1 · Jun Yan1 · Guoxin Su1 · Wen Gu2 · Shohei Kato2\nAuton Agent Multi-Agent Syst (2026) 40:2 https://doi.org/10.1007/s10458-025-09729-1\nAbstract Due to its exceptional learning ability, multi-agent deep reinforcement learning (MADRL)  has garnered widespread research interest. However, since the learning is data-driven and  involves sampling from millions of steps, training a large number of agents is inherently  challenging and inefficient. Inspired by the human learning process, we aim to transfer  knowledge from humans to avoid starting from scratch. Given the growing emphasis on  the Human-on-the-Loop concept, this study focuses on addressing the challenges of large- population learning by incorporating suboptimal human knowledge into the cooperative  multi-agent environment. To leverage human experience, we integrate human knowledge  into the training process of MADRL, representing it in natural language rather than spe­ cific action-state pairs. Compared to previous works, we further consider the attributes  of transferred knowledge to assess its impact on algorithm scalability. Additionally, we  examine several features of knowledge mapping to effectively convert human knowledge  to the action space where agent learning occurs. In reaction to the disparity in knowledge  construction between humans and agents, our approach allows agents to decide freely  which portions of the state space to leverage human knowledge. From the challenging  domains of the StarCraft Multi-agent Challenge, our method successfully alleviates the  scalability issue in MADRL. Furthermore, we find that, despite individual-type knowledge  significantly accelerating the training process, cooperative-type knowledge is more desir­ able for addressing a large agent population. We hope this study provides valuable insights  into applying and mapping human knowledge, ultimately enhancing the interpretability of  agent behavior.\nKeywords  Multi-agent learning · Reinforcement learning · Human knowledge transfer ·  Scalability\n1 3\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\n1  Introduction\nEmpowered by deep learning, multi-agent deep reinforcement learning (MADRL) has tran­ scended the limitations of historical tabular methods and found application in complex sce­ narios, stimulating widespread research interest [8, 13, 32, 52]. As a rapidly evolving field,  MADRL has achieved rapid development with numerous frameworks proposed. These  approaches leverage novel technologies in communication [14, 47], attention mechanisms  [20, 33], and graph theory [25, 43] to address the challenges of non-stationarity and partial  observability [32]. Nevertheless, scalability remains a critical attribute of MADRL, as it  facilitates autonomous collective learning behaviors among agents. In many engineering  and scientific disciplines, algorithms require sufficient scalability to ensure effective coop­ eration [4, 17, 27]. However, training a large number of agents presents inherent difficulties.  The joint action-state space expands exponentially with the number of agents, leading to the  curse of dimensionality [5, 28]. Compounded by sparse rewards and sample inefficiency  [3, 7], agents encounter “start-up” challenges [45] and frequently stagnate in local optima,  rendering learning impossible in the worst-case scenarios. While effective in small groups,  many state-of-the-art algorithms still struggle to scale to a large number of agents [13, 46].\nTo mitigate the burden of exploration and overcome the curse of dimensionality, knowl­ edge transfer methods have attracted significant research interest in the context of large- scale multi-agent systems [6, 39]. Inspired by human learning processes, these methods  enable agents to adjust their strategies based on prior experience, thereby avoiding the need  to learn from scratch when facing unfamiliar scenarios. As the most intuitive and prevalent  source, transferring prior knowledge from human trainers has received considerable atten­ tion [12, 54]. In 2017, Nahavandi [30] further highlighted the significance of the Human- on-the-Loop concept. In this paradigm, while agents execute tasks autonomously, humans  act as monitors or supervisors to facilitate more intelligent decision-making. Following this  trajectory, an increasing number of studies have investigated integrating human knowledge  into the training process to guide agent learning [19, 24, 54]. A prominent line of research  focuses on extracting prior knowledge from expert trajectories via imitation learning [40,  48] to address sequential decision-making problems. Although an increasing number of researchers have investigated the feasibility of  transferring knowledge from humans, the utilization of human knowledge in large-scale  multi-agent systems necessitates further exploration. Currently, human knowledge is pre­ dominantly applied in single-agent tasks [22, 29], whereas its implementation in multi- agent systems has not been fully discussed. Despite impressive achievements in DRL, most  single-agent methods are not directly applicable to multi-agent scenarios, as applying them  in an unprincipled manner can precipitate catastrophic negative transfer [6]. While some  existing works address the multi-agent setting, the scope is often restricted to a small num­ ber of agents [2, 49]. Furthermore, human knowledge is typically applied indiscriminately,  and the methodology for mapping knowledge from humans to agents remains in its nascent  stages [12]. However, knowledge in multi-agent systems encompasses various types and  attributes, with different types of knowledge potentially having varying impacts on agent  learning. Additionally, the scalability effects can differ depending on the number of agents\n1 3\n2  Page 2 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\ninvolved. Nevertheless, incorporating human knowledge holds potential to mitigate the  scalability challenges inherent in large-scale systems, as numerous studies have demon­ strated the efficacy of integrating human knowledge into RL agent learning.\nMotivated by these challenges, we attempt to integrate different types of human knowl­ edge into the action space to address the scalability issue in large-scale cooperative multi- agent systems. Representing human knowledge in natural language, we explore the effects  of different types of human knowledge on varying numbers of agents. As agents develop  policies within the action space, we also consider several features of knowledge mapping to  better map human knowledge onto the action level. Empirical results from challenging sce­ narios in the StarCraft Multi-Agent Challenge (SMAC) [36] demonstrate that: i) leveraging  human knowledge enables our framework to mitigate scalability issues in MADRL. Further­ more, the framework is capable of automatically filtering out improper knowledge during  the learning process to prevent negative knowledge transfer; ii) individual-type knowledge  significantly accelerates the training process, whereas cooperative-type knowledge exhibits  greater efficacy as the number of agents increases; and iii) regarding the mapping of coop­ erative-type knowledge, constraints are necessary, and the subset of participating agents  should be limited to ensure better scalability. Conversely, individual-type knowledge per­ mits broader application across large agent populations. We hope this work provides general  guidance on human knowledge transfer and enhances the interpretability of agent behaviors.\nIn the following sections, we will first discuss the related work on knowledge transfer in  Section 2. Then, the background is introduced in Section 3. Subsequently, our approach to  applying human knowledge is elaborated upon in Section 4. The experimental settings and  results are presented in Section 5. Finally, the conclusion and future work are discussed in  Section 6.\n2  Related work\nEven state-of-the-art MADRL algorithms face challenges in addressing the substantial sam­ ple complexity inherent in large-scale agent systems. Given the high computational cost  associated with exploration, knowledge transfer has emerged as an indispensable strategy  for enhancing the scalability of MADRL. Predicated on similarities in data, tasks, or models,  knowledge transfer leverages previously acquired information from comparable domains,  thereby diminishing the reliance on extensive data samples. One primary implementation  within MADRL involves repurposing solutions derived from agents in prior tasks. Alterna­ tively, numerous studies advocate for the utilization of knowledge from auxiliary sources,  notably human expert demonstrations [6].\n2.1  Knowledge transfer among agents\nMotivated by the concept that agents can benefit from the knowledge of peers, various  knowledge reuse methods have been proposed to simplify the learning process.\n1 3\nPage 3 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nTo enhance learning efficiency, parameter sharing is proposed, where knowledge is trans­ ferred among agents through the shared parameters [15]. By sharing a centralized policy  network among agents, Shao et al. [38] achieved scalability over 40 agents. However, the  application of parameter sharing typically necessitates agent homogeneity [56]. Further­ more, several studies have emphasized the critical importance of diverse policy genera­ tion in scenarios involving large agent populations. Conversely, parameter sharing tends to  enforce high policy similarity, thereby hindering the capacity of the algorithm to manage  large-scale populations effectively [3, 50].\nBeyond knowledge sharing during training, agents can also derive learning from prior  tasks. Transfer learning reuses knowledge acquired in distinct tasks requiring similar skills  to address complex agent interactions [44]. Since this approach requires discerning the cor­ relation between tasks, the issue of negative transfer remains a persistent challenge [26].  Similar to transfer learning, curriculum learning aims to improve agent capabilities gradu­ ally through a designed curriculum. By progressing from small-scale scenarios to those with  many agents, this method can compensate for specific deficiencies and positively impact  long-term development [28, 31]. Nevertheless, the curriculum at each stage is typically  selected manually by human experts. Furthermore, the fixed neural network structure limits  knowledge completeness, as the number of agents varies between curricula [45].\nHowever, a primary limitation of the aforementioned knowledge transfer methods is that  the extracted knowledge is abstract and lacks interpretability. As the neural network oper­ ates as an end-to-end “black box”, knowledge is implicitly stored within the parameters.  Consequently, evaluating the efficacy and quality of the transferred knowledge proves chal­ lenging. Transferred parameters are occasionally ill-suited, potentially leading agents to  reuse unrelated knowledge. Compounding this issue, a general metric to address this evalu­ ation problem remains absent [6, 18, 39].\n2.2  Knowledge transfer from human\nAs the “black box” approach is unsuitable for critical applications, the transfer method  should be interpretable, prompting an increasing number of researchers concerning the  Human-on-the-Loop idea [12]. Intuitively, transferring knowledge from human trainers is  straightforward and profitable. Based on human policy itself, the most common source,  various frameworks have been explored to effectively harness human knowledge. By per­ sonally executing tasks, human trainers transmit their policies to agents [37]. Agents then  record human demonstrations in the form of action-state pairs, allowing them to mimic  demonstrated policies based on imitation learning [19, 23], inverse reinforcement learning  [41, 55], and other human-focused methods [6, 29]. By mitigating the challenges posed  by sample complexity and sparse rewards, these methods improve training effectiveness,  obtaining extensive discussion.\nWhile mainstream research primarily relies on step-by-step action demonstrations, sev­ eral studies have sought to reduce the requisite human effort. To mitigate sample ineffi­ ciency, Le et al. [22] combined imitation learning with reinforcement learning. Duan et  al. [9] further reduced the computational burden associated with rule-based and imitation  learning. Additionally, Zhang et al. [53] abstracted imperfect human knowledge using fuzzy\n1 3\n2  Page 4 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nlogic to reduce dependence on carefully designed human demonstrations. However, similar  to most current works, these approaches mainly focus on single-agent tasks without consid­ ering multi-agent scenarios.\nNevertheless, the effective utilization of human prior knowledge proves significantly  more challenging within MADRL. Due to non-stationarity and the existence of multiple  Nash equilibria, most single-agent methods are unsuitable for multi-agent scenarios. To  adapt to multi-agent systems, Yang et al. [48] attempted to address the coordination chal­ lenge among groups of drones through adversarial imitation learning. However, their work  heavily relied on high-quality and comprehensive demonstrations. While some efforts have  aimed to reduce the required human involvement through inverse RL [40] or rough heu­ ristics [2], these solutions are generally limited to two-player scenarios. Research closely  aligned with our approach includes that of Han et al. [16], who proposed leveraging agent  exploration capabilities to mitigate negative transfer. However, their work did not investi­ gate the scalability issue or examine how prior knowledge influences the training process  across varying agent population sizes.\nBased on prior literature, addressing the scalability issue via human knowledge remains  underexplored. Human knowledge is typically transferred to a limited number of agents,  as designing complex rules or reward systems for large-scale systems is laborious. Conse­ quently, the appropriate harnessing of human knowledge for large agent populations neces­ sitates further investigation. Furthermore, as machines become increasingly integrated into  daily life, it is imperative that agents accurately adhere to human instructions. Neverthe­ less, research on translating human natural language into machine language for RL agents  remains in its infancy [12]. In contrast to previous works, we propose representing knowl­ edge in human language, positing that this approach holds the potential to resolve scalability  issues. Rather than applying human knowledge indiscriminately, we further consider the  type of knowledge and the method for appropriately mapping the knowledge into the action  space for RL agents.\n3  Preliminaries\n3.1  Partially observable environment\nWe view our problem as the cooperative multi-agent task. This task can be modeled as  decentralized partially observable Markov decision process (Dec-POMDP) [34], given by  a tuple G:\nG = ⟨S, A, P, r, Z, O, n, γ⟩,\b (1)\nwhere s ∈S defines the global environment state. The observations of each agent  i ∈N ≡{1, . . . , n} are partially observable oi ∈Oi, which are determined by the observa­ tion function Z(s, i) : S ⋅ N →p(O). Based on its local observation oi, each agent i selects  its action ai ∈Ai at each time step according to its stochastic policy πi : Oi ⋅ Ai →[0, 1].  Then, based on the state transition function P : S ⋅ A1 ⋅ • • • ⋅ An →S, the joint action of\n1 3\nPage 5 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nall agents ⃗a ∈⃗A changes the environment into a new state. Furthermore, our setting follows  the centralized training and decentralized execution (CTDE) paradigm [10]. All agents share  the same reward function r(s,⃗a) : S ⋅⃗A →R, and aim to learn a joint policy to maximize  a global action-value function Qtot(st,⃗at) = E⃗at+1∼⃗π,st+1∼P [∑T −t\nl=0 γlrt+l(st,⃗at)|st,⃗at]  where γ is the discount factor and T is the time horizon.\n3.2  Scalability with knowledge transfer\nDue to the high exploration costs inherent in large-scale action-state spaces, transferring  prior knowledge from related tasks has demonstrated effectiveness in scenarios involving  an increasing number of agents [13, 45]. Given that human knowledge represents the most  intuitive and accessible resource, human-guided approaches, including imitation learning  [19] and inverse reinforcement learning [41], have been adopted to mitigate learning dif­ ficulties through human demonstrations. Furthermore, Yang et al. [48] applied human inter­ vention to improve cooperation within drone swarms. However, these methods often heavily  rely on high-quality expert demonstrations, which can be laborious to collect, especially in  challenging tasks. This motivates us to explore leveraging suboptimal human knowledge to  facilitate the learning process of agents while preserving their autonomous learning capa­ bilities, thus enhancing scalability.\n4  Methods\nIn this section, we describe our method, which combines human knowledge with the  MADRL algorithm to provide general guidance on knowledge utilization and simplify the  required human effort. First, we formalize each type of human knowledge and illustrate the  process of mapping abstract human knowledge into the action space. This enables agents to  autonomously decide on the portions of the state space where knowledge should be reused  to mitigate the impact of inappropriate knowledge. Second, we show the exploration within  the extended action space and the entire training process.\n4.1  Human knowledge representation\nHumans excel at abstracting complex action sequences into simple explanations. In con­ trast to demonstrations coupled with specific states, we formulate human knowledge as  natural language explanations that describe things to perform or avoid without providing  specific actionable instructions. Consider the following advice that a human might provide  to agents to facilitate victory in SMAC:\n∀x, y : (attacks(x, y) →Agent(x) ∧Enemy(y)) .\b (2)\n1 3\n2  Page 6 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nExpecting humans to provide detailed state information is unrealistic. Moreover, creating  detailed action-state pairs that generalize from specific examples to many others is chal­ lenging. As illustrated in Formula (2), a human might recommend “Attack the enemy,”  but this advice would not be articulated as “Hold the attack key for 20 time steps when the  agent is within 9 blocks of an enemy with 35 health points.” Instead, the agent must deter­ mine how to interpret and apply human advice within different portions of the state space.  Unlike single-agent learning, the involvement of multiple agents in the system diversifies  the attributes of the provided knowledge. Here, we consider two types of human knowledge:  one that guides the development of individual policies, and another that promotes group  cooperation.\n4.1.1  Individual-type human knowledge\nPrior to the emergence of cooperation, agents must develop fundamental strategies to acquire  a rough understanding of the task and learn to operate independently. Here, we consider a  type of human knowledge designed to assist agents in developing individual behaviors. A  representative example is: “attack the nearest enemy.” In this type of knowledge, agents  make decisions based solely on their surrounding environment, disregarding the presence of  other agents. Therefore, the multi-agent scenario is simplified into a single-agent decision- making process, wherein each agent focuses exclusively on its own state. We denote this set  of individual-type knowledge as:\nhin = {\nh1\nin, . . . , hk\nin\n}\n.\b (3)\nFor each knowledge in hin:\nhk\nin : hk\nin(oi) = ai, ai⊥A−i ,\b (4)\nwhere oi and ai represent the observation and action of agent i, and A−i denotes the actions  of all agents excluding agent i.\nConsistent with prior research utilizing human knowledge in DRL [53], applying indi­ vidual-type knowledge in MADRL assists agents in overcoming initial learning challenges.  This type of knowledge is particularly valuable in scenarios with few agents, where strong  individual performance may suffice without complex cooperation. However, its effective­ ness may diminish as the number of agents increases.\n4.1.2  Cooperative-type human knowledge\nA fundamental distinction between DRL and MADRL lies in the intricate relationship  among agents, where agents must cooperate effectively to accomplish complex tasks.  Therefore, we also consider another type of human knowledge to facilitate group coordina­ tion. In addition to environmental information, cooperative-type knowledge is also based  on the behaviors of other agents, promoting teamwork among them. We anticipate that this\n1 3\nPage 7 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\ntype of knowledge will help address coordination problems in multi-agent systems, and its  effectiveness will increase with the number of agents. In the following sections, we will  discuss two proposed patterns for promoting cooperation.\nKnowledge for team behaviors  First, we consider human knowledge that directly instructs  agents on effective collaboration. In this cooperative paradigm, humans provide advice on  whom to cooperate with and what to do. We define the human knowledge set for teamwork  behaviors as:\nhteam = {\nh1\nteam, . . . , hk\nteam\n}\n.\b (5)\nFor each piece of knowledge, the human policy directs agents to collaborate, where the  action selected by an agent is dependent on its cooperative teammates. The function hk\nteam,  which guides cooperation between agents, is defined as follows:\n\nhk\nteam : G →πhk\nteam(gi, Ci) ai = πhk\nteam(gi, Ci) , \b (6)\nwhere G = {g1, . . . , gN} represents the set of agents, and Ci denotes the set of agents with  whom gi cooperates. For better intuition, consider an example of team behavior knowledge:  “Disperse when there are more than 10 allies nearby.” In this guideline, cooperation instruc­ tions are explicitly assigned to the agents within the team.\nKnowledge for mimic behaviors  In addition to directly instructing agents on how to cooper­ ate, humans can also recommend superior agents for other agents to imitate. For instance,  an example of mimic behavior knowledge is: “Follow the nearest attacking ally for the same  target (attack mimic)”. It has been suggested that behavioral cloning is an effective approach  for agents to rapidly develop cooperative skills [40]. Compared to the direct coordination  instructions provided by hteam, mimic knowledge requires agents to infer and imitate the  behaviors of other agents, resulting in implicit cooperation. However, there exists a signifi­ cant risk of agents mimicking unrelated agents whose policies are incompatible. With this  in mind, another pattern of knowledge is employed to guide agents on how to mimic the  actions of other agents and help them better understand the selected actions. We refer to the  human knowledge set for mimic behaviors as:\nhmimic = {\nh1\nmimic, . . . , hk\nmimic\n}\n.\b (7)\nHere, hk\nmimic guides agent i on how to mimic the recommended agents:\nM(gi) = Rhk\nmimic(gi), ai = πhk\nmimic(πg(M(gi))) ,\b (8)\nwhere M(gi) denotes the agent or group of agents recommended for agent gi to mimic,  Rh(gi) represents the human knowledge that recommends which agents to mimic, and πh  guides how to mimic the actions of these recommended agents.\n1 3\n2  Page 8 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nBased on the human knowledge mentioned above (3), (5), (7), we have the total human  knowledge set h to solve the scalability issue, shared among n agents:\nh = {h1, . . . , hJ} , hj ∈hin, hteam, hmimic .\b (9)\nAlgorithm 1  The mapping function of cooperative attack knowledge with upper limit.\n4.2  Mapping function\nAs human knowledge h is represented in natural language and is not directly actionable, we  design the mapping function to map each knowledge hj into the environment action space  for agent execution. The mapping function set F is defined as:\n\nF = {f1, . . . , fJ}\nhj\nfj =⇒a, a ∈{a1, . . . , aK} ,\b (10)\nwhere J is the total number of integrated human knowledge statements, and a is the original  action space of the environment. When a specific piece of human knowledge hj is utilized  by agent i, the corresponding mapping function fj is triggered to transform it into the origi­ nal environment action ak = fj(hj|oi) based on the current state.\nFor these mapping functions, we do not require comprehensive information in the form  of specific action-state pairs. Instead, we allow the agent to decide which action to take  under the current state by describing the mapping function via general logical formulas  (such as first-order logic parsing [1, 21]). Additionally, the proposed knowledge is permitted\n1 3\nPage 9 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nto be incomplete, potentially covering only a small portion of the action-state space. Fur­ thermore, we take several factors into account to achieve better mapping, such as:\n\nAdding restrictions : ←escape Setting upper and lower limits : Nagent < 5, Nagent > 15 The number of agents involved : Nagent = 2, . . . , ∀agent .\nFor clarity, we provide an illustrative mapping function example for cooperative attack  human knowledge (2) incorporating an upper limit:\n\nN(e) =\n∑\ngj∈G,j̸=i\nX(gj, e)\nT(e) =\n  \n \nargmine∈EH(e), ∀e ∈E, ∀gj ∈G, j̸ = i, X(gj, e) = 0 ;\nargmin e ∈E, gj ∈G, X(gj, e)̸ = 0 N(e), ∃e ∈E, ∃gj ∈G, j̸ = i, (N(e)\n< L(G)) ∧(X(gj, e)̸ = 0) ;\nargmine∈EN(e), otherwise.,\nwhere E = {e1, . . . , eM} represents the set of attackable enemies for agent i in the current  state s, G = {g1, . . . , gN} refers to the set of all agents, H(e) indicates the health point of  enemy e, L(G) represents the upper limit, X(g, e) ∈{0, 1} signifies whether agent g selects  enemy e to attack, N(e) is the number of agents that select enemy e to attack, and T(e)  denotes the action that agent i will select to attack enemy e. More details about this map­ ping function are illustrated in Algorithm 1. In summary, to transfer human knowledge to  agents, humans first need to identify the individual and cooperative behaviors they wish to  integrate. These behaviors are then converted into natural language statements for the agents  to select from. Finally, mapping functions, structured as decision-tree-like sequences, are  designed to translate these instructions into specific environmental actions for execution.\n4.3  Knowledge exploration\nTo allow agents to freely decide which portions of the state space to apply human knowl­ edge, the human knowledge set h is integrated into the original environment action space.  Therefore, agents can explore the new action space with Q-learning, learning to leverage the  demonstrated knowledge while filtering out inappropriate knowledge. The extended new  action space mi of agent i is:\nmi = {\nm1\ni , . . . , mJ+K\ni\n}\n= {\na1\ni , . . . , aK\ni , h1\ni , . . . , hJ\ni\n}\n.\b (11)\nAs human knowledge can benefit agents in solving the “start-up” problem in MADRL, it  is crucial that the human knowledge set is frequently explored during the initial stages of  training. To better exploit the advantages of human knowledge, we propose the probabil­ ity of knowledge exploration, δ, in addition to the ε-greedy exploration probability ε. The  exploration process, distinguishing the exploration of the human knowledge and the original  environment action, is defined as:\n\nm(t) =\n{ max Qt(m), with probability 1 −ε; Any action ak from a, with probability ε ∗(1 −δ); Any action hj from h, with probability ε ∗δ. ,\n\b (12)\n1 3\n2  Page 10 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nwhere m(t) represents the action selected at time step t. Since the integrated human knowl­ edge may be imperfect, agents are expected to automatically learn how to utilize it across  different states. Therefore, both δ and ε are initialized to 1 and rapidly decrease to their mini­ mum values, with δ decaying at a significantly faster rate. In this manner, human knowledge  is compulsorily applied only during the very initial exploration phase, thus preserving the  autonomous learning capabilities of agents.\nAlgorithm 2  MADRL with suboptimal human knowledge.\n4.4  MADRL algorithm training with human knowledge\nBased on the aforementioned mechanism, the comprehensive training process of our  approach is elaborated in Algorithm 2. Prior to training, relevant human knowledge is  designed and incorporated into the original action space as human guidance (lines 2 and  3). At each time step, the N agents explore the augmented action space m following the  exploration process outlined in (12), obtaining the actions of all agents (m1, . . . , mN) (from  line 6 to line 15). These actions are subsequently mapped back to the environment using the  mapping functions (as explained in (10)) for execution, advancing the environment to the  next state (lines 16 and 17):\n1 3\nPage 11 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\n\n(m1, . . . , mN)\nF⇒(a1, . . . , aN) ↓Execute in environment reward r and new observation o\n′ .\nThe resulting transitions, represented as tuples (o, m, r, o\n′), are stored in a replay buffer  which is then provided to the MADRL algorithm in each minibatch for agent training (line  18). Utilizing the MADRL algorithm, agents learn to apply human knowledge across differ­ ent parts of the state space (line 19):\nQ(o, m) ←Q(o, m) + α[r + γmaxmQ(o\n′, m) −Q(o, m)] .\nAccordingly, our method integrates human knowledge with MADRL algorithms to miti­ gate learning challenges while maintaining the exploration abilities of agents. The overall  architecture is illustrated in Fig. 1. The red dashed lines depict the backward gradient flow,  indicating that the algorithm adheres to the CTDE paradigm under partial observability. As  demonstrated in the figure (right box), human knowledge h is incorporated into agent local  Q network, enabling the agent to learn state-dependent knowledge application. Shown in the  figure (left yellow box), based on the local observation of agent i and the actions from other  agents, the mapping function F maps the selected human knowledge back to the original  action space to interact with the environment. As depicted in the figure, it is an end-to-end  policy framework that should be compatible with a range of MADRL algorithms. Therefore,  in this work, we employ QMIX [35] as our foundational MADRL algorithm.\n5  Experiments and analysis\n5.1  Experimental setting\nThe StarCraft Multi-Agent Challenge (SMAC) [36] serves as a standard benchmark for evalu­ ating state-of-the-art MADRL methods, specifically focusing on the learning of unit microman­ agement. Derived from StarCraft II, it contains a series of challenging cooperative environments  that require agents to develop diverse cooperative behaviors under partial observation and\nFig. 1  The overall architecture of the knowledge-guided policy network. The red dashed lines indicate  the gradient flow\n\n1 3\n2  Page 12 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nsparse rewards. The benchmark encompasses 23 distinct scenarios, featuring varying numbers  of agents and difficulty levels. During each episode, two confronting teams compete, necessi­ tating effective cooperation among agents to defeat the enemy team and win the battle.\nIn the following experiments, we use SMAC as our testbed to assess the impact of dif­ ferent human knowledge types on addressing the scalability issue in MADRL. We select  five scenarios from the “Hard” and “Super Hard” categories, featuring increasing numbers  of agents, with the game AI difficulty set to “Very Hard”. Since QMIX [35] has demon­ strated superior performance in SMAC, we adopt it as the baseline MADRL algorithm.  We integrate QMIX with three types of human knowledge, each containing five specific  pieces of knowledge, along with related mapping functions designed for SMAC environ­ ments (depicted in Table 1). Notably, underlined entries in the table represent inappropriate  knowledge that was deliberately included. To further investigate the combined effects of  these knowledge types, we also evaluate a composite setting (shown in the last column of  the table). Aside from the differences in integrated knowledge, the hyperparameters and  neural network architectures remain similar across all approaches. In addition to win rates,  we analyze the usage rates of each knowledge type and specific knowledge within each type  to identify general patterns in knowledge application and mapping. All experimental results  are based on five separate runs with distinct random seeds.\n5.2  Human knowledge integration\nSince the autonomous learning capabilities of agents are preserved, the integrated  human knowledge is allowed to be imperfect. In our SMAC experiments, the proposed  human knowledge is designed based on general domain experience, representing a  basic understanding of the SMAC environment rather than advanced domain expertise.  Furthermore, our framework maintains flexibility in knowledge design and integra­ tion, allowing users to customize their approaches. Specifically, in our experiment, we  design a total of 15 human knowledge pieces with corresponding mapping functions  for various method combinations, as detailed in Table 1. Additionally, all mapping\nTable 1  Specific human knowledge from each type for SMAC scenarios used in our experiment Type of knowledge Individual-type Team-type Mimic-type Mixed of all\nSpecific knowl­ egde for SMAC  scenarios\n1. Attack the nearest  enemy;\n1. Go to the center of a  large group of allies;\n1. Mimic the behav­ ior of surrounding  allies;\n1. Individual-type 2;\n2. Attack the least HP  enemy;\n2. Attack the enemy  with allies (no more  than 5 agents);\n2. Mimic the  behavior based on  all allies;\n2. Individual-type 4;\n3. Escape when HP  is low;\n3. Disperse (only  when surrounded by  more than 15 allies);\n3. Mimic the behav­ ior of the highest  HP ally;\n3. Team-type 1;\n4. Get close to the  enemy;\n4. Get close to an ally  who is attacking;\n4. Mimic the behav­ ior (no more than 5  agents);\n4. Team-type 2;\n5. Escape when see  the enemy.\n5. Always leave the  team.\n5. Do nothing. 5. Team-type 3;\n6. Mimic-type 1; 7. Mimic-type 2; 8. Mimic-type 3.\n\n1 3\nPage 13 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nfunctions follow a hard rule-based style similar to if-then statements, as illustrated in  Algorithm 1. Individual-type human knowledge is the simplest to design, as humans  propose behavioral instructions by solely considering the surrounding environment  without accounting for behaviors of other agents. For instance, we hypothesize that  considering distance before choosing an attack action could be beneficial; hence, we  define the instruction as “Attack the nearest enemy.” The corresponding mapping func­ tion might be: “If the agent can attack, then identify the closest enemy and execute the  corresponding attack action.” In contrast, cooperative-type human knowledge involves  more complex mapping functions, potentially including additional restrictions. For  example, the team-type knowledge “Attack the enemy with allies (no more than 5  agents)” has a corresponding mapping function detailed in Algorithm 1 (where Nagent  is set to 5). It is worth mentioning that such thresholds are based on our domain knowl­ edge, covering only a limited portion of the action-state space without guaranteed  effectiveness in all scenarios. Moreover, users can freely design customized guidelines  following the knowledge representation process described in Section 4.2. Several gen­ eral analyses regarding knowledge design are provided in the methodology section,  accompanied by empirical results in Sections 5.4.1 and 5.4.2. To further demonstrate  the tolerance of our method to imperfect knowledge, the exact same human knowledge  in each approach is applied across all five different SMAC scenarios.\n5.3  Evaluation metrics\nTo evaluate the impact of human knowledge on MADRL scalability, we employ the follow­ ing evaluation procedure: for each run of QMIX combined with different human knowledge  sets, we pause training every 5000 environment time steps and execute 32 independent  episodes with each agent performing greedy decentralized action selection. The percent­ age of these episodes in which the approach defeats all enemy units within the time limit is  considered the test win rate. Figures 2 and 3 depict the mean test win rate across 5 runs for  each approach on five selected maps.\nTo further elucidate the effect of each type of human knowledge and how knowledge is  mapped, we introduce another metric: the test knowledge using rate. Similar to the test win  rate, the test knowledge using rate represents the percentage of selected actions in which  human knowledge is chosen as the action m within a test episode:\n\ntest knowledge using rate of hj\ni =\n∑T\nt=1 Nhj\ni ∑T\nt=1 Nmi\n,\b (13)\nwhere i refers to agent i, T is the episode length, and Nhj, Nm ∈{0, 1}. Since the agents  are homogeneous in our experiment, we randomly select one agent to record its knowledge  using rate across 5 runs, each with 32 test episodes. Figure 4 shows the mean test knowledge  using rate trend over time across all tasks. The effect of different types of human knowledge  is demonstrated in Fig. 5, while the performance of knowledge mapping with various fea­ tures is elaborated in Fig. 6.\n1 3\n2  Page 14 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\n5.4  Results\nApplying human knowledge mitigates the learning difficulties of agents and improves the  scalability of MADRL. Even when pure MADRL algorithms struggle with a large num­ ber of agents (as seen with 35 agents in Fig. 3), all types of human knowledge effectively  address initial learning challenges. Notably, each piece of transferred knowledge within  each human knowledge set covers only a small portion of the action-state space. Addition­ ally, the human knowledge set may contain inappropriate advice, such as “always escape”  (underlined in Table 1). Despite based on such low performance human prior knowledge,  benefited from the proposed knowledge exploration process and MADRL learning updates,  all types of human knowledge consistently outperform pure MADRL algorithms across  various numbers of agents Fig. 3.\nStill, different types of human knowledge exert varying influences on the learning process.  On the one hand, individual-type knowledge, which can be applied more indiscriminately,  significantly accelerates training and proves beneficial in the early stages for overcoming  the “start-up” problem. On the other hand, cooperative-type knowledge is more desirable  for mediating coordination problems in large agent populations. Moreover, to achieve more  scalable knowledge mapping, it is more appropriate to define knowledge as cooperation  within a small agent group with upper limits.\n5.4.1  Effects of human knowledge on scalability\nAgents demonstrate varying preferences for different types of human knowledge, and these  variations distinctively impact scalability. As illustrated by the win rate curves in Fig. 2,\nFig. 2  The experiment results of win rate curves under all five scenarios. The Y-axis represents the win  rate, and the X-axis denotes the time step. Since the win rate of human knowledge is always zero, we do  not plot it in the figure\n\n1 3\nPage 15 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nindividual-type knowledge significantly accelerates the training process, proving beneficial  during the initial stages of learning. Furthermore, as shown in Fig. 3, individual-type knowl­ edge is more effective in scenarios with a small number of agents due to its intuitive nature  and ease of learning. However, as the number of agents increases (starting from 18 agents),  the effectiveness of individual-type knowledge diminishes. The necessity for collaboration  becomes more prominent, and cooperative-type knowledge leads to better performance.  When an excess of agents participates, the importance of collaboration becomes evident.\nThe influence of human knowledge on each stage of policy development is further illus­ trated in Fig. 4, where the using rate changes of the human knowledge set h and each piece  of knowledge hj over time are revealed. As depicted, these using rates eventually converge,  indicating that agents consistently leverage specific knowledge. Observations of the using  rate curves for individual knowledge items 3 and 5 in Fig. 4(i) suggest that agents rapidly  filter out inappropriate knowledge to avoid negative transfer. To highlight the attributes of  transferred knowledge, we select the most frequently used knowledge in each type of human  knowledge and combine them for comparison. As demonstrated in Fig. 4(l), individual-type  knowledge dominates at the beginning of training but gradually decreases over time. In  contrast, despite the initially modest using rate of cooperative-type knowledge, its usage\nFig. 3  The effect on scalability. The Y-axis is the win rate, and X-axis is the number of agents\n\n1 3\n2  Page 16 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nsteadily increases throughout training, revealing that agents recognize the importance of  collaboration in improving task completion.\nMoreover, Fig. 5(a) analyzes the final using rate of each type of human knowledge to  investigate the impact of knowledge types on scalability. While the final using rate of all  types of human knowledge decreases as the number of agents grows, individual-type knowl­ edge decreases more rapidly than cooperative-type knowledge, resulting in consistently  lower final using rate in large-scale scenarios. In summary, cooperative-type human knowl­ edge proves more effective for enhancing the scalability of MADRL. To further understand\nFig. 4  The experiment results of knowledge using rate curves with various types of knowledge involved.  The Y-axis represents the using rate of each knowledge type, and the X-axis represents the time step\n\n1 3\nPage 17 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nthe combined application of different types of human knowledge, we examine their propor­ tions within the total knowledge using rate in Fig. 5(b). As demonstrated, the proportion  of cooperative-type knowledge remains consistently high, highlighting its effectiveness in  addressing the scalability issue in MADRL.\n5.4.2  Knowledge mapping\nAn additional objective of our study is to investigate the influence of distinct features  on knowledge mapping. On the one hand, regarding individual-type knowledge, the uti­ lization of each piece of knowledge tends to become similar as the number of agents  increases. As elaborated in Fig. 6(a), the discrepancy in knowledge usage diminishes with  the growth of the agent population, allowing the knowledge to be applied broadly in  systems with a large number of agents. Once a specific piece of knowledge is effectively  utilized within a small group of agents, its applicability extends effectively to larger agent  populations. On the other hand, the mapping features of cooperative-type knowledge  are revealed in Fig. 6(b). Knowledge mapped with upper-bound restrictions consistently  achieves a high using rate. Although knowledge with mapping functions that control large  agent groups exhibits high using rates when only a few agents are present, its utilization  rapidly decreases as more agents become involved. Conversely, knowledge with mapping  functions associated with small agent groups displays lower utilization but greater stabil­ ity. For cooperative-type knowledge, to enhance its knowledge scalability, it is preferable  to design mapping functions that involve small agent groups. Furthermore, it is advisable  to incorporate restrictions, specifically by preferring the setting of upper limits rather than  lower ones.\n5.4.3  Flexibility and compatibility\nTo further demonstrate that the proposed method does not rely on expert knowledge and can  be readily deployed across diverse domains, additional experiments are conducted, with the\nFig. 5  Summary about the effect of different types of knowledge integrated. (a) The total knowledge using  rate changes with the number of agents. The Y-axis denotes the knowledge using rate, and the X-axis  denotes the number of agents involved in the environment. (b) When three types of knowledge are used  (QMIX + Mixed knowledge), the agent preference for each type of knowledge. The Y-axis denotes the  proportion of each type of knowledge, and the X-axis denotes the number of agents\n\n1 3\n2  Page 18 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nlearning curves illustrated in Fig. 7. We first examine the tolerance of the proposed method  to suboptimal human knowledge by integrating different levels of knowledge quality with  the QMIX algorithm in the ’10m_vs_11m’ scenario Fig. 7(a). Here, more comprehensive  knowledge refers to knowledge that covers a broader portion of the action-state space.  For a fair comparison, higher-quality configurations inherit the knowledge used in lower- quality settings. For instance, ’QMIX + High quality knowledge’ includes all knowledge  from ’QMIX + Medium quality knowledge’. To further evaluate robustness, we introduce  completely inappropriate knowledge in the form of random action instructions (’QMIX  + Inappropriate Knowledge’). Results show that higher-quality human knowledge leads  to better performance, while even low-quality knowledge enables the method to maintain  competitive results. When inappropriate knowledge is integrated, the method gracefully  degrades to the performance of standard QMIX, illustrating its robustness to poor guidance  and flexibility in accommodating user-defined knowledge.\nTo further demonstrate that the proposed method does not heavily depend on domain- specific designs, we apply the same human knowledge, which was originally crafted for  homogeneous agents, to heterogeneous settings by integrating it with both QMIX and  Qatten [51] in the ’3s5z’ scenario Fig. 7(b). This map involves two types of agents with  distinct attributes and knowledge requirements. Despite using the same guidance, the pro­ posed method still achieves superior performance with both algorithms. Even under subop­ timal knowledge, the knowledge-integrated variants exhibit faster convergence and better  final outcomes. These results indicate that the proposed method does not require extensive  domain expertise and can be easily generalized to other scenarios.\n5.5  Experiment hyperparameter\nIn this study, experiments are conducted on a computer equipped with a CPU (13th Gen Intel  Core i7-13700F, 2.10 GHz), a GPU (NVIDIA GeForce RTX 4080), and 80 GB RAM. The  ’35m_vs_40m’ map represents the most time-consuming scenario, with a single run requiring  more than 8 hours to complete. To ensure a controlled and fair comparison, all methods are\nFig. 6  The influence of distinct features on knowledge mapping. The Y-axis denotes the knowledge use  rate, and the X-axis denotes the number of agents. (a) Individual knowledge mapping. Individual 3 and 5  are excluded due to negligible usage even with few agents. (b) Cooperative knowledge mapping. Team 3  and Mimic 5 are excluded due to negligible usage even with few agents\n\n1 3\nPage 19 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\ntrained with similar hyperparameter settings, except for necessary adjustments to the input  and output sizes of neural networks. This design isolates the performance improvements  attributable to the proposed human guidance, rather than to differences in training configura­ tions. The chosen hyperparameter configuration primarily follows the optimal settings for  QMIX in the SMAC domain, with only a few adjustments to accommodate increased agent  counts and prevent out-of-memory issues. Detailed hyperparameters are provided in Table 2.\n6  Conclusion\nIn this work, we leverage human knowledge to address the scalability issue in MADRL. We inte­ grate various types of human knowledge into the action space and investigate several features of  knowledge mapping to enhance the learning of agents in large-scale cooperative multi-agent sys­\nFig. 7  Ablation results on the flexibility of the proposed method. (a) Different qualities of human knowl­ edge are combined with the QMIX algorithm in the ’10m_vs_11m’ scenario. (b) The proposed human  knowledge is integrated into various MADRL algorithms in a heterogeneous scenario.\n\nHyperparameter Value Total timesteps 2050000 Number of environments 8 Number of episodes to test for 32 Test interval 5000 Update interval 200 episodes Optimizer Adam γ 0.99 Batch size 128 Learning rate 0.001 RNN layer hidden size 64 Mixing embedding size 32 Hyper-network embedding size 64 ε 1.0 → 0.05 Anneal time of ε 50000 δ 1.0 → 0.01 Anneal time of δ 20000\nTable 2  Training  hyperparameters\n1 3\n2  Page 20 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\ntems. Through the integration of human knowledge, our approach effectively handles scenarios  involving a large number of agents, which would otherwise be challenging and impractical to  learn from scratch. We hope that this work can offer insights into addressing the learning difficul­ ties inherent in systems with large agent populations and further improve the interpretability of  agent policies, taking a step toward multi-agent systems that cooperate effectively with humans.\nNevertheless, several potential extensions exist for future work. In this study, human  knowledge is represented using hard rules, which may require a certain level of domain exper­ tise and limit flexibility. Additionally, since the proposed method primarily follows a rein­ forcement learning process, extra effort is needed to explore the effective use of the provided  knowledge, thereby increasing the requirement for knowledge quality. Given that represent­ ing human knowledge with minimal human effort has attracted increasing research attention  [54], future studies may explore the use of high-level human feedback to address scalability  issues in MADRL. Meanwhile, quantifying the relationship between knowledge quality and  scalability thresholds also represents an intriguing direction. Furthermore, as a growing num­ ber of studies focus on heterogeneous agents [11, 42], applying human knowledge within  heterogeneous agent systems presents another promising avenue for future research.\nAcknowledgements  Not applicable\nAuthor Contributions  DL did the experiments and wrote the main manuscript text; FR supervised the  research project and provided guidance throughout the process; FR, JY, and GS provided critical insights  and expertise in the field; WG and SK helped perform the analysis with constructive discussions. All authors  reviewed the manuscript.\nFunding  Open Access funding enabled and organized by CAUL and its Member Institutions. Not applicable\nData Availability  No datasets were generated or analysed during the current study.\nCode Availability  Not applicable\nDeclarations\nConflicts of Interest  The authors declare that they have no conflict of interest. And they have no known competing  financial interests or personal relationships that could have appeared to influence the work reported in this paper.\nEthics approval  Not applicable\nConsent to participate  Not applicable\nConsent for publication  Not applicable\nCompeting interests  The authors declare no competing interests.\nOpen Access  This article is licensed under a Creative Commons Attribution 4.0 International License,  which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long as  you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons  licence, and indicate if changes were made. The images or other third party material in this article are  included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the material.  If material is not included in the article’s Creative Commons licence and your intended use is not permitted  by statutory regulation or exceeds the permitted use, you will need to obtain permission directly from the  copyright holder. To view a copy of this licence, visit http://creativecommons.org/licenses/by/4.0/.\n1 3\nPage 21 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nReferences\n1.\t Barwise, J. (1977). An introduction to first-order logic. In Studies in Logic and the Foundations of  Mathematics (vol. 90, pp. 5–46). Elsevier. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​0​1​6​/​S​0​0​4​9​-​2​3​7​X​(​0​8​)​7​1​0​9​7​-​8 2.\t Chen, H., Wang, C., Huang, J., & Gong, J. (2021). Efficient use of heuristics for accelerating xcs-based  policy learning in Markov games. Swarm and Evolutionary Computation, 65, 100914. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​ 0​.​1​0​1​6​/​J​.​S​W​E​V​O​.​2​0​2​1​.​1​0​0​9​1​4​ 3.\t Christianos, F., Papoudakis, G., Rahman, M. A., & Albrecht, S. V. (2021). Scaling multi-agent rein­ forcement learning with selective parameter sharing. In M. Meila, T. Zhang (Eds.) Proceedings of the  38th International conference on machine learning (vol. 139, pp. 1989–1998). PMLR. ​h​t​t​p​:​/​/​p​r​o​c​e​e​d​i​n​ g​s​.​m​l​r​.​p​r​e​s​s​/​v​1​3​9​/​c​h​r​i​s​t​i​a​n​o​s​2​1​a​.​h​t​m​l 4.\t Chu, T., Wang, J., Codecà, L., & Li, Z. (2019). Multi-agent deep reinforcement learning for large- scale traffic signal control. IEEE Transactions on Intelligent Transportation Systems, 21(3), 1086–1095.  https://doi.org/10.1109/TITS.2019.2901791 5.\t Cui, K., Tahir, A., Ekinci, G., Elshamanhory, A., Eich, Y., Li, M., & Koeppl, H. (2022). A survey on  large-population systems and scalable multi-agent reinforcement learning. arXiv:2209.03859. ​h​t​t​p​s​:​/​/​d​ o​i​.​o​r​g​/​1​0​.​4​8​5​5​0​/​a​r​X​i​v​.​2​2​0​9​.​0​3​8​5​9​.​ 6.\t Da Silva, F. L., & Costa, A. H. R. (2019). A survey on transfer learning for multiagent reinforcement  learning systems. Journal of Artificial Intelligence Research, 64, 645–703. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​6​1​3​/​J​A​I​ R​.​1​.​1​1​3​9​6​ 7.\t Deka A, Sycara K (2021) Natural emergence of heterogeneous strategies in artificially intelligent com­ petitive teams. In Y. Tan, & Y. Shi (Eds.) Proceedings of the swarm intelligence: 12th International  conference (pp. 13–25). Springer. https://doi.org/10.1007/978-3-030-78743-1_2 8.\t Du, W., & Ding, S. (2021). A survey on multi-agent deep reinforcement learning: From the perspective  of challenges and applications. Artificial Intelligence Review, 54(5), 3215–3238. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​0​0​ 7​/​S​1​0​4​6​2​-​0​2​0​-​0​9​9​3​8​-​Y​ 9.\t Duan, J., Eben Li, S., Guan, Y., Sun, Q., & Cheng, B. (2020). Hierarchical reinforcement learning for  self-driving decision-making without reliance on labelled driving data. IET Intelligent Transport Sys­ tems, 14(5), 297–305. https://doi.org/10.1049/iet-its.2019.0317 10.\t Foerster, J., Farquhar, G., Afouras, T., Nardelli, N., & Whiteson, S. (2018). Counterfactual multi-agent  policy gradients. In S. A. McIlraith, & K. Q. Weinberger (Eds.) Proceedings of the 32nd AAAI conference  on artificial intelligence (pp. 2974–2982). AAAI Press. https://doi.org/10.1609/AAAI.V32I1.11794 11.\t Fu, Q., Ai, X., Yi, J., Qiu, T., Yuan, W., & Pu, Z. (2022). Learning heterogeneous agent cooperation via  multiagent league training. arXiv:2211.11616. https://arxiv.org/abs/2211.11616 12.\t Glanois, C., Weng, P., Zimmer, M., Li, D., Yang, T., Hao, J., & Liu, W. (2021). A survey on interpretable  reinforcement learning. arXiv:2112.13112. https://arxiv.org/abs/2112.13112 13.\t Gronauer, S., & Diepold, K. (2022). Multi-agent deep reinforcement learning: A survey. Artificial Intel­ ligence Review, 55(2), 895–943. https://doi.org/10.1007/S10462-021-09996-W 14.\t Grupen, N. A., Lee, D. D., & Selman, B. (2022). Multi-agent curricula and emergent implicit signaling.  In P. Faliszewski, V. Mascardi, C. Pelachaud, & M. E. Taylor (Eds.) Proceedings of the 21st Interna­ tional conference on autonomous agents and multiagent systems. International Foundation for Autono­ mous Agents and Multiagent Systems, (pp. 553–561). https://doi.org/10.5555/3535850.3535913 15.\t Gupta, J. K., Egorov, M., & Kochenderfer, M. (2017). Cooperative multi-agent control using deep reinforce­ ment learning. In G. Sukthankar, & J. A. Rodríguez-Aguilar (Eds.) Proceedings of the autonomous agents  and multiagent systems (vol. 10642, pp. 66–83). Springer. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​0​0​7​/​9​7​8​-​3​-​3​1​9​-​7​1​6​8​2​-​4​_​5​ 16.\t Han, X., Tang, H., Li, Y., Kou, G., & Liu, L. (2020). Improving multi-agent reinforcement learning  with imperfect human knowledge. In I. Farkas, P. Masulli, & S. Wermter (Eds.) Proceedings of the 29th  International conference on artificial neural networks (pp. 369–380). Springer. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​0​0​7​ /​9​7​8​-​3​-​0​3​0​-​6​1​6​1​6​-​8​_​3​0​ 17.\t Hao, J., & Varakantham, P. (2022). Hierarchical value decomposition for effective on-demand ride- pooling. In P. Faliszewski, V. Mascardi, C. Pelachaud, & M. E. Taylor (Eds.) Proceedings of the 21st  International conference on autonomous agents and multiagent systems. International Foundation for  Autonomous Agents and Multiagent Systems (IFAAMAS), pp 580–587. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​5​5​5​5​/​3​5​3​5​8​ 5​0​.​3​5​3​5​9​1​6​ 18.\t Hu, C. (2020). A confrontation decision-making method with deep reinforcement learning and knowl­ edge transfer for multi-agent system. Symmetry, 12(4), 631. https://doi.org/10.3390/SYM12040631 19.\t Hussein, A., Gaber, M. M., Elyan, E., & Jayne, C. (2017). Imitation learning: A survey of learning  methods. ACM Computing Surveys (CSUR), 50(2), 1–35. https://doi.org/10.1145/3054912\n1 3\n2  Page 22 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\n20.\t Jiang, J., & Lu, Z. (2018). Learning attentional communication for multi-agent cooperation. In S. Ben­ gio, H. M. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, & R. Garnett (Eds.) Proceedings of  the neural information processing systems (vol. 31, pp. 7265–7275). ​h​t​t​p​s​:​/​/​p​r​o​c​e​e​d​i​n​g​s​.​n​e​u​r​i​p​s​.​c​c​/​p​a​p​ e​r​/​2​0​1​8​/​h​a​s​h​/​6​a​8​0​1​8​b​3​a​0​0​b​6​9​c​0​0​8​6​0​1​b​8​b​e​c​a​e​3​9​2​b​-​A​b​s​t​r​a​c​t​.​h​t​m​l 21.\t Jiang, Z., & Luo, S. (2019). Neural logic reinforcement learning. In K. Chaudhuri, & R. Salakhutdinov  (Eds.) Proceedings of the 36th International conference on machine learning (pp. 3110–3119). PMLR. ​ h​t​t​p​:​/​/​p​r​o​c​e​e​d​i​n​g​s​.​m​l​r​.​p​r​e​s​s​/​v​9​7​/​j​i​a​n​g​1​9​a​.​h​t​m​l 22.\t Le, H., Jiang, N., Agarwal, A., Dudík, M., Yue, Y., & Daumé III, H. (2018). Hierarchical imitation and  reinforcement learning. In J. G. Dy, & A. Krause (Eds.) Proceedings of the 35th International confer­ ence on machine learning (pp. 2917–2926). PMLR. http://proceedings.mlr.press/v80/le18a.html 23.\t Le, H. M., Yue, Y., Carr, P., & Lucey, P. (2017). Coordinated multi-agent imitation learning. In D.  Precup, & Y. W. Teh (Eds.) Proceedings of the International Conference on Machine Learning (pp.  1995–2003). PMLR. http://proceedings.mlr.press/v70/le17a.html 24.\t Li, A. C., Florensa, C., Clavera, I., & Abbeel, P. (2020). Sub-policy adaptation for hierarchical rein­ forcement learning. In Proceedings of the International conference on learning representations. Open­ Review.net. https://openreview.net/forum?id=ByeWogStDS 25.\t Li, S., Gupta, J. K., Morales, P., Allen, R., & Kochenderfer, M. J. (2021). Deep implicit coordination  graphs for multi-agent reinforcement learning. In F. Dignum, A. Lomuscio, U. Endriss, & A. Nowé  (Eds.) Proceedings of the 20th International conference on autonomous agents and multiagent systems  (pp. 764–772). ACM. https://doi.org/10.5555/3463952.3464044 26.\t Liang, W., Wang, J., Bao, W., Zhu, X., Wu, G., Zhang, D., & Niu, L. (2022). Qauxi: Cooperative multi- agent reinforcement learning with knowledge transferred from auxiliary task. Neurocomputing, 504,  163–173. https://doi.org/10.1016/J.NEUCOM.2022.06.091 27.\t Liu, X., Yu, J., Feng, Z., & Gao, Y. (2020). Multi-agent reinforcement learning for resource allocation  in iot networks with edge computing. China Communications, 17(9), 220–236. ​h​t​t​p​:​/​/​w​w​w​.​c​i​c​-​c​h​i​n​a​c​o​ m​m​u​n​i​c​a​t​i​o​n​s​.​c​n​/​E​N​/​Y​2​0​2​0​/​V​1​7​/​I​9​/​2​2​0 28.\t Long, Q., Zhou, Z., Gupta, A., Fang, F., Wu, Y., & Wang, X. (2020). Evolutionary population curricu­ lum for scaling multi-agent reinforcement learning. In Proceedings of the 8th International conference  on learning representations. OpenReview.net. https://openreview.net/forum?id=SJxbHkrKDH 29.\t Mandel, T., Liu, Y.-E., Brunskill, E., & Popović, Z. (2017). Where to add actions in human-in-the-loop  reinforcement learning. In S. Singh, & S. Markovitch (Eds.) Proceedings of the 31st AAAI conference  on artificial intelligence (pp. 2322–2328). AAAI Press. https://doi.org/10.1609/AAAI.V31I1.10945 30.\t Nahavandi, S. (2017). Trusted autonomy between humans and robots: Toward human-on-the-loop in  robotics and autonomous systems. IEEE Systems, Man, and Cybernetics Magazine, 3(1), 10–17. ​h​t​t​p​s​:​ /​/​d​o​i​.​o​r​g​/​1​0​.​1​1​0​9​/​M​S​M​C​.​2​0​1​6​.​2​6​2​3​8​6​7​ 31.\t Narvekar, S., Sinapov, J., Leonetti, M., & Stone, P. (2016). Source task creation for curriculum learning. In C.  M. Jonker, S. Marsella, J. Thangarajah, & K. Tuyls (Eds.) Proceedings of the 2016 International conference  on autonomous agents multiagent systems (pp. 566–574). ACM. ​h​t​t​p​:​/​/​d​l​.​a​c​m​.​o​r​g​/​c​i​t​a​t​i​o​n​.​c​f​m​?​i​d​=​2​9​3​7​0​0​7​ 32.\t Nguyen, T. T., Nguyen, N. D., & Nahavandi, S. (2020). Deep reinforcement learning for multiagent  systems: A review of challenges, solutions, and applications. IEEE Transactions on Cybernetics, 50(9),  3826–3839. https://doi.org/10.1109/TCYB.2020.2977374 33.\t Niu, Y., Paleja, R., & Gombolay, M. (2021). Multi-agent graph-attention communication and teaming. In F.  Dignum, A. Lomuscio, U. Endriss, & A. Nowé (Eds.) Proceedings of the 20th International Conference on  Autonomous Agents and MultiAgent Systems (pp. 964–973). ACM. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​5​5​5​5​/​3​4​6​3​9​5​2​.​3​4​6​4​0​6​5​ 34.\t Oliehoek, F. A., & Amato, C. (2016). A concise introduction to decentralized POMDPs. Springer Inter­ national Publishing. https://doi.org/10.1007/978-3-319-28929-8 35.\t Rashid, T., Samvelyan, M., De Witt, C. S., Farquhar, G., Foerster, J., & Whiteson, S. (2020). Mono­ tonic value function factorisation for deep multi-agent reinforcement learning. The Journal of Machine  Learning Research, 21(1), 7234–7284. http://jmlr.org/papers/v21/20-081.html 36.\t Samvelyan, M., Rashid, T., De Witt, C. S., Farquhar, G., Nardelli, N., Rudner, T. G. J., Hung, C.-M.,  Torr, P. H. S., Foerster, J., & Whiteson, S. (2019). The starcraft multi-agent challenge. In E. Elkind, M.  Veloso, N. Agmon, & M. E. Taylor (Eds.) Proceedings of the 18th International conference on autono­ mous agents and multiagent systems. International Foundation for Autonomous Agents and Multiagent  Systems, (pp. 2186–2188). http://dl.acm.org/citation.cfm?id=3332052 37.\t Schaal, S. (1996). Learning from demonstration. Proceedings of the neural information processing  systems (vol. 9, pp. 1040–1046). ​h​t​t​p​:​/​/​p​a​p​e​r​s​.​n​i​p​s​.​c​c​/​p​a​p​e​r​/​1​2​2​4​-​l​e​a​r​n​i​n​g​-​f​r​o​m​-​d​e​m​o​n​s​t​r​a​t​i​o​n 38.\t Shao, K., Zhu, Y., & Zhao, D. (2018). Starcraft micromanagement with reinforcement learning and cur­ riculum transfer learning. IEEE Transactions on Emerging Topics in Computational Intelligence, 3(1),  73–84. https://doi.org/10.1109/TETCI.2018.2823329 39.\t Shi, H., Li, J., Mao, J., & Hwang, K. S. (2023). Lateral transfer learning for multiagent reinforcement learn­ ing. IEEE Transactions on Cybernetics, 53(3), 1699–1711. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​1​0​9​/​T​C​Y​B​.​2​0​2​1​.​3​1​0​8​2​3​7​\n1 3\nPage 23 of 25  2\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\n40.\t Song, J., Ren, H., Sadigh, D., & Ermon, S. (2018). Multi-agent generative adversarial imitation learn­ ing. In S. Bengio, H. M. Wallach, H. Larochelle, K. Grauman, N. Cesa-Bianchi, & R. Garnett (Eds.)  Proceedings of the neural information processing systems (vol. 31, pp. 7472–7483). ​h​t​t​p​s​:​/​/​p​r​o​c​e​e​d​i​n​g​ s​.​n​e​u​r​i​p​s​.​c​c​/​p​a​p​e​r​_​f​i​l​e​s​/​p​a​p​e​r​/​2​0​1​8​/​f​i​l​e​/​2​4​0​c​9​4​5​b​b​7​2​9​8​0​1​3​0​4​4​6​f​c​2​b​4​0​f​b​b​8​e​0​-​P​a​p​e​r​.​p​d​f 41.\t Suay, H. B., Brys, T., Taylor, M. E., & Chernova, S. (2016). Learning from demonstration for shaping  through inverse reinforcement learning. In C. M. Jonker, S. Marsella, J. Thangarajah, & K. Tuyls (Eds.)  Proceedings of the 15st International conference on autonomous agents and multiagent systems (pp.  429–437). ACM. http://dl.acm.org/citation.cfm?id=2936988 42.\t Terry, J. K., Grammel, N., Son, S., & Black, B. (2022). Parameter sharing for heterogeneous agents in  multi-agent reinforcement learning. arXiv:2005.13625v7. https://arxiv.org/abs/2005.13625v7 43.\t Troullinos, D., Chalkiadakis, G., Papamichail, I., & Papageorgiou, M. (2021). Collaborative multiagent  decision making for lane-free autonomous driving. In F. Dignum, A. Lomuscio, U. Endriss, & A. Nowé  (Eds.) Proceedings of the 20th International conference on autonomous agents and multiagent systems  (pp. 1335–1343). ACM. https://doi.org/10.5555/3463952.3464106 44.\t Wang, T., Dong, H., Lesser, V., & Zhang, C. (2020). ROMA: multi-agent reinforcement learning with  emergent roles. In Proceedings of the 37th International conference on machine learning (vol. 119, pp.  9876–9886). PMLR. ​h​t​t​p​:​/​/​p​r​o​c​e​e​d​i​n​g​s​.​m​l​r​.​p​r​e​s​s​/​v​1​1​9​/​w​a​n​g​2​0​f​.​h​t​m​l 45.\t Wang, T., Dong, H., Lesser, V., & Zhang, C. (2020). From few to more: Large-scale dynamic multia­ gent curriculum learning. In Proceedings of the 34th AAAI conference on artificial intelligence (pp.  7293–7300). AAAI Press. https://doi.org/10.1609/AAAI.V34I05.6221 46.\t Wang, X., Ke, L., Zhang, G., & Zhu, D. (2022). Attention based large scale multi-agent reinforcement  learning. In Proceedings of the 5th International conference on artificial intelligence and big data (pp.  112–117). ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​1​0​9​/​I​C​A​I​B​D​5​5​1​2​7​.​2​0​2​2​.​9​8​2​0​0​9​3 47.\t Wang, Y., & Sartoretti, G. (2022). Fcmnet: Full communication memory net for team-level cooperation  in multi-agent systems. In P. Faliszewski, V. Mascardi, C. Pelachaud, & M. E. Taylor (Eds.) Proceed­ ings of the 21st International conference on autonomous agents and multiagent systems (pp. 1355– 1363). International Foundation for Autonomous Agents and Multiagent Systems. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​5​5​ 5​5​/​3​5​3​5​8​5​0​.​3​5​3​6​0​0​1​ 48.\t Yang, B., Ma, C., & Xia, X. (2021). Drone formation control via belief-correlated imitation learning. In:  Dignum F, Lomuscio A, Endriss U,& A. Nowé (Eds.) Proceedings of the 20th International conference  on autonomous agents and multiagent systems (pp. 1407–1415). ACM. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​5​5​5​5​/​3​4​6​3​9​5​ 2​.​3​4​6​4​1​1​4​ 49.\t Yang, J., Borovikov, I., & Zha, H. (2020). Hierarchical cooperative multi-agent reinforcement learn­ ing with skill discovery. In A. E. F. Seghrouchni, G. Sukthankar, B. An, & N. Yorke-Smith (Eds.)  Proceedings of the 19th International conference on autonomous agents and multiagent systems (pp.  1566–1574). International Foundation for Autonomous Agents and Multiagent Systems. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​ /​1​0​.​5​5​5​5​/​3​3​9​8​7​6​1​.​3​3​9​8​9​4​1​ 50.\t Yang, N., Ding, B., Shi, P., & Feng, D. (2022). Improving scalability of multi-agent reinforcement  learning with parameters sharing. In Proceedings of the 2022 IEEE International Conference on Joint  Cloud Computing (pp 37–42). https://doi.org/10.1109/JCC56315.2022.00013 51.\t Yang, Y., Hao, J., Liao, B., Shao, K., Chen, G., Liu, W., & Tang, H. (2020). Qatten: A general framework  for cooperative multiagent reinforcement learning. https://arxiv.org/abs/2002.03939 52.\t Zhang, K., Yang, Z., & Başar, T. (2021). Multi-agent reinforcement learning: A selective overview of  theories and algorithms. Handbook of reinforcement learning and control (pp. 321–384). ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​ g​/​1​0​.​1​0​0​7​/​9​7​8​-​3​-​0​3​0​-​6​0​9​9​0​-​0​_​1​2​ 53.\t Zhang, P., Hao, J., Wang, W., Tang, H., Ma, Y., Duan, Y., & Zheng, Y. (2021). Kogun: Accelerating deep  reinforcement learning via integrating human suboptimal knowledge. In C. Bessiere, (Ed.) Proceedings  of the 29th International Joint Conference on Artificial Intelligence. ijcai.org, (pp. 2263–2269). ​h​t​t​p​s​:​/​/​ d​o​i​.​o​r​g​/​1​0​.​2​4​9​6​3​/​I​J​C​A​I​.​2​0​2​0​/​3​1​7​ 54.\t Zhang, R., Torabi, F., Guan, L., Ballard, D. H., & Stone, P. (2019). Leveraging human guidance for deep  reinforcement learning tasks. In S. Kraus (Ed.) Proceedings of the 28th International Joint Conference  on Artificial Intelligence. ijcai.org, (pp. 6339–6346). https://doi.org/10.24963/IJCAI.2019/884 55.\t Zhifei, S., & Meng Joo, E. (2012). A survey of inverse reinforcement learning techniques. International Jour­ nal of Intelligent Computing and Cybernetics, 5(3), 293–311. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​1​0​8​/​1​7​5​6​3​7​8​1​2​1​1​2​5​5​8​6​2​ 56.\t Zhou, M., Chen, Y., Wen, Y., Yang, Y., Su, Y., Zhang, W., Zhang, D., & Wang, J. (2019). Factorized  q-learning for large-scale multi-agent systems. In Proceedings of the First International conference on  distributed artificial intelligence, (pp. 1–7). https://doi.org/10.1145/3356464.3357707\nPublisher's Note  Springer Nature remains neutral with regard to jurisdictional claims in published maps and  institutional affiliations.\n1 3\n2  Page 24 of 25\n\n--- Page Break ---\n\nAutonomous Agents and Multi-Agent Systems (2026) 40:2\nAuthors and Affiliations\nDingbang Liu1,2 · Fenghui Ren1 · Jun Yan1 · Guoxin Su1 · Wen Gu2 · Shohei Kato2\nFenghui Ren\nfren@uow.edu.au\nDingbang Liu dl956@uowmail.edu.au\nJun Yan jyan@uow.edu.au\nGuoxin Su guoxin@uow.edu.au\nWen Gu wgu@nitech.ac.jp\nShohei Kato kato.shohei@nitech.ac.jp\n1\t School of Computing and Information Technology, University of Wollongong, \n Wollongong 2500, New South Wales, Australia\n2\t Department of Computer Science, Nagoya Institute of Technology, Nagoya 466-8555, Aichi,  Japan\n1 3\nPage 25 of 25  2",
+  "equations": [
+    {
+      "page": 5,
+      "raw_extracted": "G = ⟨S, A, P, r, Z, O, n, γ⟩,\b (1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "where s ∈S defines the global environment state. The observations of each agent  i ∈N ≡{1, . . . , n} are partially observable oi ∈Oi, which are determined by the observa­ tion function Z(s, i) : S ⋅ N →p(O). Based on its local observation oi, each agent i selects  its action ai ∈Ai at each time step according to its stochastic policy πi : Oi ⋅ Ai →[0, 1].  Then, based on the state transition function P : S ⋅ A1 ⋅ • • • ⋅ An →S, the joint action of",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "all agents ⃗a ∈⃗A changes the environment into a new state. Furthermore, our setting follows  the centralized training and decentralized execution (CTDE) paradigm [10]. All agents share  the same reward function r(s,⃗a) : S ⋅⃗A →R, and aim to learn a joint policy to maximize  a global action-value function Qtot(st,⃗at) = E⃗at+1∼⃗π,st+1∼P [∑T −t",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "l=0 γlrt+l(st,⃗at)|st,⃗at]  where γ is the discount factor and T is the time horizon.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "∀x, y : (attacks(x, y) →Agent(x) ∧Enemy(y)) .\b (2)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hin = {",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "h1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "in, . . . , hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "in",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "For each knowledge in hin:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "in : hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "in(oi) = ai, ai⊥A−i ,\b (4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "where oi and ai represent the observation and action of agent i, and A−i denotes the actions  of all agents excluding agent i.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "hteam = {",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "h1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "team, . . . , hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "team",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "For each piece of knowledge, the human policy directs agents to collaborate, where the  action selected by an agent is dependent on its cooperative teammates. The function hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "team,  which guides cooperation between agents, is defined as follows:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "team : G →πhk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "team(gi, Ci) ai = πhk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "team(gi, Ci) , \b (6)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where G = {g1, . . . , gN} represents the set of agents, and Ci denotes the set of agents with  whom gi cooperates. For better intuition, consider an example of team behavior knowledge:  “Disperse when there are more than 10 allies nearby.” In this guideline, cooperation instruc­ tions are explicitly assigned to the agents within the team.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Knowledge for mimic behaviors  In addition to directly instructing agents on how to cooper­ ate, humans can also recommend superior agents for other agents to imitate. For instance,  an example of mimic behavior knowledge is: “Follow the nearest attacking ally for the same  target (attack mimic)”. It has been suggested that behavioral cloning is an effective approach  for agents to rapidly develop cooperative skills [40]. Compared to the direct coordination  instructions provided by hteam, mimic knowledge requires agents to infer and imitate the  behaviors of other agents, resulting in implicit cooperation. However, there exists a signifi­ cant risk of agents mimicking unrelated agents whose policies are incompatible. With this  in mind, another pattern of knowledge is employed to guide agents on how to mimic the  actions of other agents and help them better understand the selected actions. We refer to the  human knowledge set for mimic behaviors as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "hmimic = {",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "h1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "mimic, . . . , hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "mimic",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Here, hk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "mimic guides agent i on how to mimic the recommended agents:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "M(gi) = Rhk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "mimic(gi), ai = πhk",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "mimic(πg(M(gi))) ,\b (8)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where M(gi) denotes the agent or group of agents recommended for agent gi to mimic,  Rh(gi) represents the human knowledge that recommends which agents to mimic, and πh  guides how to mimic the actions of these recommended agents.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "h = {h1, . . . , hJ} , hj ∈hin, hteam, hmimic .\b (9)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "As human knowledge h is represented in natural language and is not directly actionable, we  design the mapping function to map each knowledge hj into the environment action space  for agent execution. The mapping function set F is defined as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "F = {f1, . . . , fJ}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "hj",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "fj =⇒a, a ∈{a1, . . . , aK} ,\b (10)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where J is the total number of integrated human knowledge statements, and a is the original  action space of the environment. When a specific piece of human knowledge hj is utilized  by agent i, the corresponding mapping function fj is triggered to transform it into the origi­ nal environment action ak = fj(hj|oi) based on the current state.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Adding restrictions : ←escape Setting upper and lower limits : Nagent < 5, Nagent > 15 The number of agents involved : Nagent = 2, . . . , ∀agent .",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "N(e) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "gj∈G,j̸=i",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "X(gj, e)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "T(e) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "  ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": " ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "argmine∈EH(e), ∀e ∈E, ∀gj ∈G, j̸ = i, X(gj, e) = 0 ;",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "argmin e ∈E, gj ∈G, X(gj, e)̸ = 0 N(e), ∃e ∈E, ∃gj ∈G, j̸ = i, (N(e)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "< L(G)) ∧(X(gj, e)̸ = 0) ;",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "argmine∈EN(e), otherwise.,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "where E = {e1, . . . , eM} represents the set of attackable enemies for agent i in the current  state s, G = {g1, . . . , gN} refers to the set of all agents, H(e) indicates the health point of  enemy e, L(G) represents the upper limit, X(g, e) ∈{0, 1} signifies whether agent g selects  enemy e to attack, N(e) is the number of agents that select enemy e to attack, and T(e)  denotes the action that agent i will select to attack enemy e. More details about this map­ ping function are illustrated in Algorithm 1. In summary, to transfer human knowledge to  agents, humans first need to identify the individual and cooperative behaviors they wish to  integrate. These behaviors are then converted into natural language statements for the agents  to select from. Finally, mapping functions, structured as decision-tree-like sequences, are  designed to translate these instructions into specific environmental actions for execution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "To allow agents to freely decide which portions of the state space to apply human knowl­ edge, the human knowledge set h is integrated into the original environment action space.  Therefore, agents can explore the new action space with Q-learning, learning to leverage the  demonstrated knowledge while filtering out inappropriate knowledge. The extended new  action space mi of agent i is:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "mi = {",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "m1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i , . . . , mJ+K",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "= {",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "a1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i , . . . , aK",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i , h1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i , . . . , hJ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "As human knowledge can benefit agents in solving the “start-up” problem in MADRL, it  is crucial that the human knowledge set is frequently explored during the initial stages of  training. To better exploit the advantages of human knowledge, we propose the probabil­ ity of knowledge exploration, δ, in addition to the ε-greedy exploration probability ε. The  exploration process, distinguishing the exploration of the human knowledge and the original  environment action, is defined as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "m(t) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "{ max Qt(m), with probability 1 −ε; Any action ak from a, with probability ε ∗(1 −δ); Any action hj from h, with probability ε ∗δ. ,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "where m(t) represents the action selected at time step t. Since the integrated human knowl­ edge may be imperfect, agents are expected to automatically learn how to utilize it across  different states. Therefore, both δ and ε are initialized to 1 and rapidly decrease to their mini­ mum values, with δ decaying at a significantly faster rate. In this manner, human knowledge  is compulsorily applied only during the very initial exploration phase, thus preserving the  autonomous learning capabilities of agents.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Based on the aforementioned mechanism, the comprehensive training process of our  approach is elaborated in Algorithm 2. Prior to training, relevant human knowledge is  designed and incorporated into the original action space as human guidance (lines 2 and  3). At each time step, the N agents explore the augmented action space m following the  exploration process outlined in (12), obtaining the actions of all agents (m1, . . . , mN) (from  line 6 to line 15). These actions are subsequently mapped back to the environment using the  mapping functions (as explained in (10)) for execution, advancing the environment to the  next state (lines 16 and 17):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "(m1, . . . , mN)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "F⇒(a1, . . . , aN) ↓Execute in environment reward r and new observation o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "′ .",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "The resulting transitions, represented as tuples (o, m, r, o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "′), are stored in a replay buffer  which is then provided to the MADRL algorithm in each minibatch for agent training (line  18). Utilizing the MADRL algorithm, agents learn to apply human knowledge across differ­ ent parts of the state space (line 19):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Q(o, m) ←Q(o, m) + α[r + γmaxmQ(o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "′, m) −Q(o, m)] .",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "functions follow a hard rule-based style similar to if-then statements, as illustrated in  Algorithm 1. Individual-type human knowledge is the simplest to design, as humans  propose behavioral instructions by solely considering the surrounding environment  without accounting for behaviors of other agents. For instance, we hypothesize that  considering distance before choosing an attack action could be beneficial; hence, we  define the instruction as “Attack the nearest enemy.” The corresponding mapping func­ tion might be: “If the agent can attack, then identify the closest enemy and execute the  corresponding attack action.” In contrast, cooperative-type human knowledge involves  more complex mapping functions, potentially including additional restrictions. For  example, the team-type knowledge “Attack the enemy with allies (no more than 5  agents)” has a corresponding mapping function detailed in Algorithm 1 (where Nagent  is set to 5). It is worth mentioning that such thresholds are based on our domain knowl­ edge, covering only a limited portion of the action-state space without guaranteed  effectiveness in all scenarios. Moreover, users can freely design customized guidelines  following the knowledge representation process described in Section 4.2. Several gen­ eral analyses regarding knowledge design are provided in the methodology section,  accompanied by empirical results in Sections 5.4.1 and 5.4.2. To further demonstrate  the tolerance of our method to imperfect knowledge, the exact same human knowledge  in each approach is applied across all five different SMAC scenarios.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "test knowledge using rate of hj",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "i =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "∑T",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t=1 Nhj",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "i ∑T",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t=1 Nmi",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where i refers to agent i, T is the episode length, and Nhj, Nm ∈{0, 1}. Since the agents  are homogeneous in our experiment, we randomly select one agent to record its knowledge  using rate across 5 runs, each with 32 test episodes. Figure 4 shows the mean test knowledge  using rate trend over time across all tasks. The effect of different types of human knowledge  is demonstrated in Fig. 5, while the performance of knowledge mapping with various fea­ tures is elaborated in Fig. 6.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "The influence of human knowledge on each stage of policy development is further illus­ trated in Fig. 4, where the using rate changes of the human knowledge set h and each piece  of knowledge hj over time are revealed. As depicted, these using rates eventually converge,  indicating that agents consistently leverage specific knowledge. Observations of the using  rate curves for individual knowledge items 3 and 5 in Fig. 4(i) suggest that agents rapidly  filter out inappropriate knowledge to avoid negative transfer. To highlight the attributes of  transferred knowledge, we select the most frequently used knowledge in each type of human  knowledge and combine them for comparison. As demonstrated in Fig. 4(l), individual-type  knowledge dominates at the beginning of training but gradually decreases over time. In  contrast, despite the initially modest using rate of cooperative-type knowledge, its usage",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 20,
+      "raw_extracted": "Hyperparameter Value Total timesteps 2050000 Number of environments 8 Number of episodes to test for 32 Test interval 5000 Update interval 200 episodes Optimizer Adam γ 0.99 Batch size 128 Learning rate 0.001 RNN layer hidden size 64 Mixing embedding size 32 Hyper-network embedding size 64 ε 1.0 → 0.05 Anneal time of ε 50000 δ 1.0 → 0.01 Anneal time of δ 20000",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

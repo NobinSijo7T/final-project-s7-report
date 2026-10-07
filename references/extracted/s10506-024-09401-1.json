@@ -1,0 +1,890 @@
+{
+  "source_file": "s10506-024-09401-1.pdf",
+  "num_pages": 44,
+  "full_text": "Vol.:(0123456789)\nArtificial Intelligence and Law (2025) 33:739–782 https://doi.org/10.1007/s10506-024-09401-1\nORIGINAL RESEARCH\nInstructPatentGPT: training patent language models  to follow instructions with human feedback\nJieh‐Sheng Lee1\nAccepted: 8 April 2024 / Published online: 8 May 2024  © The Author(s) 2024\nAbstract In this research, patent prosecution is conceptualized as a system of reinforcement  learning from human feedback. The objective of the system is to increase the likeli- hood for a language model to generate patent claims that have a higher chance of  being granted. To showcase the controllability of the language model, the system  learns from granted patents and pre-grant applications with different rewards. The  status of “granted” and “pre-grant” are perceived as labeled human feedback implic- itly. In addition, specific to patent drafting, the experiments in this research dem- onstrate the model’s capability to learn from adjusting claim length and inclusion  of limiting terms for narrowing claim scope. As proof of concept, the experiments  focus on claim ones only and the training data originates from a patent dataset tai- lored specifically for artificial intelligence. Although the available human feedback  in patent prosecution are limited and the quality of generated patent text requires  improvement, the experiments following the 3-stage reinforcement learning from  human feedback have demonstrated that generative language models are capable of  reflecting the human feedback or intent in patent prosecution. To enhance the usabil- ity of language models, the implementation in this research utilizes modern tech- niques that enable execution on a single consumer-grade GPU. The demonstrated  proof of concept, which reduces hardware requirements, will prove valuable in the  future as more human feedback in patent prosecution become available for broader  use, either within patent offices or in the public domain.\nKeywords  Patent · Natural language generation · Natural language processing ·  Reinforcement learning from human feedback\n*\t Jieh‐Sheng Lee  \t jasonlee@nycu.edu.tw\n1\t School of Law, National Yang Ming Chiao Tung University (NYCU), No. 1001, Daxue Rd.,  East District, Hsinchu 300093, Taiwan\n\n--- Page Break ---\n\n740 \t J.-S. Lee\n1  Introduction\nThe codename “InstructPatentGPT” in this research refers to the development of  aligning language models in the patent domain with human feedback in patent pros- ecution. This research draws inspiration from InstructGPT (Ouyang 2022), which  has successfully shown the effectiveness of Reinforcement Learning from Human  Feedback (RLHF). In the patent domain, patent prosecution is the process of obtain- ing a patent for an invention, which includes tasks like drafting a patent applica- tion, issuing an office action, revising the patent application, and responding to the  office action, along with other associated tasks. An office action is a written notice  issued by a patent examiner to the patent applicant, addressing matters of patent- ability. Issuing and responding to office actions is an iterative back-and-forth process  between patent examiners and patent applicants. The objective for patent applicants  in general is to maximize the probability of patent allowance with preferred patent  scope. In computer science, reinforcement learning also involves an iterative process  with an objective to maximize its rewards. Hence, the idea is to merge these two  areas and implement RLHF in the context of patent prosecution.\nIn essence, patent prosecution encompasses substantial human feedback, includ- ing opinions issued by patent examiners on patentability, revisions made by patent  applicants to their patent applications, and the final determination for each patent  claim: whether it is granted, rejected or abandoned. In addition, the implicit intent  in claim drafting, such as adjusting claim length for different patent scope, utilizing  certain terms more or less frequently, also represent distinct human preferences that  can be factored into reinforcement learning. Drawing from these observations, it can  be stated that the training data for RLHF already exists, although a significant por- tion is not publicly available or in text format. When considering the effectiveness  of RLHF, it is also captivating to investigate whether RLHF can utilize the human  feedback in patent prosecution to generate patent text that can maximize the prob- ability of patent allowance.\nIn this research, the language model for reinforcement learning is the PatentGPT- J-6B model (Lee 2023). According to Lee (2023), the model has been pre-trained  from scratch exclusively using patent data. To the best of the author’s knowledge,  this research is the first time RLHF techniques are being used on language mod- els in the patent domain. To serve as proof of concept and to reduce the entry bar- riers for experiments, the implementation in this research concentrates exclusively  on the first claim of patent applications. Given the limitations imposed by publicly  available data, the human feedback used in this study is somewhat limited; nev- ertheless, it remains sufficient to show the proof of concept. As for training data,  the primary source of raw data for this research is the Artificial Intelligence Patent  Dataset (AIPD) (USPTO 2022), which was made publicly available by the United  States Patent and Trademark Office (USPTO). Selecting this dataset is intended to  make the patent claims generated more understandable for readers knowledgeable in  AI. Moreover, to promote the accessibility of language models and lowering hard- ware demands, this study’s implementation utilizes modern techniques to reduce the  model’s size, enabling it to run on a single consumer-grade GPU.\n\n--- Page Break ---\n\n741 InstructPatentGPT: training patent language models to follow...\n2  \u0007Related work\nGenerative models have demonstrated notable efficacy across diverse domains  in recent years. However, their potential applications within the patent domain  remain comparatively underexplored. In Lee and Hsiang (2020), the authors  focused on fine-tuning OpenAI GPT-2 (OpenAI 2019) models for patent claim  generation. In Lee (2020), they explored the control of patent text generation  through the use of structural metadata in patents. Despite the proposal for per- sonalized patent claim generation in another study (Lee 2019), the methods for  achieving controlled text generation remain unclear. Also, in Pelaez et al. (2023),  the authors utilized generative language models for large-scale text analysis and  discovering public value expressions in AI patents. The effectiveness of employ- ing a generative language model (GPT-4) (OpenAI 2023) for generating labels  and rationales was demonstrated by the authors in Pelaez et  al. (2023). The  approach offers advantages because labeling data is often difficult to accom- plish accurately. Moving to a more specific technical field, in Subramanian et al.  (2023), the authors developed a framework to extract molecular structures from  the USPTO patents and trained domain-specific generative RNN models to gener- ate novel molecular structures. Notwithstanding these notable efforts, the explo- ration of generative models in the patent domain remains limited.\nRLHF is an approach that combines supervised learning with reinforce- ment learning, in which a reinforcement learning agent learns how to maximize  a reward from human feedback. Some prominent instances of RLHF-trained  language models are OpenAI’s ChatGPT (OpenAI 2022) and its predecessor  InstructGPT (Ouyang 2022), as well as DeepMind’s Sparrow (Glaese 2022) and  Google’s Bard (Google 2023). To maximize the reward, RLHF is also about  learning an optimal policy model guiding the agent’s actions. A policy is a map- ping from the current environment observation to a probability distribution of  the actions (or tokens, in the case of language models) to be taken. A specific  optimization algorithm employed to train the optimal policy model is Proximal  Policy Optimization (PPO) (Schulman et al. 2017), which was developed by Ope- nAI. This research utilizes the PPO algorithm to maximize agent’s rewards from  human feedback. The agent in the context of this research is the generative lan- guage model. It is worth noting that training language models with RLHF has  gained widespread acceptance in mainstream research, and there are comprehen- sive and readily accessible resources detailing this technique, e.g., (Bai 2022) and  Lambert et al. (2022). Nevertheless, despite the popularity of RLHF in various  domains, there is currently no known application of this method in the patent  domain, as per the author’s knowledge.\nIt is possible that the primary obstacle to implementing RLHF in the patent  domain is the lack of labeled data. Generally, in many fields, acquiring human  feedback involves a laborious process of manually labeling data. However, the  patent domain may have a unique advantage in this regard, as public patent data  and prosecution history inherently contain human feedback. For example, the  patent examiner’s response to grant or reject a patent claim serves as a form of\n\n--- Page Break ---\n\n742 \t J.-S. Lee\nhuman feedback. The revisions made to patent claims during patent prosecution  may encompass other forms of human feedback or intent. The patent data used in  this research originates from the USPTO. The USPTO offers several data sources,  including the Patent Public Search website for end users, the PatentsView (http://​ www.​paten​tsview.​org/) website as a data visualization and analysis platform, the  Bulk Data Storage System (https://​bulkd​ata.​uspto.​gov/) providing a repository for  raw public bulk data, and the Patent Examination Data System (https://​ped.​uspto.​ gov/​peds) allowing users to search, display and download multiple records of pat- ent application, status, and transaction history.\nIn addition, the USPTO provides several research datasets (https://​www.​uspto.​ gov/​ip-​policy/​econo​mic-​resea​rch/​resea​rch-​datas​ets). The primary raw data in this  research comes from the AIPD dataset (USPTO 2022) and the PatentsView platform  (http://​www.​paten​tsview.​org/). The dataset, as per the Office of the Chief Economist  (OCE) at the USPTO, aims to assist researchers and policymakers in focusing on the  determinants and impacts of AI invention. Further details about the AIPD dataset  and the PatentsView platform are available in working papers (Giczy et al. 2021)  and Toole et al. (2021) respectively. It can be noted that the AIPD was used in the  USPTO report “Inventing AI: Tracing the diffusion of artificial intelligence with  U.S. patents.” (USPTO 2020). Despite the significance of artificial intelligence, to  the author’s knowledge, the AIPD dataset has not been utilized to train language  models in the patent domain, and particularly not for reinforcement learning from  human feedback.\n3  \u0007Implementation\n3.1  \u0007Human feedback\nThe primary challenge in deploying RLHF revolves around obtaining human feed- back effectively. The human feedback in RLHF can take various types, including but  not limited to: (a) preference ratings, (b) summarizations, (c) corrections, (d) dem- onstrations, and (e) specific reward signals. Typically, obtaining human feedback  in most domains involves time-consuming manual data labeling. However, public  patent data and prosecution history present a distinct advantage as they inherently  include human feedback or intent. For instance, when it comes to (a) preference rat- ings, a granted patent claim is considered preferred, whereas a rejected claim is not.  In terms of (b) summarizations, the abstract of a granted patent can be derived from  the patent’s description or claims. Additionally, (c) corrections can be identified  through revised patent claims, which may address issues such as antecedent-basis  error encountered during patent prosecution. Regarding (d) demonstrations, existing  dependent claims can serve as examples to illustrate how independent claims derive  dependent claims.\nWhen it comes to patent drafting and human intent, it is desirable to incorporate  the drafting intent in controlling patent text generation. For instance, considering  (e) specific reward signals, if the goal is to achieve a broader patent scope, gen- erating shorter patent claims with fewer limitations can represent a higher reward\n\n--- Page Break ---\n\n743 InstructPatentGPT: training patent language models to follow...\nsignal. Conversely, when the drafting intent is to avoid anticipation of prior arts and  make it easier to be granted (at the cost of potentially lower patent value), longer  patent claims might be favored and represent a higher reward signal. In summary,  the human feedbacks mentioned earlier in types (a)∼(d) can be derived from patent  data and prosecution history. Additionally, in the case of type (e), it is desirable for  generative language models to be controllable and capable of reflecting the intent  behind patent drafting. Owing to limitations in resources and the availability of pub- lic data, this research concentrates solely on implementing human feedback in types  (a) and (e). More details are provided in Sect. 3.3.\n3.2  \u0007Methodology\nThe methodology in this manuscript follows the typical 3-stage RLHF pipeline out- lined in Stiennon et al. (2020) and Ouyang (2022). Specifically, the stages of train- ing a patent language model from human feedback are:\n1.\t Supervised Fine-Tuning (SFT) Fine-tune a pretrained language model with a  domain-specific dataset. In this manuscript, the pretrained language model is  PatentGPT-J-6B and the dataset is the AIPCO (AI Patent’s Claim Ones) dataset  in Sect. 3.3. 2.\t Reward Model (RM) Collect a dataset with human feedback and train a reward  model. In the patent domain, the human feedback or intent can be categorized in  several types, as described in Sect. 3.1. 3.\t Proximal Policy Optimization (PPO) Optimize a policy against the reward model  by using PPO. PPO is a reinforcement learning algorithm that can be used to learn  a policy that maximizes a scalar reward. The reward model’s output in step 2 is  considered as this scalar reward. Alternatively, in different experiments, the scalar  reward can be defined through a reward function specified in source code.\nFine-tuning large language models is often prohibitively costly, and maintaining  fine-tuned models of the same size as the original pretrained model can be also  expensive. To address these issues, researchers have introduced parameter-efficient  fine-tuning (PEFT) techniques (Sourab  Mangrulkar and Sylvain  Gugger 2022).  These techniques aim to enable efficient adaptation of pre-trained language models  to various downstream applications without the need to fine-tune all of the model’s  parameters. The concept is to add and fine-tune only a small number of extra param- eters while freezing most parameters of the pretrained models. This approach leads  to substantial reductions in computational and storage costs. For instance, a cutting- edge PEFT method known as Low-Rank Adaptation (LoRA) (Hu 2022) has demon- strated performance similar to that of full fine-tuning. This research utilizes LoRA  to efficiently adapt the pre-trained GPT-J-6B model. Moreover, to enable fine-tuning  of language models on a single consumer-grade GPU (e.g., VRAM = 16 G or 24 G),  this research leverages the techniques of 8-bit optimization via block-wise quantiza- tion (Dettmers et al. 2022).\n\n--- Page Break ---\n\n744 \t J.-S. Lee\n3.3  \u0007Dataset\nThis research relies on two primary sources of raw data provided by the USPTO:  AIPD (USPTO 2022) and PatentsView (http://​www.​paten​tsview.​org/). AIPD offers  information and categorization of AI patents, while PatentsView provides details  pertaining to patent documents, such as patent claims. According to, there exists a  data file in the AIPD that identifies U.S. patents issued between 1976 and 2020 and  pre-grant publications that contain one or more of eight AI technology components.  These AI components are defined as: machine learning, evolutionary computation,  natural language processing, speech, computer vision, knowledge processing, plan- ning and control, and AI hardware. The authors in Giczy et al. (2021) generated this  data file using a machine learning approach that analyzed patent text and citations  to identify AI components in U.S. patent documents. This research follows the nam- ing convention of the AI components in the data file as: ML, EVO, NLP, SPEECH,  VISION, KR, PLANNING, and HARDWARE. To conduct the experiments in this  research, eight training datasets are created, each corresponding to one of these eight  AI components. In the AIPD data file, a document id can take one of two forms:  (1) a patent number for granted patents, or (2) a publication number if the docu- ment is a published patent application (pre-grant). Additionally, the data file con- tains an application id, which represents the application number of a patent applica- tion. While the AIPD data file is helpful for identifying the AI categories of a patent  document, it does not include the actual textual content of the document, such as the  title, abstract, description, and claims.\nResearchers have two sources of data for accessing the textual content of patent  documents: the PatentsView platform and the Bulk Data Storage System (BDSS).  One key distinction between PatentsView and BDSS is their data structure: BDSS  is document-centric, while PatentsView is database-centric. In BDSS, a single file  in XML format contains all the textual data and metadata for a given patent. On  the other hand, the textual data for a patent is spread across multiple database table  files at PatentsView. These individual table files can be imported and combined to  create a comprehensive database. To achieve quicker iterations and facilitate model  training, this research concentrates on the textual data of claim one. Consequently,  the PatentsView platform is a better option for accessing the patent claims and inte- grating them with the AIPD data. PatentsView provides downloadable table files for  both granted patents and pre-grant applications respectively and on a yearly basis.  The relation between granted patents and pre-grant applications can be identified by  another table file called pg_granted_pgpubs_crosswalk mapping patent application  numbers to their corresponding granted patent numbers.\nIt is worth mentioning that a database dump from PatentsView is accessible  upon request, which can simplify the process of creating a database. However, upon  inspection, the patent claim text is not included in the database dump due to the  substantial volume of patent claims. The version of the inspected database dump  is dated as of March 30, 2023. It would be beneficial if a newer version of database  dump released by the USPTO could include patent claims in the future. By inte- grating the AIPD data file having eight AI technology components and the database  tables from PatentsView (granted patents, pre-grant applications, and crosswalk),\n\n--- Page Break ---\n\n745 InstructPatentGPT: training patent language models to follow...\nthe datasets needed in this research are created encompassing all patents in AIPD  along with their corresponding text of patent claim one. The training datasets are  given the prefix AIPCO. Since AIPD comprises eight AI technology components,  eight individual datasets are constructed for the experiments in this research, each  representing a specific component along with its corresponding text of patent claim  one. These datasets are named as follows: AIPCO-ML, AIPCO-EVO, AIPCO- NLP, AIPCO-SPEECH, AIPCO-VISION, AIPCO-KR, AIPCO-PLANNING, and  AIPCO-HARDWARE. In the context of the methodology described in Sect.  3.2,  during the SFT stage, these eight datasets are used for fine-tuning. Subsequently, in  the RM stage, the eight datasets are used for training reward models too. The eight  SFT models and reward models are then used in the PPO stage of experiment in  Sect. 4.3.\nTable 1 presents the statistics for the eight datasets. The first column displays  the names of the databases, followed by the total number of rows in the second col- umn. The third column represents the total count of granted patents, and the fourth  column is the average length of those patents. The fifth column represents the total  count of pre-grant applications, and the sixth column is the average length of those  applications. It is worth mentioning that the total count of pre-grant applications  being less than the count of granted patents is attributed to the crosswalk data. For  some granted patents in the data, such as reissued patents, the pre-grant applica- tion number is empty. For some other rows, the reasons for this emptiness are less  evident. While a further investigation might be needed to understand these reasons,  for the purposes of this research, the numerical difference in rows between pre-grant  and granted is not a major concern for training models.\nIt is noted that the Office Action Research Dataset for Patents (https://​www.​uspto.​ gov/​ip-​policy/​econo​mic-​resea​rch/​resea​rch-​datas​ets/​office-​action-​resea​rch-​datas​et-​ paten​ts) provided in Research Datasets has the potential to enhance this research  in the future. The dataset marks the first time that comprehensive data on exam- iner-issued rejections are available to the research community. As previously stated,  an office action is a written notice to the patent applicant of the patent examiner’s  decision on patentability. Therefore, the notice generally discloses information,  such as the grounds for a rejection, the claims affected, and the pertinent prior art.\nTable 1   Datasets of Patent Claim Ones\nDataset Number of rows Granted Avg len Pre-grant Avg len\nAIPCO-ML 61,136 31,792 1359 29,344 864\nAIPCO-EVO 16,274 8476 1412 7798 863\nAIPCO-NLP 57,629 30,746 1438 26,883 828\nAIPCO-SPEECH 32,824 17,324 1336 15,500 805\nAIPCO-VISION 145,162 74,378 1280 70,784 838\nAIPCO-KR 297,289 156,648 1404 140,641 852\nAIPCO-PLANNING 317,442 168,297 1444 149,145 853\nAIPCO-HARDWARE 183,224 95,988 1372 87,236 819\n\n--- Page Break ---\n\n746 \t J.-S. Lee\nAccording to Lu et al. (2017), the relative inaccessibility of office actions has pre- vented researchers from fully exploiting valuable information during patent pros- ecution. The authors in Lu et al. (2017) aim to rectify the situation by using natu- ral language processing and machine learning techniques to systematically extract  information from office actions and construct a relational database of key data ele- ments. The dataset covers 4.4 million office actions mailed during the 2008 to mid- 2017 period from USPTO examiners to the applicants of 2.2 million unique patent  applications.\nFrom the perspective in Sect.  3.1, office actions encompass various types of  human feedback. For instance, a rejection can be categorized as (a) preference rat- ing as described in Sect. 3.1. How the claims are affected and revised can be con- sidered as (c) corrections. Furthermore, the pertinent prior art can play a role in  (b) summarizations used for summarizing the basis in office actions. Ideally, the  office actions serve as the most valuable source for obtaining the necessary human  feedback for RLHF. However, upon close inspection, the dataset’s coverage does  not align with the primary data source AIPD in this research. In addition, the rejec- tions in the dataset lack the patent text essential for training language models. As a  result, for training reward models in experiment of Sect. 4.3, pre-grant applications  are chosen as the source for negative samples, and granted patents serve as positive  samples. Further elaboration will be provided in that section. It is also noted that the  Patent Examination Data System (https://​ped.​uspto.​gov/​peds), another data source  from the USPTO, has comparable limitations and does not fulfill the requirements  of this research. If either the Office Action Research Dataset or the Patent Examina- tion Data System could offer more structured and comprehensive data in the future,  an enhanced quantity of human feedback during patent prosecution might be avail- able for leveraging in RLHF within the patent domain. In summary, a total of eight  AIPCO datasets, each containing the text of patent claim ones, are prepared for each  AI component.\n3.4  \u0007Library\nThe implementation in this research leverages several open source libraries in Python,  particularly the TRL (Transformer Reinforcement Learning) library (von Werra 2020)  and its examples. TRL is a full stack library providing a set of tools to train transformer  language models with reinforcement learning. The library covers all three stages: SFT,  RM, and PPO, as described in Sect. 3.2. The TRL library is built on top of the trans- formers library by Hugging Face. Therefore, pre-trained language models, such as  PatentGPT-J-6B (Lee 2023) and DistilBERT (https://​huggi​ngface.​co/​disti​lbert-​base-​ uncas​ed), can be directly loaded. Throughout the research, TRL version 0.4.2.dev0 was  utilized, while the library remained under intensive development. Other options for  implementing reinforcement learning in the language domain include: TRLX (Trans- former Reinforcement Learning X) (von Werra 2020), TextRL (Text Generation with  Reinforcement Learning) (Lam 2023), and RL4LMs (Ramamurthy 2022). Amidst the\n\n--- Page Break ---\n\n747 InstructPatentGPT: training patent language models to follow...\nfast-paced development in applying RLHF techniques to language models, it is advised  to observe which library stands out as the most promising in the future.\nTo enable the fine-tuning of language models on a single GPU with limited 16 G  VRAM, this research utilizes the LoRA method as low-rank adaptation from the PEFT  library (Sourab Mangrulkar and Sylvain Gugger 2022). The LoRA method proves to  be effective in reducing the number of trainable parameters by using parameter-effi- cient fine-tuning techniques. As shown in Sourab  Mangrulkar and Sylvain  Gugger  (2022), using LoRA on consumer hardware yields performance comparable to that of  full fine-tuning which demands high-end hardware. Furthermore, this research reduces  the model size by loading a model in 8-bit precision through the bitsandbytes library  (https://​github.​com/​TimDe​ttmers/​bitsa​ndbyt​es). The library is a lightweight wrapper  around CUDA (Compute Unified Device Architecture) custom functions, 8-bit opti- mizers, matrix multiplication, and quantization functions. CUDA is a software layer  that gives direct access to the GPU’s virtual instruction set and parallel computational  elements. It is a proprietary software layer developed by NVIDIA.\n3.5  \u0007Training\nBased on the methodology described in Sect. 3.2, the first stage (SFT) involves fine- tuning the pretrained language model PatentGPT-J-6B using the eight AIPCO datasets  in Sect. 3.3. During fine-tuning, the PatentGPT-J-6B model is loaded in 8-bit preci- sion and with the low-rank adapter in the LoRA method. The adapter adds pairs of  rank-decomposition weight matrices to the 8-bit model, and only these newly added  weights are fine-tuned. After fine-tuning, an additional step is taken to merge the  adapter weights to the original model. This merging of weights results in the creation of  the SFT model. Each of the eight AIPCO datasets is used to individually fine-tune the  PatentGPT-J-6B model, resulting in the creation of eight domain-specific SFT models  for the subsequent stage. Each model’s fine-tuning is completed in a single epoch. The  perplexity values at the end of the fine-tuning for each dataset are shown in Table 2.  Perplexity is a statistical measure of how confidently a language model predicts a text  sample. The lower the perplexity value, the better the model can predict the next word  or sequence of words in a given text. The following perplexity values are considered  low, which suggests that the SFT models are effective in predictive capabilities.\nThe second stage (RM) involves the training of a reward model using human  feedback. This research explores two separate implementation approaches for  this stage. The first approach pertains to (a) preference ratings in Sect. 3.1. In  this approach, the categorization of granted and pre-grant represents a form of  human feedback. The implicit human feedback has been supervised and does not  require further labeling efforts. The base model utilized for training in this stage\nTable 2   Perplexity of supervised fine-tuning (SFT)\nML EVO NLP SPEECH VISION KR PLANNING HARDWARE\nPerplexity 6.82 6.82 6.24 6.17 6.00 11.77 6.09 6.04\n\n--- Page Break ---\n\n748 \t J.-S. Lee\nis the distilbert-base model (https://​huggi​ngface.​co/​disti​lbert-​base-​uncas​ed). The  downstream task for the base model is a binary classification task (granted or  pre-grant). A reward of 1 is assigned to instances classified as granted, while a  reward of 0 is given to instances classified as pre-grant. More information about  how this reward model is experimented in subsequent reinforcement learning  (PPO) can be found in Sect. 4.4.\nReturning to the base model, the distilbert-base model is a distilled version of  the BERT base model. It reduces the size of a BERT model by 40%, while retaining  97% of its language understanding capabilities and being 60% faster, according to  Sanh et al. (2019). With a size of 66 M, it can avoid an out-of-memory (OOM) issue  and becomes practical in this research to execute the reward model alongside the  SFT model during the subsequent reinforcement learning stage on a consumer-grade  GPU. The same eight AIPCO datasets used in the SFT stage are also employed in  the RM stage. As a result, eight reward models are created after fine-tuning the dis- tilbert-base model with the AIPCO datasets individually. The accuracy results of  these eight reward models are presented in Table 3. Each reward model underwent  training for one epoch. The AIPCO dataset was split into 90% for training, 5% for  validation, and 5% for testing. For demonstrative purposes, the performance of these  reward models is considered adequate for building a prototype of RLHF. Assuming  GPU VRAM is not limiting, it is speculated that using the PatentGPT-J-6B model  as the base model may yield improved performance. Nonetheless, confirming this  assumption will require additional resources and further investigation in the future.\nIn the RM stage, the second approach of reward implementation focuses on (e)  specific reward signals as discussed in Sect. 3.1. This approach expands upon the  concept of the reward model by substituting the model with different reward func- tions. The reward functions are designed to reflect the underlying intent behind  patent claim drafting and determine the reward accordingly. In this research, three  reward functions are implemented and tested. Generally, for patent practitioners,  shorter patent claims are preferred as they offer a broader scope for the patent. In  contrast, longer patent claims may increase the likelihood of obtaining a patent  allowance. During patent prosecution, there are two main ways a patent examiner  might reject a patent application over prior art. One is anticipation. The other is  obviousness. It is generally easier for longer claims to be granted because they  are more likely to avoid anticipation of prior arts and reduce the likelihood of the  obviousness rejection. Nevertheless, as a patent claim becomes longer, its scope  tends to be narrow. From this practical aspect, attaining the ability to control the  length or scope of generated patent claims is highly desirable. To the author’s  knowledge, prior to this research, no previous attempts have been made to control  the length of patent text generation.\nTable 3   Performance of reward models (RM)\nML EVO NLP SPEECH VISION KR PLANNING HARDWARE\nAccuracy 0.718 0.703 0.764 0.727 0.715 0.749 0.768 0.742\n\n--- Page Break ---\n\n749 InstructPatentGPT: training patent language models to follow...\nIn Sect. 4, the first reward function depends on the length of patent claims,  and it computes the reward value based on a designated maximum length. If  the generated patent claim exceeds the maximum length, the reward will be set  to zero. Within the specified maximal length, longer patent claims will receive  higher rewards. This reward function guides the subsequent PPO algorithm to  learn generating longer patent claims, while attempting to abide by the maximum  length constraint. The main objective of the experiment in Sect. 4.1 is to assess  the viability of controlling patent text generation using RLHF. Additional details  concerning this specific reward function can be found in that section. The second  reward function focuses on controllability based on patent scope. When draft- ing patents, the inclusion of limiting terms (e.g., “wherein”) serves to narrow the  scope of a patent claim. A patent with more limiting terms and limiting clauses  generally has a narrower scope. Consequently, this may increase the chances of  the patent being allowed, while reducing the likelihood of patent infringement.  In the experiment detailed in Sect. 4.2, the reward function is designed to count  the occurrences of such limiting terms. A higher reward value is assigned when  there are more limiting terms. Further information about this reward function will  be provided in the same section. Regarding the third reward function, it combines  the previous two to calculate a joint reward value based on both the length of pat- ent claims and the count of limiting terms. The specifics of this joint reward func- tion, along with the experimental details and results, can be found in Sect. 4.3.\nReturning to the 3-stage methodology, the third stage involves training and  using PPO as the reinforcement learning algorithm to optimize the SFT model  from the first stage. This optimization is done against either a reward model  obtained in the second stage or a reward function defined. It is noted that a reward  model requires training and data, whereas a reward function does not. Reward  models are neural-based and obtained through training, while reward functions  are rule-based and defined directly in source code. Despite the differences, both  types of rewards yield numeric values as rewards, which allows them to be math- ematically combined in the training. This amalgamation of neural-based rewards  and rule-based rewards is expected to have broad applicability, encompassing a  wider range of use cases in the future.\nFor example, to be patentable, a patent claim must fulfill at least three essential  requirements: novelty, non-obviousness, and utility. Theoretically, training three  reward models, each corresponding to a specific requirement, along with defin- ing a reward function to assess the patent claim’s length, would make it possi- ble to train a policy model that can generate patentable patent claims within a  predefined length. In this research, a reward model is trained in Sect. 4.4. The  joint reward for Sect. 4.3 is composed of the reward functions in Sects. 4.1 and  4.2. Technically, it is also feasible to have a joint reward from the reward model  in Sect. 4.4 and the reward function in Sects. 4.1, 4.2, or Sect. 4.3. Nonetheless,  before proceeding with any further joint reward, it is crucial to conduct separate  validation on the quality of patent text generation using these reward models or  functions. Future research needs to delve into exploring the combination of the  aforementioned reward model and reward functions.\n\n--- Page Break ---\n\n750 \t J.-S. Lee\n3.6  \u0007Release\nUpon the publication of this manuscript, the source code, datasets, SFT models,  reward models, policy models, and experimental results will be made accessible to  the public.\n4  \u0007Experimental results\nThis chapter presents a series of RLHF experiments, each examining a differ- ent reward model or reward function. The first experiment in Sect. 4.1 implements  a reward function based on claim length. Section  4.2 implements a reward func- tion based on the number of limiting terms in patent claims. Section  4.3 imple- ments a joint reward by combining the first and the second reward functions. Sec- tion 4.4 implements a reward model based on the classification of granted patents  and pre-grant applications. Each of these experiments also includes subsequent  reinforcement learning during the PPO stage, aimed at training a policy model in  alignment with the respective reward function or reward model. Regarding compu- tational demands, after using 8-bit quantization, experiments in Sects. 4.1, 4.2, and  4.3 requires a GPU with 16 G of VRAM. In contrast, the experiment in Sect. 4.4  requires a GPU with 24 G of VRAM because of the reward model. To facilitate the  peer review process of this research, the patent claims generated in all experiments  can be accessed at OSF. These patent claims will be made public after the publica- tion of this research. A selection of exemplary patent claims, including both higher  and lower rewards, can be found in Appendix.\n4.1  \u0007Experiment 1: based on claim length\nAccording to Love et  al. (2019),  “patent prosecutors and examiners have long  assumed a link between claim length and patent validity. The conventional wis- dom is embodied in the so-called pencil test, which predict that patent claims that  can be covered by a pencil, are unlikely to be both valid and infringed.” From  this perspective, a longer patent claim is more likely to be valid but less likely to  be infringed. A shorter patent claim is less likely to be valid but more likely to  be infringed. In Marco et al. (2019), the first large-scale analysis of patent claim  length and patent scope, the authors validated that independent claim length is  negatively correlated with patent scope. According to the authors, the validation  also shows that independent claim length independently explain other measures  of patent scope that have been used in the literature: patent maintenance, for- ward citations, and the breadth of patent classes. Hence, the conventional wisdom  mentioned in Love et al. (2019) is empirically true. In Marco et al. (2019), it is  noted that the average lengths of patent claims, measured in words, are 94.2 and  111.4 respectively for patent applications published between 2001 and 2014 that  were either abandoned or granted later. This manuscript explores the intriguing\n\n--- Page Break ---\n\n751 InstructPatentGPT: training patent language models to follow...\nresearch question of how to train the policy model in RLHF to control the length  of text generation. In this experiment, the reward function for training is designed  as shown in Listing 1:\nIn the code snippet, the variable max_len is defined to set the upper threshold  for the permissible length of the generated text in terms of characters. If the length  of the generated patent text surpasses this threshold, the text is shortened. Upon  truncation, if the text lacks the specific tag < |end_of_claim| > , a reward of zero  is assigned and it indicates that the initial generated text has exceeded the upper  threshold. In contrast, when the mentioned tag is present, the reward is computed  using the formula 1+len(s) / float(max_len), where a greater reward corresponds to  longer text as a proportion of the maximum length.\nFigure 1 shows the quantitative outcomes obtained with a maximum length of  512. The SFT model for reinforcement learning is the ML model in Table 2. The  graph labeled as (a) in Fig. 1 depicts the progression of reward mean values through- out the PPO training, covering a span of 10,000 training steps. The curve ascends  and exceeds a value of 1, signifying the policy’s acquisition of the ability to pro- duce patent claims with an average length that approaches but remains below 512.  The graph labeled as (b) illustrates the average length of generated patent claims.  As depicted, there is a gradual decline in the average length. Based on graph (a),  graph (b) suggests that the policy is progressively becoming more adept at produc- ing patent claims with lengths that fall below 512 characters. Graph (c) presents the  number of limiting terms in the generated patent claims. This graph will be cross- referenced in the forthcoming experiment in Sect. 4.2, which focuses on the reward  function using limiting terms. Both graphs (b) and (c) also include plots of the trend  using moving averages with a window size of 100.\nFigure  2 displays the results corresponding to a maximum length of 1024,  obtained through over 20,000 training steps. The SFT model for reinforcement  learning remains the same ML model. With the increased number of training steps,  the reward value ultimately achieves a higher level, surpassing the value in graph (a)  of Fig. 1. In Fig. 2, the significance and findings drawn from all three graphs paral- lel those observed in the corresponding counterparts within Fig. 1. Hence, repeti- tive explanations are omitted here for brevity. For qualitative analysis in the future,  readers with an interest can refer to the exemplary patent claims of higher and lower  rewards in Appendix A or all generated patent claims in this research at OSF.\n\n--- Page Break ---\n\n752 \t J.-S. Lee\nFig. 1   Rewards based on max_len=512\n\n--- Page Break ---\n\n753 InstructPatentGPT: training patent language models to follow...\nFig. 2   Rewards based on max_len=1024\n\n--- Page Break ---\n\n754 \t J.-S. Lee\n4.2  \u0007Experiment 2: based on limiting terms\nA limiting clause in a patent claim expresses one or more inventive aspects of the  invention on which the patent was conditioned and allowed. Typically, the term  “wherein” denotes such a limiting clause and narrows the scope of the patent claim  during patent prosecution. For example, a claim might read, “A device comprising  A, B, and C, wherein C is made of material X.” In this instance, wherein limits the  scope of C to being made of a specific material, X. A narrower claim scope increases  the likelihood of allowance, albeit it decreases the likelihood of being infringed. If  the goal is to increase the chance of patent allowance, including more “wherein”  clauses may be preferable. Conversely, if the intention is to have a broader claim  scope, it’s generally advisable to use fewer “wherein” clauses. A well-crafted patent  claim should strike a balance between a broader claim scope and the likelihood of  allowance, or between a narrower claim scope and the likelihood of infringement.  In patent litigation, a defendant might occasionally argue that the “wherein” clause  is not limiting because it merely stated the intended results and was not material  to patentability. For example, according to Emery (2019), in Case No. 2018-2207  (Fed. Cir. Aug. 29, 2019), the defendant argued that, without the limiting effect of  the “wherein” clause, the resulting broader claims were invalid as obvious based on  prior rulings. In fact, the “wherein” clauses of the patents in suit referenced efficacy  and safety for a method of treatment. Therefore, the district court found the disputed  “wherein” clauses to constitute claim limitations because “they were material to  patentability and expressed the inventive aspect of the claimed invention.” The US  Court of Appeals for the Federal Circuit upheld the district court’s finding that the  disputed “wherein” clauses were indeed limiting.\nIdeally, an effective patent claim should contain neither too many nor too few  limiting terms. Nevertheless, achieving this equilibrium through RLHF is a com- plex endeavor at this current research stage. Instead, the present experiment aims to  explore whether the policy model in RLHF can learn against a reward function reliant  on the count of limiting terms. By validating the controllability of the policy model  over the use of limiting terms, it might become feasible to train the policy model  to maintain a suitable equilibrium in subsequent research. For this experiment, the  limiting terms are: wherein, where, when and whereby. This list is not exhaustive,  and additional terms could be incorporated following further study in the future. The  reward function in this experiment is outlined in Listing 2 below. The SFT model  applied for reinforcement learning is identical to the ML model in Experiment 4.1.\n\n--- Page Break ---\n\n755 InstructPatentGPT: training patent language models to follow...\nIn this experiment, a training consisting of 2,500 steps is sufficient to validate  the policy’s controllability over the use of limiting terms. Illustrated in Fig. 3, graph  (a) demonstrates a progressive rise in the mean reward value as training advances.  This reward value corresponds to the count of limiting terms. Meanwhile, graph (b)  showcases a gradual increase in the length of generated patent claims over the train- ing steps. The policy model generating longer patent claims as the number of limit- ing terms increases is a logical outcome. Both graphs (b) and (c) include plots of the  trend using moving averages with a window size of 100. It’s worth observing that in  section 4.1, the curves within graph (c) appear relatively flat. This is attributed to the  absence of counting the number of limiting terms in the reward function. Regarding  the quality of text generation in this experiment, it is noticeable that higher rewards  could potentially result in a decline in text quality. A thorough qualitative analy- sis would necessitate further efforts, which exceed the resources available in this  research. Nevertheless, readers with an interest can refer to the exemplary patent  claims with both higher and lower rewards in Appendices B.1 and B.2. Alterna- tively, all the generated patent claims are accessible online at OSF.\nTo ensure the reproducibility of the policy’s controllability over the use of limit- ing terms, the next experiment employs the third model (NLP) in Table 2 as the  SFT model for reinforcement learning. Another aim of the experiment is to investi- gate the upper bounds of claim length and the number of limiting terms depicted in  graphs (b) and (c). Interestingly, as depicted in Fig. 4, graph (a) illustrates that the  mean reward value surpasses over 50 and then diminishes. Correspondingly, graph  (b) demonstrates an initial ascent followed by a descent in claim length, while graph  (c) also demonstrates an initial ascent followed by a descent in the number of limit- ing terms. This outcome is unexpected since rewards were anticipated to consist- ently increase.\nUpon inspecting the patent claims generated at different training steps, it was  observed that the maximum number of limiting terms reached 173 at training step  3699 (see Appendix B.4). At training step 454, the number of limiting terms was  3, and the generated patent claim is relatively favorable (see Appendix B.3). In  contrast, at training step 4500, the reward was down to zero, as shown in Appen- dix B.5, demonstrating an evidently unfavorable outcome. The phenomenon of the  model’s collapse after reaching its peak reward is perplexing. It necessitates sub- sequent inquiry in the future. Another notable point gleaned from inspection is the  decline in the quality of generated patent claims as their length extends. The correla- tion observed indicates that longer patent claims tend to generate nonsensical or far- fetched content. Preserving the quality and coherence of patent text generation poses  a distinct challenge for future research, surpassing the scope of this current study.\n4.3  \u0007Experiment 3: a joint reward function\nThe joint reward function in this experiment combines the reward functions in  Sect. 4.1 (using max_len=1024) and 4.2. The source code is outlined in Listing 3  below. The training steps have been increased to 10,000. The goal is to validate the  controllability of the policy over both the claim length and the use of limiting terms.\n\n--- Page Break ---\n\n756 \t J.-S. Lee\nFig. 3   Rewards based on limiting terms (SFT model: ML)\n\n--- Page Break ---\n\n757 InstructPatentGPT: training patent language models to follow...\nFig. 4   Rewards based on limiting terms (SFT model: NLP)\n\n--- Page Break ---\n\n758 \t J.-S. Lee\nThe SFT models applied for reinforcement learning are the eight models shown  in Table 2. Appendix C shows the file names in OSF containing generated patent  claims for each model. The graphical representation of claim lengths and the num- ber of limiting terms are depicted in Fig. 5 for each model. To ensure conciseness,  the curves depicting reward mean values have been omitted.\nFigure 5 illustrates that the claim length is constrained by the upper bound, as  showcased in Fig.  2. As a result, the claim length does not exhibit a continuous  increase, contrasting with the trend observed in Fig. 3. Additionally, the same figure  demonstrates a gradual rise in the number of limiting terms, even while adhering  to the claim length constraint. This phenomenon can be rationalized by consider- ing the model’s pursuit of higher rewards. As the inclusion of more limiting terms  results in higher rewards and given that longer claims can still achieve a minimum  reward of zero, the model tends to overlook claim length and prioritizes the addi- tion of more limiting terms. Hence, the length does not exhibit continuous growth  as seen in Fig. 3. Simultaneously, Fig. 5 demonstrates that the number of limiting  terms increases over time, even while adhering to the limitation imposed by claim  length. Ultimately, similar to the findings in Fig. 4, the model inexplicably experi- ences a breakdown after extended training. Alongside this qualitative analysis, it’s  important to highlight that the challenge lies in conducting quantitative analysis.  Such an endeavor would demand substantial efforts from patent practitioners in the  future, a resource allocation that exceeds the scope of this current research.\n4.4  \u0007Experiment 4: based on granted or pre‐grant\nThis experiment involves the implementation of both the RM stage and the PPO  stage described in Sect. 3.2. At the RM stage, training a reward model is to train  a distilbert-base model for a binary classification task (granted = 1 or pre-grant =  0). It is noted that pre-grant applications usually have shorter claims compared to  granted patents. This is because inventors and patent practitioners often initially aim  for broader patent scopes and subsequently extend the length of the claims to narrow  their scopes. The purpose is to overcome any prior art identified by patent exam- iners later, but only as necessary. This heuristic can be confirmed by the research  in Marco et al. (2019). In Fig. 3(a) of Marco et al. (2019), the authors showcase a\n\n--- Page Break ---\n\n759 InstructPatentGPT: training patent language models to follow...\ncomparison of claim length trends between patent applications and issued patents  for the years 2001 to 2014. Three different types of documents are compared: (1)  published applications that are later abandoned, (2) published applications that are  later granted, and (3) granted patents. The average length observed in (1) is con- sistently shorter than that in (2), and similarly, the average length in (2) is always  shorter than that in (3). The authors conclude that the claims of granted patents are  narrower in scope than those that are published and granted, and these in turn are  narrower than those that are published and abandoned.\nIn this manuscript, the training data for the reward models come from the eight  datasets listed in Table 1. As a result, eight distinct reward models are trained. Their  performances are provided in Table 3. Subsequently, the PPO stage builds upon the  SFT models that have been previously fine-tuned and uses these reward models to  train eight policy models in reinforcement learning. Because of the context window\nFig. 5   Based on joint rewards\n\n--- Page Break ---\n\n760 \t J.-S. Lee\nsize of the distilbert-base model, the reward model’s input tokens are capped at 500  as a maximum. The reward value to compute in PPO is the accuracy of the classi- fication task based on the reward model. Training a single policy model for 10,000  training steps takes approximately 5 days using an NVIDIA L4 GPU with a VRAM  of 24 G. This training process could be accomplished using a consumer-grade GPU  like the RTX 4090, which also has 24GB of VRAM. The mean reward values for  each model are illustrated in Fig. 6. To maintain brevity, the two graphs showing  claim length and the number of limiting terms are omitted. Nevertheless, regarding  the two graphs, it is noted that the graph of claim length shows a gradual and slight  increase. This observation is reasonable as lengthier patent claims typically have a  higher probability of being granted for patent practitioners. This observation is also  supported by Table 1, in which the average length of granted patents exceeds that of  pre-grant applications. Another observation was that the curve depicting the number  of limiting terms is relatively flat. This finding is reasonable due to the absence of  any reward function to include limiting terms.\nTo assess the efficacy of RLHF, a comparative examination is performed to con- trast patent allowances before and after PPO training, based on the prediction of  the reward model. Prior to PPO training, the SFT models were fine-tuned using the  AIPCO datasets. The likelihood of generating a granted patent without a prompt  should resemble the ratio of the number of granted patents in each dataset. After  PPO training, the policy model’s propensity to produce granted patents is expected  to rise due to its learning from the reward model, which assigns greater rewards to  granted patents. The subsequent outcomes in Table 4 are in accordance with this  expectation. In Table 4, the first column presents the names of the datasets. Within  this experiment, an assessment is conducted on the initial 1,000 rows within each  dataset. The subsequent two columns display the counts of both granted and pre- grant records, as determined by the respective reward model associated with each  dataset. In the fourth column, the ratio of granted relative to the total of 1,000 rows  is displayed. The second, third, and fourth columns present the results before the  PPO training. These results are based on SFT models and RM models, without PPO  models. Similarly, the fifth, sixth, and seventh columns convey comparable findings,  representing the results after the PPO training. The results are thus based on pol- icy models in RLHF and RM models. Significantly, the ratio after PPO training is  notably higher than the ratio observed before PPO training. This outcome provides  strong validation for the efficacy of RLHF in this experiment.\nA technical detail within this experiment is that, for each of the 1000 rows, the  first 30 tokens of the patent claim are extracted and utilized as the prompt for the  policy model to generate patent text. With this setting, an assumption is made that  the 1,000 prompts collected for the policy model will exhibit sufficient diversity.  Additionally, it is assumed that the initial 30 tokens used as prompts should not  be decisive, and they should not unilaterally determine the outcome in terms of  being predicted as granted or pre-grant by the reward model. In terms of the rela- tions among tables in this research, each policy model in Table 4 learns from its  respective reward model in Table 3. As detailed in Sect. 3.5, each AIPCO dataset  in Table 1 serves as the basis for its corresponding SFT model in Table 2 and RW  model in Table 3.\n\n--- Page Break ---\n\n761 InstructPatentGPT: training patent language models to follow...\nFig. 6   PPO reward_mean\n\n--- Page Break ---\n\n762 \t J.-S. Lee\nFor qualitative analysis in the future, readers with an interest can refer to the  exemplary patent claims of higher and lower rewards in Appendix 4 or all generated  patent claims at OSF. It should be noted that, while the increased ratios in Table 4 is  derived from the reward model trained for granted patents, it cannot be inferred that  the trained policy model will predominantly produce patent claims with a higher  probability of being granted in actual patent prosecution or even hold strong in liti- gation. The process of patent prosecution is intricate, and patent litigation is even  more complex. Hence, the patent claims produced by the policy model and pre- dicted by the reward model as granted in this study should not be mistaken as the  actual outcomes that will occur in real patent prosecution.\nIn fact, after initial (subjective) inspections, it seems that the existence of PPO  training and the quality of the generated patent claims do not correlate. For example,  in Appendix D.1, the generated text without PPO training is less favorable compared  with the generated text after PPO training in Appendix D.2. On the other hand, in  Appendix D.3, the text without PPO training is more favorable compared with the  generated text after PPO training in Appendix D.4. The crucial factor here is the  reward model itself. As a demonstration of the concept, this experiment shows that  the policy model in RLHF can effectively align with the reward model for higher  rewards. However, the ultimate quality of the generated patent text hinges on the  performance of the reward model. To create high-quality patent claims, it is impera- tive that these claims fulfill the novelty, nonobviousness, and utility requirements  stipulated by patent law. Relying solely on granted patents and pre-grant applica- tions falls short in constructing a comprehensive reward model. The complexities  associated with training a reward model to address all requirements in patent law  will be discussed in Sect. 5.1.\nTable 4   Granted ratios before and after PPO training\nBold indicates the ratio = granted / (granted+pre-grant)\n1000 rows in Before After\nGranted Pre-grant Ratio Granted Pre-grant Ratio\nAIPCO-ML 551 449 0.551 708 292 0.708\nAIPCO-EVO 471 529 0.471 572 428 0.572\nAIPCO-NLP 518 482 0.518 835 165 0.835\nAIPCO-SPEECH 514 486 0.514 777 223 0.777\nAIPCO-VISION 502 498 0.502 703 297 0.703\nAIPCO-KR 488 512 0.488 673 327 0.673\nAIPCO-PLANNING 527 473 0.527 739 261 0.739\nAIPCO-HARDWARE 498 502 0.498 742 258 0.742\n\n--- Page Break ---\n\n763 InstructPatentGPT: training patent language models to follow...\n5  \u0007Discussion\n5.1  \u0007Patent prosecution as an RLHF system\nThe overarching aim within this realm of research is to envision the entire patent  prosecution system as an RLHF system. The ultimate goal is to generate patent  claims that meet the legal requirements for allowance by patent offices. From the  perspective of RLHF, the human participants in patent prosecution include several  roles such as inventors, patent agents, patent attorneys, and patent examiners. The  feedback from humans consists of various forms, such as the office actions issued  by patent examiners and the revisions made by patent agents, attorneys, or inventors.  Reinforcement learning involves the iterative back-and-forth dynamics within patent  prosecution, and the objective for patent practitioners is to maximize the probability  of patent allowance with preferred patent scope.\nAs mentioned, to be patentable, at least three major requirements in patent law  must be satisfied: novelty, non-obviousness, and utility. The challenges lie in devel- oping corresponding reward models for each of these requirements and acquiring  the necessary data to effectively train these models. The reward model in Sect. 4.4  for classifying granted and pre-grant is demonstrative and aims to offer a prelimi- nary assessment of whether the three requirements have been met jointly. In terms  of acquiring the necessary data, it will be crucial to consider the references to prior  arts that are cited in the office actions issued by patent examiners. By pinpointing  and extracting relevant paragraphs from prior art references to use as training data,  there is a possibility of creating reward models more capable of evaluating novelty  and non-obviousness. However, despite the presence of these prior art references  within the records of patent prosecution history, they are not publicly accessible in  text form. The obstacle could potentially be overcome in the future if patent offices  can release more textual and structural data in patent prosecution for public access.\nIt is also worth mentioning that, among the three requirements, the utility require- ment is likely the most challenging to address. It bears resemblance to the issue of  factuality encountered within the realm of large language models in general. Such  models have gained notoriety for generating content that lacks grounding or is  entirely hallucinated (although hallucination might spark innovative creativity in  inventors). In the patent domain, all granted patents and most of pre-grant appli- cations are expected to have met the utility requirement. Consequently, instances  where the requirement is unmet essentially do not exist. This scarcity of negative  samples creates an insurmountable hurdle, making the training of a classifier for the  utility requirement implausible. In conjunction with the challenges posed by issues  of grounding and hallucination, the endeavor of training a reward model to evaluate  the utility requirement in patent law becomes exceptionally formidable. In the fore- seeable future, having human in the loop to assess the utility requirement might be  the sole solution.\nIn brief, the suggestion in this section is to conceptualize the entire patent pros- ecution system as an RLHF system, wherein human in the loop remains integral  for evaluating the utility requirement. As for the novelty and non-obviousness\n\n--- Page Break ---\n\n764 \t J.-S. Lee\nrequirements, it is advisable to train either two distinct reward models or a single  joint reward model. Similarly, additional requirements of patent law such as the  written description requirement, antecedent-basis requirement, means-plus-func- tion structure, and patentable subject matter could potentially be evaluated through  reward models, benefiting from the available positive (allowed) and negative  (rejected) samples in patent prosecution history.\n5.2  \u0007Future work\nOwing to limited resources, this manuscript is constrained by the absence of com- prehensive qualitative and quantitative analyses. Addressing these limitations would  require significant efforts from patent practitioners, particularly in reviewing gener- ated patent claims and providing human feedback. Beyond these efforts, and from  a broader perspective, there are two potential directions for future research in the  intersection of AI and patent law. The first is from the perspective of generative  AI, while the second is from the perspective of the patent domain. In terms of the  former, the rapid progression of techniques within generative AI over recent years  promises an expanded application within the patent domain, particularly in light of  the conceptual framework in Sect. 5.1. For instance, it is worth considering whether  the newly introduced concept of DPO (Direct Preference Optimization) represents a  more efficient paradigm for training language models in contrast to RLHF. The idea  pertains to training based on preferences without relying on reinforcement learn- ing. In the event that RLHF continues to stand as the favored approach, the question  arises whether other alternatives, such as (Implicit Language Q-Learning) (Snell  et al. 2023), might excel in performance beyond the existing PPO approach.\nRegarding the perspective of the patent domain, it is noteworthy to highlight that  various conventional tasks will remain highly relevant to the effective generation of  patent text. Take, for instance, the longstanding hurdle of prior art search (semantic  or keyword-based or both), a challenge that remains unresolved. Training an effec- tive reward model for assessing novelty or non-obviousness necessitates the incorpo- ration of related prior art references into the training data. Lacking a more effective  prior art search, the sufficiency of the training data’s scope will be compromised.  Another example is patent classification. In this context, the granularity of patent  classification is not confined to existing classification systems like CPC (Coopera- tive Patent Classification). With increased granularity, a classifier can refine the  focus within a specific technical field, enabling the training data to be more cen- tered around that specific scope. Consequently, model training can center on a more  nuanced and precise range of training data. This refined training data is anticipated  to bring advantages to models at all stages within RLHF. These are two instances of  conventional patent tasks that can be supportive to the core objectives in RLHF, and  there likely exist additional such tasks to delve into. In summary, considering both  the perspectives of generative AI and the patent domain, there remains considerable  uncharted territory holding significant potential for future exploration.\n\n--- Page Break ---\n\n765 InstructPatentGPT: training patent language models to follow...\n6  \u0007Conclusion\nFrom a broad perspective, this research frames patent prosecution as a reinforce- ment learning system. The goal of applying reinforcement learning is to make use  of human feedback or intent in patent prosecution and increase the chances of gen- erating patent claims that are likely to be granted. Although the human feedback  accessible in public and in text format are limited, the experiments conducted as  part of this research demonstrate that generative language models can be controlled  through reinforcement learning. These models are capable of reflecting the human  feedback or intent in patent prosecution. Regarding human feedback, the language  models can be trained to align with a reward model that classifies granted patents  over pre-grant applications. Regarding human intent, these language models can be  trained using different reward functions based on the length of patent claims or the  number of limiting terms in patent claims, or a combination of both. While the gen- erated patent text currently falls short of meeting the quality for allowance by patent  offices and requires significant improvement, these experiments confirm the viabil- ity of applying RLHF to patent text generation. Notably, the standard 3-stage RLHF  pipeline has been implemented in the patent domain for the first time. To foster the  realization of the ideas presented in this research, the source code and datasets will  be made available. This will prove valuable in the future as more human feedback  becomes accessible for implementation within patent offices or for broader use in  the public domain.\nAppendix A: Patent claims in Sect. 4.1\nThe following results are extracted from the file labeled “experiment_1_1.txt” in  OSF. This file uses JSON formatting, wherein:\n1.\t The term flag_patent means granted when its value is 1, and it means pre-grant  when the value is 0. 2.\t The term doc_id means a patent number if flag_patent is 1, and a publication  number if flag_patent is 0. 3.\t The term appl_id means an application number. 4.\t The term claim_one means the original claim one of the granted patent or pre- grant application. 5.\t The term prompt means the input text for generative model in RLHF. 6.\t The term generated means the generated patent claim text.\n\n--- Page Break ---\n\n766 \t J.-S. Lee\nA.1 max_len = 512, higher reward (1.94)\n\n--- Page Break ---\n\n767 InstructPatentGPT: training patent language models to follow...\nA.2 max_len=512, lower reward (1.04)\nThe following results are extracted from the file labeled “experiment_1_2.txt” in  OSF.\n\n--- Page Break ---\n\n768 \t J.-S. Lee\nA.3 max_len=1024, higher reward (1.91)\n\n--- Page Break ---\n\n769 InstructPatentGPT: training patent language models to follow...\nA.4 max_len=1024, lower reward (1.17)\n\n--- Page Break ---\n\n770 \t J.-S. Lee\nAppendix B: Patent claims in Sect. 4.2\nThe following results are extracted from the file labeled “experiment_2_1.txt” in  OSF. To enhance readability, the limiting terms are highlighted in bold. It is noted  that in the subsequent context, the terms favorable outcome and unfavorable out- come refer to text generation that either presents a positive or negative impression  upon initial inspection. These quality interpretations might not correspond with  patent examination standards and require assessment by patent practitioners in the  future. In addition, the relative quality of the generated text is compared with other  text generations, rather than by comparing it to the original patent claims.\n\n--- Page Break ---\n\n771 InstructPatentGPT: training patent language models to follow...\nB.1 reward = 3, training step = 7, favorable outcome\n\n--- Page Break ---\n\n772 \t J.-S. Lee\nB.2 reward = 12, training step = 2138, unfavorable outcome\n\n--- Page Break ---\n\n773 InstructPatentGPT: training patent language models to follow...\nThe following results are extracted from the file labeled “experiment_2_2.txt” in  OSF.\n\n--- Page Break ---\n\n774 \t J.-S. Lee\nB.3 reward = 3, training step = 454, favorable outcome\n\n--- Page Break ---\n\n775 InstructPatentGPT: training patent language models to follow...\nB.4 reward = 173, training step = 3699, unfavorable outcome\n\n--- Page Break ---\n\n776 \t J.-S. Lee\nB.5 reward = 0, training step = 4500, unfavorable outcome\nAppendix C: Patent claims in Sect. 4.3\nThe generated patent claims for eight SFT models are labeled as the following in  OSF.\n•\t experiment_3_ml.txt •\t experiment_3_evo.txt •\t experiment_3_nlp.txt •\t experiment_3_speech.txt\n\n--- Page Break ---\n\n777 InstructPatentGPT: training patent language models to follow...\n•\t experiment_3_vision.txt •\t experiment_3_kr.txt •\t experiment_3_planning.txt •\t experiment_3_hardware.txt\nAppendix D: Patent claims in Sect. 4.4\nThe following results are extracted from the files labeled “experiment_4_nlp_ before_PPO.txt” and “experiment_4_nlp_after_PPO.txt” in OSF.\nD.1 doc_id = 9476718, before PPO, unfavorable outcome\n\n--- Page Break ---\n\n778 \t J.-S. Lee\nD.2 doc_id = 9476718, after PPO, favorable outcome\n\n--- Page Break ---\n\n779 InstructPatentGPT: training patent language models to follow...\nD.3 doc_id = 5583946, before PPO, favorable outcome\n\n--- Page Break ---\n\n780 \t J.-S. Lee\nD.4 doc_id = 5583946, after PPO, unfavorable outcome\nAcknowledgements  The research reported in this manuscript has been funded by the National Science  and Technology Council (NSTC) in Taiwan (Project ID: 112-2221-E-A49-117). Additionally, the author  expresses deep gratitude to the TensorFlow Research Cloud (Google) for providing TPU resources, and  to the Research Solutions GCP Credits Program (Google) for providing GPU resources. The contribution  of these generous resources has made this research endeavor possible.\nFunding  Open Access funding enabled and organized by National Yang Ming Chiao Tung University.\nOpen Access  This article is licensed under a Creative Commons Attribution 4.0 International License,  which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long  as you give appropriate credit to the original author(s) and the source, provide a link to the Creative  Commons licence, and indicate if changes were made. The images or other third party material in this  article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line  to the material. If material is not included in the article’s Creative Commons licence and your intended  use is not permitted by statutory regulation or exceeds the permitted use, you will need to obtain permis- sion directly from the copyright holder. To view a copy of this licence, visit http://creativecommons.org/ licenses/by/4.0/.\n\n--- Page Break ---\n\n781 InstructPatentGPT: training patent language models to follow...\nReferences\nBai Y et al (2022) Training a helpful and harmless assistant with reinforcement learning from human\nfeedback. arxiv:​ 2204:​05862 Dettmers T, Lewis M, Shleifer S, Zettlemoyer L (2022) 8-bit optimizers via block-wise quantization. In:\n9th international conference on learning representations, ICLR Dettmers T. bitsandbytes. https://​github.​com/​TimDe​ttmers/​bitsa​ndbyt​es Emery MW (2019) When is “wherein” clause limiting? When it’s material to patentability. https://​www.​\njdsup​ra.​com/​legal​news/​when-​is-​where​in-​clause-​limit​ing-​when-​it-​83886/ Giczy A, Pairolero N, Toole AA (2021) Identifying artificial intelligence (AI) invention: a novel AI pat-\nent dataset. J Technol Transf 47:476 Glaese A et al (2022) Improving alignment of dialogue agents via targeted human judgements. arxiv:​\n2209:​14375 Google (2023) An overview of Bard: an early experiment with generative AI. https://​ai.​google/​static/​\ndocum​ents/​google-​about-​bard.​pdf Hu EJ et al (2022) LoRA: low-rank adaptation of large language models. https://​openr​eview.​net/​forum?​\nid=​nZeVK​eeFYf9 Lam E (2023) Textrl: text generation with reinforcement learning. https://​github.​com/​voidf​ul/​TextRL Lambert N, Castricato L, von Werra L, Havrilla A (2022) Illustrating reinforcement learning from human\nfeedback (rlhf). Hugging Face Blog. https://​huggi​ngface.​co/​blog/​rlhf Lee J-S (2023) Evaluating generative patent language models. World Patent Inf 72:102173. https://​doi.​\norg/​10.​1016/j.​wpi.​2023.​102173 Lee J-S, Hsiang J (2020) Patent claim generation by fine-tuning openai gpt-2. World Patent Inf\n62:101983. https://​doi.​org/​10.​1016/j.​wpi.​2020.​101983 (https://​www.​scien​cedir​ect.​com/​scien​ce/​artic​ le/​pii/​S0172​21901​93007​66) Lee J-S (2023) Patentgpt-j-6b. https://​huggi​ngface.​co/​patent/​Paten​tGPT-J-​6B/​tree/​main Lee J-S. Results for reviewers. https://​osf.​io/​8bxze/?​view_​only=​9cad6​bb7f1​7f410​59cfb​d497d​f663a​96 Lee J-S (2020) Controlling patent text generation by structural metadata, CIKM ’20, 3241–3244 (Asso-\nciation for Computing Machinery, New York, NY. USA. https://​doi.​org/​10.​1145/​33405​31.​34185​03 Lee J-S (2019) Patent transformer: a framework for personalized patent claim generation. http://​ceur-​ws.​\norg/​Vol-​2598/​paper-​06.​pdf Love BJ, Miller SP, Ambwani S (2019) Determinants of patent quality: evidence from inter partes review\nproceedings. (University of Colorado Law Review, Vol. 90) Lu Q, Myers A, Beliveau S (2017) USPTO patent prosecution research data: unlocking office action\ntraits. https://​ssrn.​com/​abstr​act=​30246​21 Marco AC, Sarnoff JD, deGrazia CA (2019) Patent claims and patent scope. Res Policy 48(9):103790.\nhttps://​doi.​org/​10.​1016/j.​respol.​2019.​04.​014 OpenAI (2023) Gpt-4 technical report. arxiv:​2303.​08774 OpenAI (2022) Introducing ChatGPT. https://​openai.​com/​blog/​chatg​pt OpenAI (2019) Better language models and their implications. https://​openai.​com/​blog/​better-​langu​\nage-​models Ouyang L et al (2022) Training language models to follow instructions with human feedback. In: Koyejo\nS et al (eds) Advances in neural information processing systems, vol 35. Curran Associates Inc,  New York, pp 27730–27744 Pelaez S, Verma G, Ribeiro B, Shapira P (2023) Large-scale text analysis using generative language mod-\nels: a case study in discovering public value expressions in AI patents. arXiv:​ 2305.​10383 Ramamurthy R et  al (2022) Is reinforcement learning (not) for natural language processing?: Bench-\nmarks, baselines, and building blocks for natural language policy optimization https://​arxiv.​org/​abs/​ 2210.​01241 Sanh V, Debut L, Chaumond J, Wolf T (zzz) Distilbert base model (uncased). https://​huggi​ngface.​co/​disti​\nlbert-​base-​uncas​ed Sanh V, Debut L, Chaumond J, Wolf T (2019) Distilbert, a distilled version of bert: smaller, faster,\ncheaper and lighter. In: Proceedings of the 5th EMC2 - Energy Efficient Training and Inference  of Transformer Based Models. https://​www.​emc2-​ai.​org/​assets/​docs/​neuri​ps-​19/​emc2-​neuri​ps19-​ paper-​33.​pdf Schulman J, Wolski F, Dhariwal P, Radford A, Klimov O (2017) Proximal policy optimization algorithms\narXiv:​1707:​06347\n\n--- Page Break ---\n\n782 \t J.-S. Lee\nSnell C, Kostrikov I, Su Y, Yang S, Levine S (2023) Offline RL for natural language generation with\nimplicit language Q learning (OpenReview.net). https://​openr​eview.​net/​pdf?​id=​aBH_​DydEv​oH Sourab  Mangrulkar LDYBSP, Sylvain  G (2022) Peft: state-of-the-art parameter-efficient fine-tuning\nmethods. https://​github.​com/​huggi​ngface/​peft Stiennon N et al (2020) Learning to summarize with human feedback. In: Larochelle H, Ranzato M, Had-\nsell R, Balcan M, Lin H (eds) Advances in neural information processing systems, vol 33. Curran  Associates Inc,., New York, pp 3008–3021 Subramanian A, Greenman K, Gervaix A, Yang T, Gómez-Bombarelli R (2023) Automated patent\nextraction powers generative modeling in focused chemical spaces. Digit Discov 2303:08272 Toole AA, Jones C, Madhavan S (2021) Patentsview: an open data platform to advance science and tech-\nnology policy. https://​ssrn.​com/​abstr​act=​38742​13 USPTO. PatentsView. http://​www.​paten​tsview.​org/ USPTO. Bulk data storage system. https://​bulkd​ata.​uspto.​gov/ USPTO. Patent examination data system. https://​ped.​uspto.​gov/​peds USPTO. Research datasets. https://​www.​uspto.​gov/​ip-​policy/​econo​mic-​resea​rch/​resea​rch-​datas​ets USPTO. Office action research dataset for patents. https://​www.​uspto.​gov/​ip-​policy/​econo​mic-​resea​rch/​\nresea​rch-​datas​ets/​office-​action-​resea​rch-​datas​et-​paten​ts USPTO (2020) Inventing AI: tracing the diffusion of artificial intelligence with U.S. patents. https://​\nwww.​uspto.​gov/​sites/​defau​lt/​files/​docum​ents/​OCE-​DH-​AI.​pdf USPTO (2022) Artificial Intelligence Patent Dataset. https://​www.​uspto.​gov/​ip-​policy/​econo​mic-​resea​\nrch/​resea​rch-​datas​ets/​artif​icial-​intel​ligen​ce-​patent-​datas​et von Werra L et al (2020) Trl: transformer reinforcement learning. https://​github.​com/​lvwer​ra/​trl von Werra L et al (2020) Trl: transformer reinforcement learning. https://​github.​com/​Carpe​rAI/​trlx\nPublisher’s Note  Springer Nature remains neutral with regard to jurisdictional claims in published maps  and institutional affiliations.",
+  "equations": [
+    {
+      "page": 1,
+      "raw_extracted": "Abstract In this research, patent prosecution is conceptualized as a system of reinforcement  learning from human feedback. The objective of the system is to increase the likeli- hood for a language model to generate patent claims that have a higher chance of  being granted. To showcase the controllability of the language model, the system  learns from granted patents and pre-grant applications with different rewards. The  status of “granted” and “pre-grant” are perceived as labeled human feedback implic- itly. In addition, specific to patent drafting, the experiments in this research dem- onstrate the model’s capability to learn from adjusting claim length and inclusion  of limiting terms for narrowing claim scope. As proof of concept, the experiments  focus on claim ones only and the training data originates from a patent dataset tai- lored specifically for artificial intelligence. Although the available human feedback  in patent prosecution are limited and the quality of generated patent text requires  improvement, the experiments following the 3-stage reinforcement learning from  human feedback have demonstrated that generative language models are capable of  reflecting the human feedback or intent in patent prosecution. To enhance the usabil- ity of language models, the implementation in this research utilizes modern tech- niques that enable execution on a single consumer-grade GPU. The demonstrated  proof of concept, which reduces hardware requirements, will prove valuable in the  future as more human feedback in patent prosecution become available for broader  use, either within patent offices or in the public domain.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Keywords  Patent · Natural language generation · Natural language processing ·  Reinforcement learning from human feedback",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "*\t Jieh‐Sheng Lee  \t jasonlee@nycu.edu.tw",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "1\t School of Law, National Yang Ming Chiao Tung University (NYCU), No. 1001, Daxue Rd.,  East District, Hsinchu 300093, Taiwan",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "The codename “InstructPatentGPT” in this research refers to the development of  aligning language models in the patent domain with human feedback in patent pros- ecution. This research draws inspiration from InstructGPT (Ouyang 2022), which  has successfully shown the effectiveness of Reinforcement Learning from Human  Feedback (RLHF). In the patent domain, patent prosecution is the process of obtain- ing a patent for an invention, which includes tasks like drafting a patent applica- tion, issuing an office action, revising the patent application, and responding to the  office action, along with other associated tasks. An office action is a written notice  issued by a patent examiner to the patent applicant, addressing matters of patent- ability. Issuing and responding to office actions is an iterative back-and-forth process  between patent examiners and patent applicants. The objective for patent applicants  in general is to maximize the probability of patent allowance with preferred patent  scope. In computer science, reinforcement learning also involves an iterative process  with an objective to maximize its rewards. Hence, the idea is to merge these two  areas and implement RLHF in the context of patent prosecution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "In essence, patent prosecution encompasses substantial human feedback, includ- ing opinions issued by patent examiners on patentability, revisions made by patent  applicants to their patent applications, and the final determination for each patent  claim: whether it is granted, rejected or abandoned. In addition, the implicit intent  in claim drafting, such as adjusting claim length for different patent scope, utilizing  certain terms more or less frequently, also represent distinct human preferences that  can be factored into reinforcement learning. Drawing from these observations, it can  be stated that the training data for RLHF already exists, although a significant por- tion is not publicly available or in text format. When considering the effectiveness  of RLHF, it is also captivating to investigate whether RLHF can utilize the human  feedback in patent prosecution to generate patent text that can maximize the prob- ability of patent allowance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "In this research, the language model for reinforcement learning is the PatentGPT- J-6B model (Lee 2023). According to Lee (2023), the model has been pre-trained  from scratch exclusively using patent data. To the best of the author’s knowledge,  this research is the first time RLHF techniques are being used on language mod- els in the patent domain. To serve as proof of concept and to reduce the entry bar- riers for experiments, the implementation in this research concentrates exclusively  on the first claim of patent applications. Given the limitations imposed by publicly  available data, the human feedback used in this study is somewhat limited; nev- ertheless, it remains sufficient to show the proof of concept. As for training data,  the primary source of raw data for this research is the Artificial Intelligence Patent  Dataset (AIPD) (USPTO 2022), which was made publicly available by the United  States Patent and Trademark Office (USPTO). Selecting this dataset is intended to  make the patent claims generated more understandable for readers knowledgeable in  AI. Moreover, to promote the accessibility of language models and lowering hard- ware demands, this study’s implementation utilizes modern techniques to reduce the  model’s size, enabling it to run on a single consumer-grade GPU.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Generative models have demonstrated notable efficacy across diverse domains  in recent years. However, their potential applications within the patent domain  remain comparatively underexplored. In Lee and Hsiang (2020), the authors  focused on fine-tuning OpenAI GPT-2 (OpenAI 2019) models for patent claim  generation. In Lee (2020), they explored the control of patent text generation  through the use of structural metadata in patents. Despite the proposal for per- sonalized patent claim generation in another study (Lee 2019), the methods for  achieving controlled text generation remain unclear. Also, in Pelaez et al. (2023),  the authors utilized generative language models for large-scale text analysis and  discovering public value expressions in AI patents. The effectiveness of employ- ing a generative language model (GPT-4) (OpenAI 2023) for generating labels  and rationales was demonstrated by the authors in Pelaez et  al. (2023). The  approach offers advantages because labeling data is often difficult to accom- plish accurately. Moving to a more specific technical field, in Subramanian et al.  (2023), the authors developed a framework to extract molecular structures from  the USPTO patents and trained domain-specific generative RNN models to gener- ate novel molecular structures. Notwithstanding these notable efforts, the explo- ration of generative models in the patent domain remains limited.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "RLHF is an approach that combines supervised learning with reinforce- ment learning, in which a reinforcement learning agent learns how to maximize  a reward from human feedback. Some prominent instances of RLHF-trained  language models are OpenAI’s ChatGPT (OpenAI 2022) and its predecessor  InstructGPT (Ouyang 2022), as well as DeepMind’s Sparrow (Glaese 2022) and  Google’s Bard (Google 2023). To maximize the reward, RLHF is also about  learning an optimal policy model guiding the agent’s actions. A policy is a map- ping from the current environment observation to a probability distribution of  the actions (or tokens, in the case of language models) to be taken. A specific  optimization algorithm employed to train the optimal policy model is Proximal  Policy Optimization (PPO) (Schulman et al. 2017), which was developed by Ope- nAI. This research utilizes the PPO algorithm to maximize agent’s rewards from  human feedback. The agent in the context of this research is the generative lan- guage model. It is worth noting that training language models with RLHF has  gained widespread acceptance in mainstream research, and there are comprehen- sive and readily accessible resources detailing this technique, e.g., (Bai 2022) and  Lambert et al. (2022). Nevertheless, despite the popularity of RLHF in various  domains, there is currently no known application of this method in the patent  domain, as per the author’s knowledge.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "It is possible that the primary obstacle to implementing RLHF in the patent  domain is the lack of labeled data. Generally, in many fields, acquiring human  feedback involves a laborious process of manually labeling data. However, the  patent domain may have a unique advantage in this regard, as public patent data  and prosecution history inherently contain human feedback. For example, the  patent examiner’s response to grant or reject a patent claim serves as a form of",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "human feedback. The revisions made to patent claims during patent prosecution  may encompass other forms of human feedback or intent. The patent data used in  this research originates from the USPTO. The USPTO offers several data sources,  including the Patent Public Search website for end users, the PatentsView (http://​ www.​paten​tsview.​org/) website as a data visualization and analysis platform, the  Bulk Data Storage System (https://​bulkd​ata.​uspto.​gov/) providing a repository for  raw public bulk data, and the Patent Examination Data System (https://​ped.​uspto.​ gov/​peds) allowing users to search, display and download multiple records of pat- ent application, status, and transaction history.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "In addition, the USPTO provides several research datasets (https://​www.​uspto.​ gov/​ip-​policy/​econo​mic-​resea​rch/​resea​rch-​datas​ets). The primary raw data in this  research comes from the AIPD dataset (USPTO 2022) and the PatentsView platform  (http://​www.​paten​tsview.​org/). The dataset, as per the Office of the Chief Economist  (OCE) at the USPTO, aims to assist researchers and policymakers in focusing on the  determinants and impacts of AI invention. Further details about the AIPD dataset  and the PatentsView platform are available in working papers (Giczy et al. 2021)  and Toole et al. (2021) respectively. It can be noted that the AIPD was used in the  USPTO report “Inventing AI: Tracing the diffusion of artificial intelligence with  U.S. patents.” (USPTO 2020). Despite the significance of artificial intelligence, to  the author’s knowledge, the AIPD dataset has not been utilized to train language  models in the patent domain, and particularly not for reinforcement learning from  human feedback.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "The primary challenge in deploying RLHF revolves around obtaining human feed- back effectively. The human feedback in RLHF can take various types, including but  not limited to: (a) preference ratings, (b) summarizations, (c) corrections, (d) dem- onstrations, and (e) specific reward signals. Typically, obtaining human feedback  in most domains involves time-consuming manual data labeling. However, public  patent data and prosecution history present a distinct advantage as they inherently  include human feedback or intent. For instance, when it comes to (a) preference rat- ings, a granted patent claim is considered preferred, whereas a rejected claim is not.  In terms of (b) summarizations, the abstract of a granted patent can be derived from  the patent’s description or claims. Additionally, (c) corrections can be identified  through revised patent claims, which may address issues such as antecedent-basis  error encountered during patent prosecution. Regarding (d) demonstrations, existing  dependent claims can serve as examples to illustrate how independent claims derive  dependent claims.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "When it comes to patent drafting and human intent, it is desirable to incorporate  the drafting intent in controlling patent text generation. For instance, considering  (e) specific reward signals, if the goal is to achieve a broader patent scope, gen- erating shorter patent claims with fewer limitations can represent a higher reward",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "signal. Conversely, when the drafting intent is to avoid anticipation of prior arts and  make it easier to be granted (at the cost of potentially lower patent value), longer  patent claims might be favored and represent a higher reward signal. In summary,  the human feedbacks mentioned earlier in types (a)∼(d) can be derived from patent  data and prosecution history. Additionally, in the case of type (e), it is desirable for  generative language models to be controllable and capable of reflecting the intent  behind patent drafting. Owing to limitations in resources and the availability of pub- lic data, this research concentrates solely on implementing human feedback in types  (a) and (e). More details are provided in Sect. 3.3.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "The methodology in this manuscript follows the typical 3-stage RLHF pipeline out- lined in Stiennon et al. (2020) and Ouyang (2022). Specifically, the stages of train- ing a patent language model from human feedback are:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "1.\t Supervised Fine-Tuning (SFT) Fine-tune a pretrained language model with a  domain-specific dataset. In this manuscript, the pretrained language model is  PatentGPT-J-6B and the dataset is the AIPCO (AI Patent’s Claim Ones) dataset  in Sect. 3.3. 2.\t Reward Model (RM) Collect a dataset with human feedback and train a reward  model. In the patent domain, the human feedback or intent can be categorized in  several types, as described in Sect. 3.1. 3.\t Proximal Policy Optimization (PPO) Optimize a policy against the reward model  by using PPO. PPO is a reinforcement learning algorithm that can be used to learn  a policy that maximizes a scalar reward. The reward model’s output in step 2 is  considered as this scalar reward. Alternatively, in different experiments, the scalar  reward can be defined through a reward function specified in source code.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Fine-tuning large language models is often prohibitively costly, and maintaining  fine-tuned models of the same size as the original pretrained model can be also  expensive. To address these issues, researchers have introduced parameter-efficient  fine-tuning (PEFT) techniques (Sourab  Mangrulkar and Sylvain  Gugger 2022).  These techniques aim to enable efficient adaptation of pre-trained language models  to various downstream applications without the need to fine-tune all of the model’s  parameters. The concept is to add and fine-tune only a small number of extra param- eters while freezing most parameters of the pretrained models. This approach leads  to substantial reductions in computational and storage costs. For instance, a cutting- edge PEFT method known as Low-Rank Adaptation (LoRA) (Hu 2022) has demon- strated performance similar to that of full fine-tuning. This research utilizes LoRA  to efficiently adapt the pre-trained GPT-J-6B model. Moreover, to enable fine-tuning  of language models on a single consumer-grade GPU (e.g., VRAM = 16 G or 24 G),  this research leverages the techniques of 8-bit optimization via block-wise quantiza- tion (Dettmers et al. 2022).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "This research relies on two primary sources of raw data provided by the USPTO:  AIPD (USPTO 2022) and PatentsView (http://​www.​paten​tsview.​org/). AIPD offers  information and categorization of AI patents, while PatentsView provides details  pertaining to patent documents, such as patent claims. According to, there exists a  data file in the AIPD that identifies U.S. patents issued between 1976 and 2020 and  pre-grant publications that contain one or more of eight AI technology components.  These AI components are defined as: machine learning, evolutionary computation,  natural language processing, speech, computer vision, knowledge processing, plan- ning and control, and AI hardware. The authors in Giczy et al. (2021) generated this  data file using a machine learning approach that analyzed patent text and citations  to identify AI components in U.S. patent documents. This research follows the nam- ing convention of the AI components in the data file as: ML, EVO, NLP, SPEECH,  VISION, KR, PLANNING, and HARDWARE. To conduct the experiments in this  research, eight training datasets are created, each corresponding to one of these eight  AI components. In the AIPD data file, a document id can take one of two forms:  (1) a patent number for granted patents, or (2) a publication number if the docu- ment is a published patent application (pre-grant). Additionally, the data file con- tains an application id, which represents the application number of a patent applica- tion. While the AIPD data file is helpful for identifying the AI categories of a patent  document, it does not include the actual textual content of the document, such as the  title, abstract, description, and claims.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Researchers have two sources of data for accessing the textual content of patent  documents: the PatentsView platform and the Bulk Data Storage System (BDSS).  One key distinction between PatentsView and BDSS is their data structure: BDSS  is document-centric, while PatentsView is database-centric. In BDSS, a single file  in XML format contains all the textual data and metadata for a given patent. On  the other hand, the textual data for a patent is spread across multiple database table  files at PatentsView. These individual table files can be imported and combined to  create a comprehensive database. To achieve quicker iterations and facilitate model  training, this research concentrates on the textual data of claim one. Consequently,  the PatentsView platform is a better option for accessing the patent claims and inte- grating them with the AIPD data. PatentsView provides downloadable table files for  both granted patents and pre-grant applications respectively and on a yearly basis.  The relation between granted patents and pre-grant applications can be identified by  another table file called pg_granted_pgpubs_crosswalk mapping patent application  numbers to their corresponding granted patent numbers.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "It is worth mentioning that a database dump from PatentsView is accessible  upon request, which can simplify the process of creating a database. However, upon  inspection, the patent claim text is not included in the database dump due to the  substantial volume of patent claims. The version of the inspected database dump  is dated as of March 30, 2023. It would be beneficial if a newer version of database  dump released by the USPTO could include patent claims in the future. By inte- grating the AIPD data file having eight AI technology components and the database  tables from PatentsView (granted patents, pre-grant applications, and crosswalk),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "the datasets needed in this research are created encompassing all patents in AIPD  along with their corresponding text of patent claim one. The training datasets are  given the prefix AIPCO. Since AIPD comprises eight AI technology components,  eight individual datasets are constructed for the experiments in this research, each  representing a specific component along with its corresponding text of patent claim  one. These datasets are named as follows: AIPCO-ML, AIPCO-EVO, AIPCO- NLP, AIPCO-SPEECH, AIPCO-VISION, AIPCO-KR, AIPCO-PLANNING, and  AIPCO-HARDWARE. In the context of the methodology described in Sect.  3.2,  during the SFT stage, these eight datasets are used for fine-tuning. Subsequently, in  the RM stage, the eight datasets are used for training reward models too. The eight  SFT models and reward models are then used in the PPO stage of experiment in  Sect. 4.3.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Table 1 presents the statistics for the eight datasets. The first column displays  the names of the databases, followed by the total number of rows in the second col- umn. The third column represents the total count of granted patents, and the fourth  column is the average length of those patents. The fifth column represents the total  count of pre-grant applications, and the sixth column is the average length of those  applications. It is worth mentioning that the total count of pre-grant applications  being less than the count of granted patents is attributed to the crosswalk data. For  some granted patents in the data, such as reissued patents, the pre-grant applica- tion number is empty. For some other rows, the reasons for this emptiness are less  evident. While a further investigation might be needed to understand these reasons,  for the purposes of this research, the numerical difference in rows between pre-grant  and granted is not a major concern for training models.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "It is noted that the Office Action Research Dataset for Patents (https://​www.​uspto.​ gov/​ip-​policy/​econo​mic-​resea​rch/​resea​rch-​datas​ets/​office-​action-​resea​rch-​datas​et-​ paten​ts) provided in Research Datasets has the potential to enhance this research  in the future. The dataset marks the first time that comprehensive data on exam- iner-issued rejections are available to the research community. As previously stated,  an office action is a written notice to the patent applicant of the patent examiner’s  decision on patentability. Therefore, the notice generally discloses information,  such as the grounds for a rejection, the claims affected, and the pertinent prior art.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Table 1   Datasets of Patent Claim Ones",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Dataset Number of rows Granted Avg len Pre-grant Avg len",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-ML 61,136 31,792 1359 29,344 864",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-EVO 16,274 8476 1412 7798 863",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-NLP 57,629 30,746 1438 26,883 828",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-SPEECH 32,824 17,324 1336 15,500 805",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-VISION 145,162 74,378 1280 70,784 838",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-KR 297,289 156,648 1404 140,641 852",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-PLANNING 317,442 168,297 1444 149,145 853",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "AIPCO-HARDWARE 183,224 95,988 1372 87,236 819",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "According to Lu et al. (2017), the relative inaccessibility of office actions has pre- vented researchers from fully exploiting valuable information during patent pros- ecution. The authors in Lu et al. (2017) aim to rectify the situation by using natu- ral language processing and machine learning techniques to systematically extract  information from office actions and construct a relational database of key data ele- ments. The dataset covers 4.4 million office actions mailed during the 2008 to mid- 2017 period from USPTO examiners to the applicants of 2.2 million unique patent  applications.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "From the perspective in Sect.  3.1, office actions encompass various types of  human feedback. For instance, a rejection can be categorized as (a) preference rat- ing as described in Sect. 3.1. How the claims are affected and revised can be con- sidered as (c) corrections. Furthermore, the pertinent prior art can play a role in  (b) summarizations used for summarizing the basis in office actions. Ideally, the  office actions serve as the most valuable source for obtaining the necessary human  feedback for RLHF. However, upon close inspection, the dataset’s coverage does  not align with the primary data source AIPD in this research. In addition, the rejec- tions in the dataset lack the patent text essential for training language models. As a  result, for training reward models in experiment of Sect. 4.3, pre-grant applications  are chosen as the source for negative samples, and granted patents serve as positive  samples. Further elaboration will be provided in that section. It is also noted that the  Patent Examination Data System (https://​ped.​uspto.​gov/​peds), another data source  from the USPTO, has comparable limitations and does not fulfill the requirements  of this research. If either the Office Action Research Dataset or the Patent Examina- tion Data System could offer more structured and comprehensive data in the future,  an enhanced quantity of human feedback during patent prosecution might be avail- able for leveraging in RLHF within the patent domain. In summary, a total of eight  AIPCO datasets, each containing the text of patent claim ones, are prepared for each  AI component.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "The implementation in this research leverages several open source libraries in Python,  particularly the TRL (Transformer Reinforcement Learning) library (von Werra 2020)  and its examples. TRL is a full stack library providing a set of tools to train transformer  language models with reinforcement learning. The library covers all three stages: SFT,  RM, and PPO, as described in Sect. 3.2. The TRL library is built on top of the trans- formers library by Hugging Face. Therefore, pre-trained language models, such as  PatentGPT-J-6B (Lee 2023) and DistilBERT (https://​huggi​ngface.​co/​disti​lbert-​base-​ uncas​ed), can be directly loaded. Throughout the research, TRL version 0.4.2.dev0 was  utilized, while the library remained under intensive development. Other options for  implementing reinforcement learning in the language domain include: TRLX (Trans- former Reinforcement Learning X) (von Werra 2020), TextRL (Text Generation with  Reinforcement Learning) (Lam 2023), and RL4LMs (Ramamurthy 2022). Amidst the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "fast-paced development in applying RLHF techniques to language models, it is advised  to observe which library stands out as the most promising in the future.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "To enable the fine-tuning of language models on a single GPU with limited 16 G  VRAM, this research utilizes the LoRA method as low-rank adaptation from the PEFT  library (Sourab Mangrulkar and Sylvain Gugger 2022). The LoRA method proves to  be effective in reducing the number of trainable parameters by using parameter-effi- cient fine-tuning techniques. As shown in Sourab  Mangrulkar and Sylvain  Gugger  (2022), using LoRA on consumer hardware yields performance comparable to that of  full fine-tuning which demands high-end hardware. Furthermore, this research reduces  the model size by loading a model in 8-bit precision through the bitsandbytes library  (https://​github.​com/​TimDe​ttmers/​bitsa​ndbyt​es). The library is a lightweight wrapper  around CUDA (Compute Unified Device Architecture) custom functions, 8-bit opti- mizers, matrix multiplication, and quantization functions. CUDA is a software layer  that gives direct access to the GPU’s virtual instruction set and parallel computational  elements. It is a proprietary software layer developed by NVIDIA.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Based on the methodology described in Sect. 3.2, the first stage (SFT) involves fine- tuning the pretrained language model PatentGPT-J-6B using the eight AIPCO datasets  in Sect. 3.3. During fine-tuning, the PatentGPT-J-6B model is loaded in 8-bit preci- sion and with the low-rank adapter in the LoRA method. The adapter adds pairs of  rank-decomposition weight matrices to the 8-bit model, and only these newly added  weights are fine-tuned. After fine-tuning, an additional step is taken to merge the  adapter weights to the original model. This merging of weights results in the creation of  the SFT model. Each of the eight AIPCO datasets is used to individually fine-tune the  PatentGPT-J-6B model, resulting in the creation of eight domain-specific SFT models  for the subsequent stage. Each model’s fine-tuning is completed in a single epoch. The  perplexity values at the end of the fine-tuning for each dataset are shown in Table 2.  Perplexity is a statistical measure of how confidently a language model predicts a text  sample. The lower the perplexity value, the better the model can predict the next word  or sequence of words in a given text. The following perplexity values are considered  low, which suggests that the SFT models are effective in predictive capabilities.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "The second stage (RM) involves the training of a reward model using human  feedback. This research explores two separate implementation approaches for  this stage. The first approach pertains to (a) preference ratings in Sect. 3.1. In  this approach, the categorization of granted and pre-grant represents a form of  human feedback. The implicit human feedback has been supervised and does not  require further labeling efforts. The base model utilized for training in this stage",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Table 2   Perplexity of supervised fine-tuning (SFT)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ML EVO NLP SPEECH VISION KR PLANNING HARDWARE",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Perplexity 6.82 6.82 6.24 6.17 6.00 11.77 6.09 6.04",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "is the distilbert-base model (https://​huggi​ngface.​co/​disti​lbert-​base-​uncas​ed). The  downstream task for the base model is a binary classification task (granted or  pre-grant). A reward of 1 is assigned to instances classified as granted, while a  reward of 0 is given to instances classified as pre-grant. More information about  how this reward model is experimented in subsequent reinforcement learning  (PPO) can be found in Sect. 4.4.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Returning to the base model, the distilbert-base model is a distilled version of  the BERT base model. It reduces the size of a BERT model by 40%, while retaining  97% of its language understanding capabilities and being 60% faster, according to  Sanh et al. (2019). With a size of 66 M, it can avoid an out-of-memory (OOM) issue  and becomes practical in this research to execute the reward model alongside the  SFT model during the subsequent reinforcement learning stage on a consumer-grade  GPU. The same eight AIPCO datasets used in the SFT stage are also employed in  the RM stage. As a result, eight reward models are created after fine-tuning the dis- tilbert-base model with the AIPCO datasets individually. The accuracy results of  these eight reward models are presented in Table 3. Each reward model underwent  training for one epoch. The AIPCO dataset was split into 90% for training, 5% for  validation, and 5% for testing. For demonstrative purposes, the performance of these  reward models is considered adequate for building a prototype of RLHF. Assuming  GPU VRAM is not limiting, it is speculated that using the PatentGPT-J-6B model  as the base model may yield improved performance. Nonetheless, confirming this  assumption will require additional resources and further investigation in the future.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "In the RM stage, the second approach of reward implementation focuses on (e)  specific reward signals as discussed in Sect. 3.1. This approach expands upon the  concept of the reward model by substituting the model with different reward func- tions. The reward functions are designed to reflect the underlying intent behind  patent claim drafting and determine the reward accordingly. In this research, three  reward functions are implemented and tested. Generally, for patent practitioners,  shorter patent claims are preferred as they offer a broader scope for the patent. In  contrast, longer patent claims may increase the likelihood of obtaining a patent  allowance. During patent prosecution, there are two main ways a patent examiner  might reject a patent application over prior art. One is anticipation. The other is  obviousness. It is generally easier for longer claims to be granted because they  are more likely to avoid anticipation of prior arts and reduce the likelihood of the  obviousness rejection. Nevertheless, as a patent claim becomes longer, its scope  tends to be narrow. From this practical aspect, attaining the ability to control the  length or scope of generated patent claims is highly desirable. To the author’s  knowledge, prior to this research, no previous attempts have been made to control  the length of patent text generation.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Table 3   Performance of reward models (RM)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ML EVO NLP SPEECH VISION KR PLANNING HARDWARE",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Accuracy 0.718 0.703 0.764 0.727 0.715 0.749 0.768 0.742",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "In Sect. 4, the first reward function depends on the length of patent claims,  and it computes the reward value based on a designated maximum length. If  the generated patent claim exceeds the maximum length, the reward will be set  to zero. Within the specified maximal length, longer patent claims will receive  higher rewards. This reward function guides the subsequent PPO algorithm to  learn generating longer patent claims, while attempting to abide by the maximum  length constraint. The main objective of the experiment in Sect. 4.1 is to assess  the viability of controlling patent text generation using RLHF. Additional details  concerning this specific reward function can be found in that section. The second  reward function focuses on controllability based on patent scope. When draft- ing patents, the inclusion of limiting terms (e.g., “wherein”) serves to narrow the  scope of a patent claim. A patent with more limiting terms and limiting clauses  generally has a narrower scope. Consequently, this may increase the chances of  the patent being allowed, while reducing the likelihood of patent infringement.  In the experiment detailed in Sect. 4.2, the reward function is designed to count  the occurrences of such limiting terms. A higher reward value is assigned when  there are more limiting terms. Further information about this reward function will  be provided in the same section. Regarding the third reward function, it combines  the previous two to calculate a joint reward value based on both the length of pat- ent claims and the count of limiting terms. The specifics of this joint reward func- tion, along with the experimental details and results, can be found in Sect. 4.3.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Returning to the 3-stage methodology, the third stage involves training and  using PPO as the reinforcement learning algorithm to optimize the SFT model  from the first stage. This optimization is done against either a reward model  obtained in the second stage or a reward function defined. It is noted that a reward  model requires training and data, whereas a reward function does not. Reward  models are neural-based and obtained through training, while reward functions  are rule-based and defined directly in source code. Despite the differences, both  types of rewards yield numeric values as rewards, which allows them to be math- ematically combined in the training. This amalgamation of neural-based rewards  and rule-based rewards is expected to have broad applicability, encompassing a  wider range of use cases in the future.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "For example, to be patentable, a patent claim must fulfill at least three essential  requirements: novelty, non-obviousness, and utility. Theoretically, training three  reward models, each corresponding to a specific requirement, along with defin- ing a reward function to assess the patent claim’s length, would make it possi- ble to train a policy model that can generate patentable patent claims within a  predefined length. In this research, a reward model is trained in Sect. 4.4. The  joint reward for Sect. 4.3 is composed of the reward functions in Sects. 4.1 and  4.2. Technically, it is also feasible to have a joint reward from the reward model  in Sect. 4.4 and the reward function in Sects. 4.1, 4.2, or Sect. 4.3. Nonetheless,  before proceeding with any further joint reward, it is crucial to conduct separate  validation on the quality of patent text generation using these reward models or  functions. Future research needs to delve into exploring the combination of the  aforementioned reward model and reward functions.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Upon the publication of this manuscript, the source code, datasets, SFT models,  reward models, policy models, and experimental results will be made accessible to  the public.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "This chapter presents a series of RLHF experiments, each examining a differ- ent reward model or reward function. The first experiment in Sect. 4.1 implements  a reward function based on claim length. Section  4.2 implements a reward func- tion based on the number of limiting terms in patent claims. Section  4.3 imple- ments a joint reward by combining the first and the second reward functions. Sec- tion 4.4 implements a reward model based on the classification of granted patents  and pre-grant applications. Each of these experiments also includes subsequent  reinforcement learning during the PPO stage, aimed at training a policy model in  alignment with the respective reward function or reward model. Regarding compu- tational demands, after using 8-bit quantization, experiments in Sects. 4.1, 4.2, and  4.3 requires a GPU with 16 G of VRAM. In contrast, the experiment in Sect. 4.4  requires a GPU with 24 G of VRAM because of the reward model. To facilitate the  peer review process of this research, the patent claims generated in all experiments  can be accessed at OSF. These patent claims will be made public after the publica- tion of this research. A selection of exemplary patent claims, including both higher  and lower rewards, can be found in Appendix.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "According to Love et  al. (2019),  “patent prosecutors and examiners have long  assumed a link between claim length and patent validity. The conventional wis- dom is embodied in the so-called pencil test, which predict that patent claims that  can be covered by a pencil, are unlikely to be both valid and infringed.” From  this perspective, a longer patent claim is more likely to be valid but less likely to  be infringed. A shorter patent claim is less likely to be valid but more likely to  be infringed. In Marco et al. (2019), the first large-scale analysis of patent claim  length and patent scope, the authors validated that independent claim length is  negatively correlated with patent scope. According to the authors, the validation  also shows that independent claim length independently explain other measures  of patent scope that have been used in the literature: patent maintenance, for- ward citations, and the breadth of patent classes. Hence, the conventional wisdom  mentioned in Love et al. (2019) is empirically true. In Marco et al. (2019), it is  noted that the average lengths of patent claims, measured in words, are 94.2 and  111.4 respectively for patent applications published between 2001 and 2014 that  were either abandoned or granted later. This manuscript explores the intriguing",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "research question of how to train the policy model in RLHF to control the length  of text generation. In this experiment, the reward function for training is designed  as shown in Listing 1:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "In the code snippet, the variable max_len is defined to set the upper threshold  for the permissible length of the generated text in terms of characters. If the length  of the generated patent text surpasses this threshold, the text is shortened. Upon  truncation, if the text lacks the specific tag < |end_of_claim| > , a reward of zero  is assigned and it indicates that the initial generated text has exceeded the upper  threshold. In contrast, when the mentioned tag is present, the reward is computed  using the formula 1+len(s) / float(max_len), where a greater reward corresponds to  longer text as a proportion of the maximum length.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Figure 1 shows the quantitative outcomes obtained with a maximum length of  512. The SFT model for reinforcement learning is the ML model in Table 2. The  graph labeled as (a) in Fig. 1 depicts the progression of reward mean values through- out the PPO training, covering a span of 10,000 training steps. The curve ascends  and exceeds a value of 1, signifying the policy’s acquisition of the ability to pro- duce patent claims with an average length that approaches but remains below 512.  The graph labeled as (b) illustrates the average length of generated patent claims.  As depicted, there is a gradual decline in the average length. Based on graph (a),  graph (b) suggests that the policy is progressively becoming more adept at produc- ing patent claims with lengths that fall below 512 characters. Graph (c) presents the  number of limiting terms in the generated patent claims. This graph will be cross- referenced in the forthcoming experiment in Sect. 4.2, which focuses on the reward  function using limiting terms. Both graphs (b) and (c) also include plots of the trend  using moving averages with a window size of 100.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Figure  2 displays the results corresponding to a maximum length of 1024,  obtained through over 20,000 training steps. The SFT model for reinforcement  learning remains the same ML model. With the increased number of training steps,  the reward value ultimately achieves a higher level, surpassing the value in graph (a)  of Fig. 1. In Fig. 2, the significance and findings drawn from all three graphs paral- lel those observed in the corresponding counterparts within Fig. 1. Hence, repeti- tive explanations are omitted here for brevity. For qualitative analysis in the future,  readers with an interest can refer to the exemplary patent claims of higher and lower  rewards in Appendix A or all generated patent claims in this research at OSF.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Fig. 1   Rewards based on max_len=512",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Fig. 2   Rewards based on max_len=1024",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "A limiting clause in a patent claim expresses one or more inventive aspects of the  invention on which the patent was conditioned and allowed. Typically, the term  “wherein” denotes such a limiting clause and narrows the scope of the patent claim  during patent prosecution. For example, a claim might read, “A device comprising  A, B, and C, wherein C is made of material X.” In this instance, wherein limits the  scope of C to being made of a specific material, X. A narrower claim scope increases  the likelihood of allowance, albeit it decreases the likelihood of being infringed. If  the goal is to increase the chance of patent allowance, including more “wherein”  clauses may be preferable. Conversely, if the intention is to have a broader claim  scope, it’s generally advisable to use fewer “wherein” clauses. A well-crafted patent  claim should strike a balance between a broader claim scope and the likelihood of  allowance, or between a narrower claim scope and the likelihood of infringement.  In patent litigation, a defendant might occasionally argue that the “wherein” clause  is not limiting because it merely stated the intended results and was not material  to patentability. For example, according to Emery (2019), in Case No. 2018-2207  (Fed. Cir. Aug. 29, 2019), the defendant argued that, without the limiting effect of  the “wherein” clause, the resulting broader claims were invalid as obvious based on  prior rulings. In fact, the “wherein” clauses of the patents in suit referenced efficacy  and safety for a method of treatment. Therefore, the district court found the disputed  “wherein” clauses to constitute claim limitations because “they were material to  patentability and expressed the inventive aspect of the claimed invention.” The US  Court of Appeals for the Federal Circuit upheld the district court’s finding that the  disputed “wherein” clauses were indeed limiting.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Ideally, an effective patent claim should contain neither too many nor too few  limiting terms. Nevertheless, achieving this equilibrium through RLHF is a com- plex endeavor at this current research stage. Instead, the present experiment aims to  explore whether the policy model in RLHF can learn against a reward function reliant  on the count of limiting terms. By validating the controllability of the policy model  over the use of limiting terms, it might become feasible to train the policy model  to maintain a suitable equilibrium in subsequent research. For this experiment, the  limiting terms are: wherein, where, when and whereby. This list is not exhaustive,  and additional terms could be incorporated following further study in the future. The  reward function in this experiment is outlined in Listing 2 below. The SFT model  applied for reinforcement learning is identical to the ML model in Experiment 4.1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "In this experiment, a training consisting of 2,500 steps is sufficient to validate  the policy’s controllability over the use of limiting terms. Illustrated in Fig. 3, graph  (a) demonstrates a progressive rise in the mean reward value as training advances.  This reward value corresponds to the count of limiting terms. Meanwhile, graph (b)  showcases a gradual increase in the length of generated patent claims over the train- ing steps. The policy model generating longer patent claims as the number of limit- ing terms increases is a logical outcome. Both graphs (b) and (c) include plots of the  trend using moving averages with a window size of 100. It’s worth observing that in  section 4.1, the curves within graph (c) appear relatively flat. This is attributed to the  absence of counting the number of limiting terms in the reward function. Regarding  the quality of text generation in this experiment, it is noticeable that higher rewards  could potentially result in a decline in text quality. A thorough qualitative analy- sis would necessitate further efforts, which exceed the resources available in this  research. Nevertheless, readers with an interest can refer to the exemplary patent  claims with both higher and lower rewards in Appendices B.1 and B.2. Alterna- tively, all the generated patent claims are accessible online at OSF.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "To ensure the reproducibility of the policy’s controllability over the use of limit- ing terms, the next experiment employs the third model (NLP) in Table 2 as the  SFT model for reinforcement learning. Another aim of the experiment is to investi- gate the upper bounds of claim length and the number of limiting terms depicted in  graphs (b) and (c). Interestingly, as depicted in Fig. 4, graph (a) illustrates that the  mean reward value surpasses over 50 and then diminishes. Correspondingly, graph  (b) demonstrates an initial ascent followed by a descent in claim length, while graph  (c) also demonstrates an initial ascent followed by a descent in the number of limit- ing terms. This outcome is unexpected since rewards were anticipated to consist- ently increase.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "Upon inspecting the patent claims generated at different training steps, it was  observed that the maximum number of limiting terms reached 173 at training step  3699 (see Appendix B.4). At training step 454, the number of limiting terms was  3, and the generated patent claim is relatively favorable (see Appendix B.3). In  contrast, at training step 4500, the reward was down to zero, as shown in Appen- dix B.5, demonstrating an evidently unfavorable outcome. The phenomenon of the  model’s collapse after reaching its peak reward is perplexing. It necessitates sub- sequent inquiry in the future. Another notable point gleaned from inspection is the  decline in the quality of generated patent claims as their length extends. The correla- tion observed indicates that longer patent claims tend to generate nonsensical or far- fetched content. Preserving the quality and coherence of patent text generation poses  a distinct challenge for future research, surpassing the scope of this current study.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "The joint reward function in this experiment combines the reward functions in  Sect. 4.1 (using max_len=1024) and 4.2. The source code is outlined in Listing 3  below. The training steps have been increased to 10,000. The goal is to validate the  controllability of the policy over both the claim length and the use of limiting terms.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "Fig. 3   Rewards based on limiting terms (SFT model: ML)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "Fig. 4   Rewards based on limiting terms (SFT model: NLP)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 20,
+      "raw_extracted": "The SFT models applied for reinforcement learning are the eight models shown  in Table 2. Appendix C shows the file names in OSF containing generated patent  claims for each model. The graphical representation of claim lengths and the num- ber of limiting terms are depicted in Fig. 5 for each model. To ensure conciseness,  the curves depicting reward mean values have been omitted.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 20,
+      "raw_extracted": "Figure 5 illustrates that the claim length is constrained by the upper bound, as  showcased in Fig.  2. As a result, the claim length does not exhibit a continuous  increase, contrasting with the trend observed in Fig. 3. Additionally, the same figure  demonstrates a gradual rise in the number of limiting terms, even while adhering  to the claim length constraint. This phenomenon can be rationalized by consider- ing the model’s pursuit of higher rewards. As the inclusion of more limiting terms  results in higher rewards and given that longer claims can still achieve a minimum  reward of zero, the model tends to overlook claim length and prioritizes the addi- tion of more limiting terms. Hence, the length does not exhibit continuous growth  as seen in Fig. 3. Simultaneously, Fig. 5 demonstrates that the number of limiting  terms increases over time, even while adhering to the limitation imposed by claim  length. Ultimately, similar to the findings in Fig. 4, the model inexplicably experi- ences a breakdown after extended training. Alongside this qualitative analysis, it’s  important to highlight that the challenge lies in conducting quantitative analysis.  Such an endeavor would demand substantial efforts from patent practitioners in the  future, a resource allocation that exceeds the scope of this current research.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 20,
+      "raw_extracted": "This experiment involves the implementation of both the RM stage and the PPO  stage described in Sect. 3.2. At the RM stage, training a reward model is to train  a distilbert-base model for a binary classification task (granted = 1 or pre-grant =  0). It is noted that pre-grant applications usually have shorter claims compared to  granted patents. This is because inventors and patent practitioners often initially aim  for broader patent scopes and subsequently extend the length of the claims to narrow  their scopes. The purpose is to overcome any prior art identified by patent exam- iners later, but only as necessary. This heuristic can be confirmed by the research  in Marco et al. (2019). In Fig. 3(a) of Marco et al. (2019), the authors showcase a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "comparison of claim length trends between patent applications and issued patents  for the years 2001 to 2014. Three different types of documents are compared: (1)  published applications that are later abandoned, (2) published applications that are  later granted, and (3) granted patents. The average length observed in (1) is con- sistently shorter than that in (2), and similarly, the average length in (2) is always  shorter than that in (3). The authors conclude that the claims of granted patents are  narrower in scope than those that are published and granted, and these in turn are  narrower than those that are published and abandoned.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "In this manuscript, the training data for the reward models come from the eight  datasets listed in Table 1. As a result, eight distinct reward models are trained. Their  performances are provided in Table 3. Subsequently, the PPO stage builds upon the  SFT models that have been previously fine-tuned and uses these reward models to  train eight policy models in reinforcement learning. Because of the context window",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "Fig. 5   Based on joint rewards",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "size of the distilbert-base model, the reward model’s input tokens are capped at 500  as a maximum. The reward value to compute in PPO is the accuracy of the classi- fication task based on the reward model. Training a single policy model for 10,000  training steps takes approximately 5 days using an NVIDIA L4 GPU with a VRAM  of 24 G. This training process could be accomplished using a consumer-grade GPU  like the RTX 4090, which also has 24GB of VRAM. The mean reward values for  each model are illustrated in Fig. 6. To maintain brevity, the two graphs showing  claim length and the number of limiting terms are omitted. Nevertheless, regarding  the two graphs, it is noted that the graph of claim length shows a gradual and slight  increase. This observation is reasonable as lengthier patent claims typically have a  higher probability of being granted for patent practitioners. This observation is also  supported by Table 1, in which the average length of granted patents exceeds that of  pre-grant applications. Another observation was that the curve depicting the number  of limiting terms is relatively flat. This finding is reasonable due to the absence of  any reward function to include limiting terms.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "To assess the efficacy of RLHF, a comparative examination is performed to con- trast patent allowances before and after PPO training, based on the prediction of  the reward model. Prior to PPO training, the SFT models were fine-tuned using the  AIPCO datasets. The likelihood of generating a granted patent without a prompt  should resemble the ratio of the number of granted patents in each dataset. After  PPO training, the policy model’s propensity to produce granted patents is expected  to rise due to its learning from the reward model, which assigns greater rewards to  granted patents. The subsequent outcomes in Table 4 are in accordance with this  expectation. In Table 4, the first column presents the names of the datasets. Within  this experiment, an assessment is conducted on the initial 1,000 rows within each  dataset. The subsequent two columns display the counts of both granted and pre- grant records, as determined by the respective reward model associated with each  dataset. In the fourth column, the ratio of granted relative to the total of 1,000 rows  is displayed. The second, third, and fourth columns present the results before the  PPO training. These results are based on SFT models and RM models, without PPO  models. Similarly, the fifth, sixth, and seventh columns convey comparable findings,  representing the results after the PPO training. The results are thus based on pol- icy models in RLHF and RM models. Significantly, the ratio after PPO training is  notably higher than the ratio observed before PPO training. This outcome provides  strong validation for the efficacy of RLHF in this experiment.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "A technical detail within this experiment is that, for each of the 1000 rows, the  first 30 tokens of the patent claim are extracted and utilized as the prompt for the  policy model to generate patent text. With this setting, an assumption is made that  the 1,000 prompts collected for the policy model will exhibit sufficient diversity.  Additionally, it is assumed that the initial 30 tokens used as prompts should not  be decisive, and they should not unilaterally determine the outcome in terms of  being predicted as granted or pre-grant by the reward model. In terms of the rela- tions among tables in this research, each policy model in Table 4 learns from its  respective reward model in Table 3. As detailed in Sect. 3.5, each AIPCO dataset  in Table 1 serves as the basis for its corresponding SFT model in Table 2 and RW  model in Table 3.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 23,
+      "raw_extracted": "Fig. 6   PPO reward_mean",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "For qualitative analysis in the future, readers with an interest can refer to the  exemplary patent claims of higher and lower rewards in Appendix 4 or all generated  patent claims at OSF. It should be noted that, while the increased ratios in Table 4 is  derived from the reward model trained for granted patents, it cannot be inferred that  the trained policy model will predominantly produce patent claims with a higher  probability of being granted in actual patent prosecution or even hold strong in liti- gation. The process of patent prosecution is intricate, and patent litigation is even  more complex. Hence, the patent claims produced by the policy model and pre- dicted by the reward model as granted in this study should not be mistaken as the  actual outcomes that will occur in real patent prosecution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "In fact, after initial (subjective) inspections, it seems that the existence of PPO  training and the quality of the generated patent claims do not correlate. For example,  in Appendix D.1, the generated text without PPO training is less favorable compared  with the generated text after PPO training in Appendix D.2. On the other hand, in  Appendix D.3, the text without PPO training is more favorable compared with the  generated text after PPO training in Appendix D.4. The crucial factor here is the  reward model itself. As a demonstration of the concept, this experiment shows that  the policy model in RLHF can effectively align with the reward model for higher  rewards. However, the ultimate quality of the generated patent text hinges on the  performance of the reward model. To create high-quality patent claims, it is impera- tive that these claims fulfill the novelty, nonobviousness, and utility requirements  stipulated by patent law. Relying solely on granted patents and pre-grant applica- tions falls short in constructing a comprehensive reward model. The complexities  associated with training a reward model to address all requirements in patent law  will be discussed in Sect. 5.1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "Table 4   Granted ratios before and after PPO training",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "Bold indicates the ratio = granted / (granted+pre-grant)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "1000 rows in Before After",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "Granted Pre-grant Ratio Granted Pre-grant Ratio",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-ML 551 449 0.551 708 292 0.708",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-EVO 471 529 0.471 572 428 0.572",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-NLP 518 482 0.518 835 165 0.835",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-SPEECH 514 486 0.514 777 223 0.777",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-VISION 502 498 0.502 703 297 0.703",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-KR 488 512 0.488 673 327 0.673",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-PLANNING 527 473 0.527 739 261 0.739",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "AIPCO-HARDWARE 498 502 0.498 742 258 0.742",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "The overarching aim within this realm of research is to envision the entire patent  prosecution system as an RLHF system. The ultimate goal is to generate patent  claims that meet the legal requirements for allowance by patent offices. From the  perspective of RLHF, the human participants in patent prosecution include several  roles such as inventors, patent agents, patent attorneys, and patent examiners. The  feedback from humans consists of various forms, such as the office actions issued  by patent examiners and the revisions made by patent agents, attorneys, or inventors.  Reinforcement learning involves the iterative back-and-forth dynamics within patent  prosecution, and the objective for patent practitioners is to maximize the probability  of patent allowance with preferred patent scope.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "As mentioned, to be patentable, at least three major requirements in patent law  must be satisfied: novelty, non-obviousness, and utility. The challenges lie in devel- oping corresponding reward models for each of these requirements and acquiring  the necessary data to effectively train these models. The reward model in Sect. 4.4  for classifying granted and pre-grant is demonstrative and aims to offer a prelimi- nary assessment of whether the three requirements have been met jointly. In terms  of acquiring the necessary data, it will be crucial to consider the references to prior  arts that are cited in the office actions issued by patent examiners. By pinpointing  and extracting relevant paragraphs from prior art references to use as training data,  there is a possibility of creating reward models more capable of evaluating novelty  and non-obviousness. However, despite the presence of these prior art references  within the records of patent prosecution history, they are not publicly accessible in  text form. The obstacle could potentially be overcome in the future if patent offices  can release more textual and structural data in patent prosecution for public access.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "It is also worth mentioning that, among the three requirements, the utility require- ment is likely the most challenging to address. It bears resemblance to the issue of  factuality encountered within the realm of large language models in general. Such  models have gained notoriety for generating content that lacks grounding or is  entirely hallucinated (although hallucination might spark innovative creativity in  inventors). In the patent domain, all granted patents and most of pre-grant appli- cations are expected to have met the utility requirement. Consequently, instances  where the requirement is unmet essentially do not exist. This scarcity of negative  samples creates an insurmountable hurdle, making the training of a classifier for the  utility requirement implausible. In conjunction with the challenges posed by issues  of grounding and hallucination, the endeavor of training a reward model to evaluate  the utility requirement in patent law becomes exceptionally formidable. In the fore- seeable future, having human in the loop to assess the utility requirement might be  the sole solution.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "In brief, the suggestion in this section is to conceptualize the entire patent pros- ecution system as an RLHF system, wherein human in the loop remains integral  for evaluating the utility requirement. As for the novelty and non-obviousness",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "requirements, it is advisable to train either two distinct reward models or a single  joint reward model. Similarly, additional requirements of patent law such as the  written description requirement, antecedent-basis requirement, means-plus-func- tion structure, and patentable subject matter could potentially be evaluated through  reward models, benefiting from the available positive (allowed) and negative  (rejected) samples in patent prosecution history.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Owing to limited resources, this manuscript is constrained by the absence of com- prehensive qualitative and quantitative analyses. Addressing these limitations would  require significant efforts from patent practitioners, particularly in reviewing gener- ated patent claims and providing human feedback. Beyond these efforts, and from  a broader perspective, there are two potential directions for future research in the  intersection of AI and patent law. The first is from the perspective of generative  AI, while the second is from the perspective of the patent domain. In terms of the  former, the rapid progression of techniques within generative AI over recent years  promises an expanded application within the patent domain, particularly in light of  the conceptual framework in Sect. 5.1. For instance, it is worth considering whether  the newly introduced concept of DPO (Direct Preference Optimization) represents a  more efficient paradigm for training language models in contrast to RLHF. The idea  pertains to training based on preferences without relying on reinforcement learn- ing. In the event that RLHF continues to stand as the favored approach, the question  arises whether other alternatives, such as (Implicit Language Q-Learning) (Snell  et al. 2023), might excel in performance beyond the existing PPO approach.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Regarding the perspective of the patent domain, it is noteworthy to highlight that  various conventional tasks will remain highly relevant to the effective generation of  patent text. Take, for instance, the longstanding hurdle of prior art search (semantic  or keyword-based or both), a challenge that remains unresolved. Training an effec- tive reward model for assessing novelty or non-obviousness necessitates the incorpo- ration of related prior art references into the training data. Lacking a more effective  prior art search, the sufficiency of the training data’s scope will be compromised.  Another example is patent classification. In this context, the granularity of patent  classification is not confined to existing classification systems like CPC (Coopera- tive Patent Classification). With increased granularity, a classifier can refine the  focus within a specific technical field, enabling the training data to be more cen- tered around that specific scope. Consequently, model training can center on a more  nuanced and precise range of training data. This refined training data is anticipated  to bring advantages to models at all stages within RLHF. These are two instances of  conventional patent tasks that can be supportive to the core objectives in RLHF, and  there likely exist additional such tasks to delve into. In summary, considering both  the perspectives of generative AI and the patent domain, there remains considerable  uncharted territory holding significant potential for future exploration.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "From a broad perspective, this research frames patent prosecution as a reinforce- ment learning system. The goal of applying reinforcement learning is to make use  of human feedback or intent in patent prosecution and increase the chances of gen- erating patent claims that are likely to be granted. Although the human feedback  accessible in public and in text format are limited, the experiments conducted as  part of this research demonstrate that generative language models can be controlled  through reinforcement learning. These models are capable of reflecting the human  feedback or intent in patent prosecution. Regarding human feedback, the language  models can be trained to align with a reward model that classifies granted patents  over pre-grant applications. Regarding human intent, these language models can be  trained using different reward functions based on the length of patent claims or the  number of limiting terms in patent claims, or a combination of both. While the gen- erated patent text currently falls short of meeting the quality for allowance by patent  offices and requires significant improvement, these experiments confirm the viabil- ity of applying RLHF to patent text generation. Notably, the standard 3-stage RLHF  pipeline has been implemented in the patent domain for the first time. To foster the  realization of the ideas presented in this research, the source code and datasets will  be made available. This will prove valuable in the future as more human feedback  becomes accessible for implementation within patent offices or for broader use in  the public domain.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "The following results are extracted from the file labeled “experiment_1_1.txt” in  OSF. This file uses JSON formatting, wherein:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "1.\t The term flag_patent means granted when its value is 1, and it means pre-grant  when the value is 0. 2.\t The term doc_id means a patent number if flag_patent is 1, and a publication  number if flag_patent is 0. 3.\t The term appl_id means an application number. 4.\t The term claim_one means the original claim one of the granted patent or pre- grant application. 5.\t The term prompt means the input text for generative model in RLHF. 6.\t The term generated means the generated patent claim text.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 29,
+      "raw_extracted": "The following results are extracted from the file labeled “experiment_1_2.txt” in  OSF.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 32,
+      "raw_extracted": "The following results are extracted from the file labeled “experiment_2_1.txt” in  OSF. To enhance readability, the limiting terms are highlighted in bold. It is noted  that in the subsequent context, the terms favorable outcome and unfavorable out- come refer to text generation that either presents a positive or negative impression  upon initial inspection. These quality interpretations might not correspond with  patent examination standards and require assessment by patent practitioners in the  future. In addition, the relative quality of the generated text is compared with other  text generations, rather than by comparing it to the original patent claims.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 35,
+      "raw_extracted": "The following results are extracted from the file labeled “experiment_2_2.txt” in  OSF.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 38,
+      "raw_extracted": "The generated patent claims for eight SFT models are labeled as the following in  OSF.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 38,
+      "raw_extracted": "•\t experiment_3_ml.txt •\t experiment_3_evo.txt •\t experiment_3_nlp.txt •\t experiment_3_speech.txt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 39,
+      "raw_extracted": "•\t experiment_3_vision.txt •\t experiment_3_kr.txt •\t experiment_3_planning.txt •\t experiment_3_hardware.txt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 39,
+      "raw_extracted": "The following results are extracted from the files labeled “experiment_4_nlp_ before_PPO.txt” and “experiment_4_nlp_after_PPO.txt” in OSF.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 42,
+      "raw_extracted": "Acknowledgements  The research reported in this manuscript has been funded by the National Science  and Technology Council (NSTC) in Taiwan (Project ID: 112-2221-E-A49-117). Additionally, the author  expresses deep gratitude to the TensorFlow Research Cloud (Google) for providing TPU resources, and  to the Research Solutions GCP Credits Program (Google) for providing GPU resources. The contribution  of these generous resources has made this research endeavor possible.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 42,
+      "raw_extracted": "Funding  Open Access funding enabled and organized by National Yang Ming Chiao Tung University.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 42,
+      "raw_extracted": "Open Access  This article is licensed under a Creative Commons Attribution 4.0 International License,  which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long  as you give appropriate credit to the original author(s) and the source, provide a link to the Creative  Commons licence, and indicate if changes were made. The images or other third party material in this  article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line  to the material. If material is not included in the article’s Creative Commons licence and your intended  use is not permitted by statutory regulation or exceeds the permitted use, you will need to obtain permis- sion directly from the copyright holder. To view a copy of this licence, visit http://creativecommons.org/ licenses/by/4.0/.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "Bai Y et al (2022) Training a helpful and harmless assistant with reinforcement learning from human",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "feedback. arxiv:​ 2204:​05862 Dettmers T, Lewis M, Shleifer S, Zettlemoyer L (2022) 8-bit optimizers via block-wise quantization. In:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "9th international conference on learning representations, ICLR Dettmers T. bitsandbytes. https://​github.​com/​TimDe​ttmers/​bitsa​ndbyt​es Emery MW (2019) When is “wherein” clause limiting? When it’s material to patentability. https://​www.​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "jdsup​ra.​com/​legal​news/​when-​is-​where​in-​clause-​limit​ing-​when-​it-​83886/ Giczy A, Pairolero N, Toole AA (2021) Identifying artificial intelligence (AI) invention: a novel AI pat-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "ent dataset. J Technol Transf 47:476 Glaese A et al (2022) Improving alignment of dialogue agents via targeted human judgements. arxiv:​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "2209:​14375 Google (2023) An overview of Bard: an early experiment with generative AI. https://​ai.​google/​static/​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "docum​ents/​google-​about-​bard.​pdf Hu EJ et al (2022) LoRA: low-rank adaptation of large language models. https://​openr​eview.​net/​forum?​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "id=​nZeVK​eeFYf9 Lam E (2023) Textrl: text generation with reinforcement learning. https://​github.​com/​voidf​ul/​TextRL Lambert N, Castricato L, von Werra L, Havrilla A (2022) Illustrating reinforcement learning from human",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "feedback (rlhf). Hugging Face Blog. https://​huggi​ngface.​co/​blog/​rlhf Lee J-S (2023) Evaluating generative patent language models. World Patent Inf 72:102173. https://​doi.​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "org/​10.​1016/j.​wpi.​2023.​102173 Lee J-S, Hsiang J (2020) Patent claim generation by fine-tuning openai gpt-2. World Patent Inf",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "62:101983. https://​doi.​org/​10.​1016/j.​wpi.​2020.​101983 (https://​www.​scien​cedir​ect.​com/​scien​ce/​artic​ le/​pii/​S0172​21901​93007​66) Lee J-S (2023) Patentgpt-j-6b. https://​huggi​ngface.​co/​patent/​Paten​tGPT-J-​6B/​tree/​main Lee J-S. Results for reviewers. https://​osf.​io/​8bxze/?​view_​only=​9cad6​bb7f1​7f410​59cfb​d497d​f663a​96 Lee J-S (2020) Controlling patent text generation by structural metadata, CIKM ’20, 3241–3244 (Asso-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "ciation for Computing Machinery, New York, NY. USA. https://​doi.​org/​10.​1145/​33405​31.​34185​03 Lee J-S (2019) Patent transformer: a framework for personalized patent claim generation. http://​ceur-​ws.​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "org/​Vol-​2598/​paper-​06.​pdf Love BJ, Miller SP, Ambwani S (2019) Determinants of patent quality: evidence from inter partes review",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "proceedings. (University of Colorado Law Review, Vol. 90) Lu Q, Myers A, Beliveau S (2017) USPTO patent prosecution research data: unlocking office action",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "traits. https://​ssrn.​com/​abstr​act=​30246​21 Marco AC, Sarnoff JD, deGrazia CA (2019) Patent claims and patent scope. Res Policy 48(9):103790.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "https://​doi.​org/​10.​1016/j.​respol.​2019.​04.​014 OpenAI (2023) Gpt-4 technical report. arxiv:​2303.​08774 OpenAI (2022) Introducing ChatGPT. https://​openai.​com/​blog/​chatg​pt OpenAI (2019) Better language models and their implications. https://​openai.​com/​blog/​better-​langu​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "age-​models Ouyang L et al (2022) Training language models to follow instructions with human feedback. In: Koyejo",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "S et al (eds) Advances in neural information processing systems, vol 35. Curran Associates Inc,  New York, pp 27730–27744 Pelaez S, Verma G, Ribeiro B, Shapira P (2023) Large-scale text analysis using generative language mod-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "els: a case study in discovering public value expressions in AI patents. arXiv:​ 2305.​10383 Ramamurthy R et  al (2022) Is reinforcement learning (not) for natural language processing?: Bench-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "marks, baselines, and building blocks for natural language policy optimization https://​arxiv.​org/​abs/​ 2210.​01241 Sanh V, Debut L, Chaumond J, Wolf T (zzz) Distilbert base model (uncased). https://​huggi​ngface.​co/​disti​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "lbert-​base-​uncas​ed Sanh V, Debut L, Chaumond J, Wolf T (2019) Distilbert, a distilled version of bert: smaller, faster,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "cheaper and lighter. In: Proceedings of the 5th EMC2 - Energy Efficient Training and Inference  of Transformer Based Models. https://​www.​emc2-​ai.​org/​assets/​docs/​neuri​ps-​19/​emc2-​neuri​ps19-​ paper-​33.​pdf Schulman J, Wolski F, Dhariwal P, Radford A, Klimov O (2017) Proximal policy optimization algorithms",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 43,
+      "raw_extracted": "arXiv:​1707:​06347",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "Snell C, Kostrikov I, Su Y, Yang S, Levine S (2023) Offline RL for natural language generation with",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "implicit language Q learning (OpenReview.net). https://​openr​eview.​net/​pdf?​id=​aBH_​DydEv​oH Sourab  Mangrulkar LDYBSP, Sylvain  G (2022) Peft: state-of-the-art parameter-efficient fine-tuning",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "methods. https://​github.​com/​huggi​ngface/​peft Stiennon N et al (2020) Learning to summarize with human feedback. In: Larochelle H, Ranzato M, Had-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "sell R, Balcan M, Lin H (eds) Advances in neural information processing systems, vol 33. Curran  Associates Inc,., New York, pp 3008–3021 Subramanian A, Greenman K, Gervaix A, Yang T, Gómez-Bombarelli R (2023) Automated patent",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "extraction powers generative modeling in focused chemical spaces. Digit Discov 2303:08272 Toole AA, Jones C, Madhavan S (2021) Patentsview: an open data platform to advance science and tech-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "nology policy. https://​ssrn.​com/​abstr​act=​38742​13 USPTO. PatentsView. http://​www.​paten​tsview.​org/ USPTO. Bulk data storage system. https://​bulkd​ata.​uspto.​gov/ USPTO. Patent examination data system. https://​ped.​uspto.​gov/​peds USPTO. Research datasets. https://​www.​uspto.​gov/​ip-​policy/​econo​mic-​resea​rch/​resea​rch-​datas​ets USPTO. Office action research dataset for patents. https://​www.​uspto.​gov/​ip-​policy/​econo​mic-​resea​rch/​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "resea​rch-​datas​ets/​office-​action-​resea​rch-​datas​et-​paten​ts USPTO (2020) Inventing AI: tracing the diffusion of artificial intelligence with U.S. patents. https://​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "www.​uspto.​gov/​sites/​defau​lt/​files/​docum​ents/​OCE-​DH-​AI.​pdf USPTO (2022) Artificial Intelligence Patent Dataset. https://​www.​uspto.​gov/​ip-​policy/​econo​mic-​resea​",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "rch/​resea​rch-​datas​ets/​artif​icial-​intel​ligen​ce-​patent-​datas​et von Werra L et al (2020) Trl: transformer reinforcement learning. https://​github.​com/​lvwer​ra/​trl von Werra L et al (2020) Trl: transformer reinforcement learning. https://​github.​com/​Carpe​rAI/​trlx",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 44,
+      "raw_extracted": "Publisher’s Note  Springer Nature remains neutral with regard to jurisdictional claims in published maps  and institutional affiliations.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

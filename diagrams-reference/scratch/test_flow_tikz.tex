@@ -1,0 +1,179 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+\usetheme{Madrid}
+\usepackage{tikz}
+\usepackage{adjustbox}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc,shadows,shapes.geometric}
+
+\definecolor{bannerGreen}{RGB}{27,104,52}
+\definecolor{prismNavy}{RGB}{13,29,54}
+\definecolor{prismBlue}{RGB}{38,126,190}
+\definecolor{prismTeal}{RGB}{28,161,157}
+\definecolor{prismGold}{RGB}{229,166,50}
+\definecolor{prismDark}{RGB}{15,23,42}
+\definecolor{cardBg}{RGB}{243,246,251}
+\definecolor{prismIndigo}{RGB}{79,70,229}
+\definecolor{prismSlate}{RGB}{71,85,105}
+
+\definecolor{cInput}{RGB}{243,244,246}
+\definecolor{cStem}{RGB}{224,231,255}
+\definecolor{cStage1}{RGB}{220,252,231}
+\definecolor{cStage2}{RGB}{254,243,199}
+\definecolor{cStage3}{RGB}{254,226,226}
+\definecolor{cStage4}{RGB}{224,242,254}
+\definecolor{cHead}{RGB}{243,232,255}
+\definecolor{cOutput}{RGB}{252,231,243}
+
+\setbeamercolor{frametitle}{bg=prismNavy,fg=white}
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+\begin{frame}[t]{01. Overall End-to-End System Flow (Figure 4.3)}
+\vspace{-0.4em}
+\centering
+\adjustbox{max width=0.98\linewidth, max height=0.82\textheight}{%
+\begin{tikzpicture}[
+  x=1cm, y=1cm,
+  every node/.style={align=center},
+  colcard/.style={
+    draw=prismBlue!50, dashed, line width=0.7pt, fill=cardBg!40,
+    rounded corners=6pt
+  },
+  coltitle/.style={
+    fill=prismNavy, text=white, font=\scriptsize\bfseries,
+    rounded corners=3pt, inner xsep=6pt, inner ysep=2.5pt,
+    drop shadow={opacity=0.15, shadow xshift=0.5pt, shadow yshift=-0.5pt}
+  },
+  flowbox/.style={
+    rectangle, rounded corners=3pt, line width=0.6pt,
+    text width=4.3cm, minimum height=0.58cm, inner ysep=2pt, inner xsep=3pt,
+    font=\fontsize{5.5}{6.8}\selectfont
+  },
+  enginebox/.style={
+    rectangle, rounded corners=4pt, line width=0.75pt,
+    text width=4.5cm, minimum height=0.62cm, inner ysep=3pt, inner xsep=4pt,
+    font=\fontsize{5.2}{6.5}\selectfont
+  },
+  arrow/.style={
+    -{Stealth[scale=0.8]}, line width=0.75pt, draw=prismNavy!85
+  },
+  pipearrow/.style={
+    -{Stealth[scale=0.95]}, line width=1.1pt, draw=prismBlue
+  }
+]
+
+  % =========================================================================
+  % COLUMN 1: INGESTION, PREPROCESSING & ANOMALY DETECTION
+  % =========================================================================
+  \node[colcard, minimum width=4.8cm, minimum height=6.5cm] (card1) at (2.4, 3.25) {};
+  \node[coltitle] (title1) at (2.4, 6.35) {Phase 1: Ingestion \& Preprocessing};
+
+  \node[flowbox, fill=cInput, draw=prismSlate!70] (s1) at (2.4, 5.65) {
+    \textbf{1. User Objective \& Context Input}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont Natural Language Prompt $\;\vert\;$ Multi-Turn Context
+  };
+
+  \node[flowbox, fill=cStem, draw=prismIndigo!70] (s2) at (2.4, 4.65) {
+    \textbf{2. Data Preprocessing \& Normalization}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont Unicode Sanitization $\;\vert\;$ Whitespace Stripping
+  };
+
+  \node[flowbox, fill=cStage4, draw=prismBlue!75] (s3) at (2.4, 3.65) {
+    \textbf{3. Feature Extraction}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont 10k TF-IDF n-grams $\;\vert\;$ 5D Lexical Metrics
+  };
+
+  \node[flowbox, fill=cStage1, draw=prismTeal!80] (s4) at (2.4, 2.65) {
+    \textbf{4. Imputation \& Standardization}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont Mean Imputation $\;\vert\;$ $-Score Normalization
+  };
+
+  \node[flowbox, fill=cStage2, draw=prismGold!95!black, line width=0.8pt] (s5) at (2.4, 1.45) {
+    \textbf{5. Anomaly Detection \& Filtering}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont \textbf{IsolationForest Gate} (Intercepts OOD Inputs)
+  };
+
+  \draw[arrow] (s1) -- (s2);
+  \draw[arrow] (s2) -- (s3);
+  \draw[arrow] (s3) -- (s4);
+  \draw[arrow] (s4) -- (s5);
+
+  % =========================================================================
+  % COLUMN 2: MULTI-MODEL INTELLIGENCE ENGINE
+  % =========================================================================
+  \node[colcard, minimum width=5.0cm, minimum height=6.5cm] (card2) at (7.6, 3.25) {};
+  \node[coltitle] (title2) at (7.6, 6.35) {Phase 2: Intelligence Engine $\mathcal{M}_{\text{prism}}$};
+
+  \node[enginebox, fill=white, draw=prismNavy, line width=0.85pt] (e_title) at (7.6, 5.65) {
+    \textbf{\faBrain\ Multi-Model Engine $\mathcal{M}_{\text{prism}}$}\\[-0.15em]
+    \fontsize{4.5}{5.5}\selectfont Calibrated Multi-Task Optimization Core
+  };
+
+  \node[enginebox, fill=cInput, draw=prismBlue!70] (e_intent) at (7.6, 4.60) {
+    \textbf{12-Class Intent Classifier}\\[-0.15em]
+    \fontsize{4.5}{5.5}\selectfont TF-IDF Vector $\;\vert\;$ Calibrated Softmax Head
+  };
+
+  \node[enginebox, fill=cStage4, draw=prismTeal!80] (e_router) at (7.6, 3.55) {
+    \textbf{Multi-Provider Router}\\[-0.15em]
+    \fontsize{4.5}{5.5}\selectfont Optimal LLM (Groq / NVIDIA / OpenAI / Claude)
+  };
+
+  \node[enginebox, fill=cStem, draw=prismIndigo!80] (e_disp) at (7.6, 2.50) {
+    \textbf{Agent Swarm Dispatcher}\\[-0.15em]
+    \fontsize{4.5}{5.5}\selectfont Multi-Label Classifier $\;\vert\;$ Minimal Active Swarm
+  };
+
+  \node[enginebox, fill=cStage3, draw=red!60!black, line width=0.8pt] (e_gate) at (7.6, 1.45) {
+    \textbf{Safety \& Approval Gate}\\[-0.15em]
+    \fontsize{4.5}{5.5}\selectfont Threshold-Tuned Predictor $\;\vert\;$ Shell/Disk Sandbox
+  };
+
+  \draw[arrow] (e_title) -- (e_intent);
+  \draw[arrow] (e_intent) -- (e_router);
+  \draw[arrow] (e_router) -- (e_disp);
+  \draw[arrow] (e_disp) -- (e_gate);
+
+  % =========================================================================
+  % COLUMN 3: DAG PLANNING, EXECUTION & PERSISTENCE
+  % =========================================================================
+  \node[colcard, minimum width=4.8cm, minimum height=6.5cm] (card3) at (12.8, 3.25) {};
+  \node[coltitle] (title3) at (12.8, 6.35) {Phase 3: Execution \& Persistence};
+
+  \node[flowbox, fill=cInput, draw=prismSlate!70] (x1) at (12.8, 5.65) {
+    \textbf{6. DAG Workflow Construction $\mathcal{L}_{\text{plan}}$}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont Dependency Graph $\mathcal{G}(V, E) \;\vert\;$ Topological Sort
+  };
+
+  \node[flowbox, fill=cStage2, draw=prismGold!95!black] (x2) at (12.8, 4.65) {
+    \textbf{7. ReAct Agent Execution}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont Observation $\rightarrow$ Thought $\rightarrow$ Action Matrix $\mathbf{A}_{i,j}$
+  };
+
+  \node[flowbox, fill=cStage1, draw=prismTeal!80] (x3) at (12.8, 3.65) {
+    \textbf{8. Real-time SSE Token Streaming}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont Chunk-by-chunk Async Stream to Next.js UI
+  };
+
+  \node[flowbox, fill=cStage3, draw=red!60!black] (x4) at (12.8, 2.65) {
+    \textbf{9. Evaluation \& Verification Layer}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont ORPO Preference Reward $\;\vert\;$ Quality Check $\tau$
+  };
+
+  \node[flowbox, fill=cHead, draw=purple!70!black, line width=0.8pt] (x5) at (12.8, 1.45) {
+    \textbf{10. Local IndexedDB Persistence}\\[-0.15em]
+    \fontsize{4.6}{5.6}\selectfont \textbf{PrismDB} Updates via \texttt{useLiveQuery()}
+  };
+
+  \draw[arrow] (x1) -- (x2);
+  \draw[arrow] (x2) -- (x3);
+  \draw[arrow] (x3) -- (x4);
+  \draw[arrow] (x4) -- (x5);
+
+  % Inter-Card Pipeline Connectors
+  \draw[pipearrow] (s5.east) -- (e_gate.west);
+  \draw[pipearrow] (e_title.east) -- (x1.west);
+
+\end{tikzpicture}%
+}
+\end{frame}
+\end{document}

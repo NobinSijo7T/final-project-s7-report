@@ -1,0 +1,100 @@
+% Figure 4.1: Proposed Architecture of PrismSpace Multi-Agent System
+% Clean Academic Style with reset linespread, generous clearances and zero text overlap
+\begin{tikzpicture}[
+    auto,
+    font=\linespread{1.0}\selectfont\small,
+    box/.style={
+        rectangle, draw=black, line width=0.8pt, fill=white,
+        rounded corners=1.5pt, minimum height=0.68cm,
+        align=center, inner sep=4pt
+    },
+    container/.style={
+        rectangle, draw=black, line width=1.0pt, fill=white,
+        rounded corners=2pt, inner sep=7pt
+    },
+    cylinder_node/.style={
+        cylinder, draw=black, line width=0.8pt, fill=white,
+        shape border rotate=90, aspect=0.25, minimum height=0.85cm, minimum width=1.6cm,
+        align=center, inner sep=2pt, font=\linespread{1.0}\selectfont\footnotesize
+    },
+    arrow/.style={
+        -{Stealth[scale=0.9]}, line width=0.8pt, draw=black
+    },
+    biarrow/.style={
+        {Stealth[scale=0.85]}-{Stealth[scale=0.85]}, line width=0.8pt, draw=black
+    }
+]
+
+    % =========================================================================
+    % CONTAINER 1: USER INTERFACE (TOP-LEFT)
+    % =========================================================================
+    \node [box, text width=4.1cm] (ui_prompt) at (0, 7.4) {User Objective\\/ Prompt};
+    \node [box, text width=4.1cm, below=0.45cm of ui_prompt] (ui_client) {Next.js App Shell \&\\Swarm Visualizer};
+    \draw [arrow] (ui_prompt) -- (ui_client);
+
+    \node [font=\linespread{1.0}\selectfont\footnotesize\bfseries, above=0.35cm of ui_prompt] (ui_title) {User Interface};
+
+    \begin{scope}[on background layer]
+        \node [container, fit=(ui_title) (ui_prompt) (ui_client)] (box_ui) {};
+    \end{scope}
+
+    % =========================================================================
+    % CONTAINER 2: TOOL EXECUTION LAYER (BOTTOM-LEFT)
+    % =========================================================================
+    \node [box, text width=4.5cm] (tool_mcp) at (0, 2.6) {MCP Tool Protocol Hub\\(Filesystem, Terminal, Web)};
+    \node [box, text width=4.5cm] (tool_exec) at (0, 1.05) {Sandboxed Execution\\Engine};
+    \draw [biarrow] (tool_mcp) -- (tool_exec);
+
+    \node [font=\linespread{1.0}\selectfont\footnotesize\bfseries, above=0.35cm of tool_mcp] (tool_title) {Tool Execution Layer};
+
+    \begin{scope}[on background layer]
+        \node [container, fit=(tool_title) (tool_mcp) (tool_exec)] (box_tools) {};
+    \end{scope}
+
+    % =========================================================================
+    % CONTAINER 3: COGNITIVE & MULTI-AGENT LAYER (RIGHT)
+    % =========================================================================
+    \node [box, text width=4.4cm] (plan_agent) at (6.5, 7.4) {Planning Agent (LLM)\\DAG Workflow Generator};
+    \node [box, text width=4.4cm] (reason_agent) at (6.5, 4.5) {Reasoning Agent (LLM)\\ReAct Execution Core};
+    \node [box, text width=4.5cm] (model_router) at (11.5, 7.4) {Model \& Intent Router\\(Groq, NIM, OpenAI,\\Anthropic)};
+    \node [box, text width=4.4cm] (verify_agent) at (6.5, 1.05) {Verification \& Safety Gate\\Human Checkpoint Filter};
+    \node [cylinder_node, right=1.6cm of verify_agent] (memory_db) {PrismDB\\(IndexedDB)};
+
+    \coordinate (cog_top_mid) at ($(plan_agent.north)!0.5!(model_router.north)$);
+    \node [font=\linespread{1.0}\selectfont\footnotesize\bfseries, above=0.35cm of cog_top_mid] (cog_title) {Cognitive \& Multi-Agent Layer};
+
+    \begin{scope}[on background layer]
+        \node [container, fit=(cog_title) (plan_agent) (reason_agent) (model_router) (verify_agent) (memory_db)] (box_cognitive) {};
+    \end{scope}
+
+    % =========================================================================
+    % INTER-CONTAINER AND INTRA-CONTAINER FLOWS
+    % =========================================================================
+    % UI to Planning
+    \draw [arrow] (ui_client.east) -- ++(0.6, 0) |- (plan_agent.west);
+
+    % Planning to Reasoning
+    \draw [arrow] (plan_agent.south) -- (reason_agent.north);
+
+    % Model Router to Reasoning (enters upper right port of Reasoning Agent)
+    \draw [arrow] ([xshift=-1.0cm]model_router.south) |- ([yshift=5pt]reason_agent.east);
+
+    % Planning to Model Router
+    \draw [arrow] (plan_agent.east) -- (model_router.west);
+
+    % Reasoning to Tool Layer
+    \draw [arrow] (reason_agent.west) -- ++(-0.6, 0) |- (tool_mcp.east);
+
+    % Tool Exec to Verification Gate (straight horizontal line at y=1.7)
+    \draw [arrow] (tool_exec.east) -- (verify_agent.west);
+
+    % Reasoning to Verification
+    \draw [arrow] (reason_agent.south) -- (verify_agent.north);
+
+    % Verification to PrismDB
+    \draw [arrow] (verify_agent.east) -- (memory_db.west);
+
+    % PrismDB Feedback to Reasoning Agent (clean L-route to lower right port of Reasoning Agent)
+    \draw [arrow] (memory_db.north) |- ([yshift=-5pt]reason_agent.east);
+
+\end{tikzpicture}

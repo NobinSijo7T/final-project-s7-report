@@ -1,0 +1,1016 @@
+{
+  "source_file": "s40747-024-01415-1.pdf",
+  "num_pages": 20,
+  "full_text": "Complex & Intelligent Systems (2024) 10:5261–5280 https://doi.org/10.1007/s40747-024-01415-1\nORIGINAL ARTICLE\nGHQ: grouped hybrid Q-learning for cooperative heterogeneous multi-agent reinforcement learning\nXiaoyang Yu1,2 · Youfang Lin1,2 · Xiangsen Wang1,2 · Sheng Han1,2 · Kai Lv1,2\nReceived: 10 July 2023 / Accepted: 9 March 2024 / Published online: 23 April 2024 © The Author(s) 2024\nAbstract Previous deep multi-agent reinforcement learning (MARL) algorithms have achieved impressive results, typically in sym- metric and homogeneous scenarios. However, asymmetric heterogeneous scenarios are prevalent and usually harder to solve. In this paper, the main discussion is about the cooperative heterogeneous MARL problem in asymmetric heterogeneous maps of the Starcraft Multi-Agent Challenges (SMAC) environment. Recent mainstream approaches use policy-based actor-critic algorithms to solve the heterogeneous MARL problem with various individual agent policies. However, these approaches lack formal definition and further analysis of the heterogeneity problem. Therefore, a formal definition of the Local Transition Het- erogeneity (LTH) problem is first given. Then, the LTH problem in SMAC environment can be studied. To comprehensively reveal and study the LTH problem, some new asymmetric heterogeneous maps in SMAC are designed. It has been observed that baseline algorithms fail to perform well in the new maps. Then, the authors propose the Grouped Individual-Global-Max (GIGM) consistency and a novel MARL algorithm, Grouped Hybrid Q-Learning (GHQ). GHQ separates agents into sev- eral groups and keeps individual parameters for each group. To enhance cooperation between groups, GHQ maximizes the mutual information between trajectories of different groups. A novel hybrid structure for value factorization in GHQ is also proposed. Finally, experiments on the original and the new maps show the fabulous performance of GHQ compared to other state-of-the-art algorithms.\nKeywords Heterogeneous multi-agent reinforcement learning · Cooperative multi-agent reinforcement learning · Value function factorization · StarCraftII multi-agent challenge\nIntroduction\nThe multi-agent system (MAS) and multi-agent reinforce- ment learning (MARL) have drawn lots of attention [1] and have been applied to solve some optimization problems in the physical world, such as resource allocation problem [2–4], cooperative navigation problem [5–7], air traffic flow man- agement[8],andmassivetrafficlightcontrolproblem[9–11].\nB Kai Lv\nlvkai@bjtu.edu.cn\nXiaoyang Yu xiaoyang.yu@bjtu.edu.cn\nSheng Han shhan@bjtu.edu.cn\n1 School of Computer and Information Technology, Beijing Jiaotong University, Beijing, China\n2 Beijing Key Laboratory of Traffic Data Analysis and Mining, Beijing Jiaotong University, Beijing, China\nThe novel research field successfully combines machine learning (ML) [12, 13], deep learning (DL) [14, 15], and swarm intelligence [16] approaches, and proves the abil- ity to obtain outstanding results in different areas. Previous deep MARL algorithms have achieved impressive results in cooperative MARL environment [17, 18], e.g., the Starcraft Multi-Agent Challenges (SMAC) environment [19].\nThe SMAC environment is a multi-agent micromanage- ment scenario in which two adversarial MAS battle against each other. The goal is to train an MARL algorithm control- ling ally agents to eliminate enemy agents controlled by the internal script of SMAC environment. The algorithm needs to learn tactics and skills for choosing the best actions and uti- lizing the different properties of agents. Due to the discrete property of the environment, value-based algorithms have achieved better results than policy-based algorithms [20–22].\nAsymmetric heterogeneous problems are very common in real-world scenarios [23–27], such as wireless network accessibility problem [28] and multi-agent robotic systems\n123\n\n--- Page Break ---\n\n5262 Complex & Intelligent Systems (2024) 10:5261–5280\n[29, 30]. However, the original maps of SMAC environment mainly consist of symmetric maps or homogeneous maps (see Table 1). A symmetric map means that allies and ene- mies consist of the same types of units, and the numbers of both sides are also equal. A homogeneous map means that allies consist of one specific type of unit, no matter what com- position of the enemies. Furthermore, in SMAC, even though allies and enemies are equal at the starting state of symmetric heterogeneous problems, they would become asymmetric as the game runs, because the two sides are attacking and killing each other. In [31], the authors propose a situation (Proposi- tion 5) where the policy of an algorithm may be trapped in a sub-optimal state due to the complexity of heterogeneity. Therefore, it is necessary to comprehensively and carefully study the heterogeneous MARL problem.\nPrevious algorithms have acquired good performance in most symmetric homogeneous maps, symmetric hetero- geneous maps, and asymmetric homogeneous maps from the SMAC original map set. However, experiments show that even state-of-the-art algorithms cannot achieve a high winning-rate (WR) in asymmetric heterogeneous maps, indi- cating that the combination of asymmetry and heterogeneity brings more complexity. Therefore, to fully study the het- erogeneity problem, it is beneficial to enrich the SMAC environment with more asymmetric heterogeneous maps. Recent mainstream approaches use policy-based actor-critic algorithms to solve the heterogeneous MARL problem with various individual agent policies [32, 33]. Some other papersdiscussingheterogeneityaremainlyaboutmulti-agent robotic systems, such as [29, 30], which are slightly different from MARL research.\nFor example, in the multi-agent area search problem proposed in [29], the multi-agent robotic methods usually managetomodeltheproblemindetailwithpropermathemat- ical structures, and then propose the solution. However, the MARL approaches usually model the problem as a POMDP (see the section “Preliminaries” for details) and design a proper reward function for the environment. The goal is to learn an optimal policy function to decide the best actions for all states.\nParticularly, it is required to point out that previous approaches lack the formal definition of heterogeneity. A natural description of the heterogeneity problem is that the action spaces of agents are different, and parameter-sharing among different agents is limited or prohibited. However, such description is not detailed enough for further study. In [34], the authors describe and classify the Physical and Behavioral heterogeneities with natural language instead of mathematical definitions. It is easy for humans to realize that planes and cars are heterogeneous. However, it is still neces- sary to deeply analyze heterogeneity with a formal definition, so that we are able to figure out what property is different, so that the MASs must be treated differently, and which type\nof heterogeneity do the MASs possess. Based on the defini- tion and classification, we can further quantify and solve the heterogeneity problem.\nConsidering the generation process of a transition tuple, it is concluded that the heterogeneity in MARL mainly occurs in three components of the tuple: Local Reward, Local Obser- vation, and Local Transition. In this paper, we focus on and study the cooperative Local Transition Heterogeneity (LTH) MARL problem, in which cooperation happens among dif- ferent types of agents. When changing the number of ally agents, the ratio of different agent types may also be changed, and thus, the optimal cooperating policy is affected. This change increases the diversity and complexity of the LTH problem.\nA natural solution for LTH is grouping. An agent is determined to affiliate a specific group depending on its certain property. Furthermore, an agent keeps to be a per- manent member of a group as long as the scenario remains unchanged. The grouping process simplifies and stabilizes the determination of group members and the usage of differ- ent group policies, making it easier to add inter-group mecha- nisms between policies of groups. In addition, grouping helps to maintain a proper structure for parameter-sharing, which helps to improve cooperation through homophily [35]. As a result, it becomes an important problem to choose an appro- priate property for grouping in LTH problems.\nIn this paper, we propose GIGM consistency and GHQ algorithm to solve the LTH problem in SMAC environment. First, to leverage the benefit of value-based methods and grouping methods, we need to generalize the Individual- Global-Maximum (IGM) consistency [36] into grouped situations. Therefore, we conduct the Grouped Individual- Global-Maximum (GIGM) consistency and a condition to test whether a grouping method satisfies GIGM. Second, we propose the Grouped Hybrid Q-Learning (GHQ). Agents are partitioned into groups following the ideal object group- ing (IOG) method. Each group has its own isolated network parameters, and the parameters are only shared among group members. A novel hybrid structure for value factorization is proposed for optimizing and reducing computation. Further- more, a variational lower bound of the inter-group mutual information (IGMI) is introduced to increase the correlation between groups for better cooperation. Third, we test GHQ in our new asymmetric heterogeneous maps. Results show that GHQ outperforms other baseline algorithms with higher WR and better learning curve, and the cooperate policy between GHQ groups is significantly different against baselines. Main contributions of this paper are:\n• As far as we know, we are the first to propose the Local Transition Heterogeneity (LTH) problem with a formal definition.\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5263\nTable 1 SMAC original maps\nMap name Symmetric Homogeneous Difficulty\n1c3s5z \u0002 \u0003 Easy\n2c_vs_64zg \u0003 \u0002 Medium\n2m_vs_1z \u0003 \u0002 Medium\n2s_vs_1sc \u0003 \u0002 Easy\n2s3z \u0002 \u0003 Easy\n3m \u0002 \u0002 Easy\n3s_vs_3z \u0003 \u0002 Easy\n3s_vs_4z \u0003 \u0002 Medium\n3s_vs_5z \u0003 \u0002 Medium\n3s5z \u0002 \u0003 Easy\n3s5z_vs_3s6z \u0003 \u0003 Ex-Hard\n5m_vs_6m \u0003 \u0002 Medium\n6h_vs_8z \u0003 \u0002 Ex-Hard\n8m \u0002 \u0002 Medium\n8m_vs_9m \u0003 \u0002 Medium\n10m_vs_11m \u0003 \u0002 Easy\n25m \u0002 \u0002 Hard\n27m_vs_30m \u0003 \u0002 Hard\nbane_vs_bane \u0002 \u0003 Easy\ncorridor \u0003 \u0002 Ex-Hard\nMMM \u0002 \u0003 Medium\nMMM2 \u0003 \u0003 Hard\nso_many_baneling \u0003 \u0002 Hard\n• We analyze the properties of the LTH problem and design new asymmetric heterogeneous SMAC maps to compre- hensively study the LTH problem. • We propose the GIGM consistency and the GHQ algo- rithm to solve the LTH problem in SMAC. • We run comparison and ablation experiments to prove the effectiveness of the GHQ algorithm.\nThe rest of the content is as follows: we summarize some related works in the section “Related works”; we give the definition of LTH and theoretically analyze it in SMAC in the section “Local transition heterogeneity”; we provide details about the GHQ algorithm in the section “Methods”; we present detailed environmental and experimental design, and discuss results of our experiments in the section “Exper- iments and results”; and finally, we draw some conclusion in the section “Conclusion”.\nRelated works\nMulti-agent reinforcement learning\nFollowing the centralized training with decentralized execu- tion (CTDE) paradigm [37–39], which requests agents not to use state s during execution, recent approaches have achieved impressive results in SMAC environment. The mainstream value-based method is the value factorization method. Its formal objective is to learn a centralized yet factorized joint action-value function Qtot and the factorization structure:\nQtot →Qi, and use them to calculate TD-error and guide the optimization of agent policies\nL(θ) = ED\n\u0002\n(r + γ max\na′ Qtgt\ntot(τ ′, s′; θtgt)\n−Qtot(τ, s; θ))2\u0003\n(1)\nwhere ED means sampling a batch of tuples (τ, s,r) from replay buffer←D and calculating expectation across the batch. π is the action policy, which is commonly the ε-greedy policy or argmax policy of Q function in value-based algorithms.\nQtgt\ntot is the target function and of Qtot. θ and θtgt are the net- work parameter of Qtot and Qtgt\ntot, respectively. To factorize Qtot and use the argmax policy of Qi to select actions, the Individual-Global-Max (IGM) consistency [36] is required\narg max a Qtot(τ, s) =\n⎛\n⎝\narg maxa Q1(τ1)\n..., arg maxa Qk(τk)\n⎞\n⎠. (2)\nVDN [40] represents Qtot as the sum of local Qi func- tions. QMIX [20] changes the factorization structure from additivity to monotonicity, and the fine-tuned version of QMIX has been proved to be one of the best algorithms on the original SMAC maps [21]. Based on these two fundamental algorithms, QTRAN [36], WQMIX [41], Qatten [42], and QPLEX [43] improve performance with modified value fac- torizing mechanism. Qauxi [44] introduces auxiliary tasks to generate meta-experience for transfer learning. CDCR [45] calculates Cognition Differences between agents with the attention mechanism and learns Consistent Representation of agents’ hidden states for enhancing cooperation. Trans_mix [46] uses a transform network to solve the misalignment of partially observatory value. BRGR [47] uses Bidirectional Real-Time Gain Representation to learn overall information representation and neighbor information representation, and combines them with other value-based algorithms for better cooperation.\n123\n\n--- Page Break ---\n\n5264 Complex & Intelligent Systems (2024) 10:5261–5280\nHeterogeneous MARL has been considered as a spe- cial case of homogeneous MARL and can be handled with individual policy networks. HAPPO [32], in which the H stands for heterogeneous, lacks specific analysis and suffi- cient experiments for heterogeneity. In other field of MAS, [48] uses Relative Needs Entropy (RNE) to build a trust model to improve cooperation in heterogeneous multi-robot grouping task, and [49] contributes a novel method for the heterogeneous multi-robot assembly planning.\nGrouping method\nGrouping is a natural idea and solution for complex or large- scale problems and is widely used in many research of optimization or machine learning. In SMAC environment, THGC [50] divides agents into different groups based on their different “types” for knowledge sharing and group com- munication. However, it is necessary to formally define and describe the difference between agent types in a universal way across different environments. In this paper, we intro- duce some auxiliary definitions for describing our grouping method.\nLiu et al. [51] uses a channel grouping algorithm to clus- ter different sub-regions of pictures for vehicle Re-ID. Li et al. [52] introduces a ranking-based grouping method to improve multi-population-based differential evolution algo- rithm. Cheng et al. [53] proposes a grouping attraction model, which can significantly reduce the number of attractions and fitnesscomparisonsinthefireflyalgorithm.Lietal.[54]mod- ify the Transformer encoder by properly organizing encoder layers into multiple groups, and connect these groups via a grouping skip connection mechanism. Rotman et al. [55] enhance the Optimal Sequential Grouping (OSG) to solve the video scene detection problem. Hou et al. [56] propose FedEntropy for better dynamic device grouping in federated learning.AlFaiyaetal.[57]introduceanenhanceddecentral- ized autonomous aerial swarm system with group planning. [58] designs a self-organizing MAS for distributed voltage regulation in the smart power grid.\nMutual information\nComputing the variational bound of mutual information (MI) has been proven to enhance cooperation in MARL. MAVEN [59] maximizes a variational lower bound of the MI between the latent variable z and the agent-specific Boltzmann pol- icy σ(τ) to encourage exploration of the algorithm. ROMA [60] computes two MI-related losses to learn identifiable and specialized role policies. PMIC [61] maintains positive and negative trajectory memories to compute the upper bound and lower bound of the MI between global state s and joint action a. MAIC [62] maximizes the MI between the trajec- tory of agent i and the ID of another agent j for teammate\nmodeling and communication. CDS [63] maximizes the MI between the trajectory τi of agent i and its own agent ID to maintain diverse individual local Q functions.\nLocal transition heterogeneity\nIn this section, our goal is to give a formal definition of the Local Transition Heterogeneity (LTH) problem and analyze its existence in SMAC. We first present fundamental con- cepts and definitions in the section “Preliminaries”. Next, we define auxiliary concepts and the Local Transition Function (LTF) for the formal definition of LTH in the section “Aux- iliary definitions and the local transition function”. These definitions isolate one specific agent i into an ideal scenario. Therefore, we can study the properties of agent i affecting the LTH problem. And then, in the section “Definition of local transition heterogeneity”, we define the LTH problem and show the advantage of our definition. Finally, we con- clude two properties for proving the existence of the LTH problem, and analyze the existence of LTH in SMAC in the section “Existence of LTH in SMAC”.\nPreliminaries\nIn this paper, we study the cooperative MARL problems that can be modeled as the decentralized partially observable Markov decision process (Dec-POMDP) [64]. The problem is described with a tuple G = ⟨S, A, P, R, \u0004, O; γ, K, T ⟩. s ∈S denotes the true state of environment with complete information, K = {1, ..., k} denotes the finite set of k agents, and γ ∈[0, 1) is the discount factor. At each time-step t ≤T , agent i ∈K receives an individual partial observation ot\ni and chooses an action at\ni ∈Ai from local action set Ai, with the local action-dim |Ai|. Actions of all agents form a joint action at = (at\n1, ..., at k) ∈A = (A1, ..., Ak). The envi- ronment receives a joint action at and returns a next-state st+1 according to the joint transition function P(st+1|st, at), and a reward rt = R(s, at) shared by all agents. The joint observation ot = (ot\n1, ..., ot k) ∈\u0004 is generated according to the observation function Ot(st, i). Observation-action tra- jectory history τ t = ∪t\n1{(ot−1, at−1)} (t ≥1; τ 0 = o0) is the summary of partial transition tuples before t. Specifically, τi = τ T\ni indicates the overall trajectory of agent i through all time-steps t ≤T . Replay buffer←D = ∪(τ, s,r) stores all data for batch sampling. Network parameters are notated by θ and ψ.\nAuxiliary definitions and the local transition function\nApart from the joint transition function P(st+1|st, at), we need to define the Local Transition Function (LTF)\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5265\nPi(st+1|st, at\ni ) for the definition of LTH problem. Several auxiliary definitions are given for better demonstration and analysis of LTF and LTH.\nFirst, we partition the actions of an agent Ai into 3 differ- ent types: common actions Acom, which only affect agent i itself, e.g., moving, scanning, and transforming; interactive actions Aact, which are interacting with other agents, e.g., attacking, guiding, and delivering; and mixing actions Amix, which affect both itself and others, e.g., a predator moving close to a prey for automatic predating. Usually, Amix can be divided into the combination of Acom and Aact, e.g., the\nAmix automatic predating can be divided into Acom moving and Aact predating. For terminological simplicity, we divide\nAmix into the combination of Aact and Acom by default, and focus on the latter two types of actions.\nSecond, we introduce the joint available-action-mask matrix AM(st) and the local available-action-mask vector\nAMi(st, i), which are common components in many MARL environments. AM(st) is a binary matrix with dimensions being |Ai| × K, indicating that the available-actions of all agents at the state st. AMi(st, i) are the column vector of\nAM(st), indicating the mask vector of a certain agent. Ele- ment 1 (true) at (at\ni , i) of AM(st) means that agent i can take action at\ni at st, and vice versa. Finally, we define the Ideal Object (I O) and the Ideal Condition (IC), and then define the LTF, Pi(st+1|st, at\ni ).\nDefinition 1 Ideal Object (IO) and Ideal Condition (IC): The Ideal Object (I Oi) of agent i is an action object that is available for any Aact of agent i to be applied on. The Ideal Condition (ICi) of agent i is the environmental condi- tion that maintains the local available-action-mask function\nAMi(st, i) being all true for any state st and any action at\ni applied on I Oi.\nDefinition 2 Local Transition Function (LTF): For agent i with its I Oi and ICi, the Local Transition Function (LTF)\nPi(st+1|st, at\ni ) is the probability distribution of next-state st+1 conditioned by state st and action at\ni . The action at\ni is applied on I Oi under ICi.\nDefinition of local transition heterogeneity\nIn general, the Local Transition Heterogeneity (LTH) means that agents cannot reach the same next-state st+1 from the samestatest,nomatterwhatpoliciestheyareusing.Aformal definition is given below.\nDefinition 3 Local Transition Heterogeneity (LTH): Let there be two agents i, j ∈K. Their policies are πi(ai|s) and π j(a j|s),andtheirLTFsare Pi(st+1|st, at\ni )and Pj(st+1|st, at\nj). A certain state st, which simultaneously fulfills ICi and IC j, is the starting state. The sets of next-states {st+1\ni |st, πi, Pi} and {st+1\nj |st, π j, Pj} are generated by πi and π j individually\nTable 2 Unit information in SMAC\nUnit Health- Shot- DPS Speed Unit Flying name point range type unit\nMarine 45 5 6.97 2.25 Uatk \u0003\nMedivac 150 4 9.00 2.75 Uspt \u0002\nMarauder 125 6 6.67 2.25 Uatk \u0003\nDPS stands for “damage-per-game-second”. For Medivac, the number of DPS indicates the healing-per-game-second (HPS)\nexecuted on st toward their corresponding I Oi and I O j. If the intersection of the two sets of next-states is empty for all available policies, then the MARL problem has LTH\n∃i, j ∈K, ∀πi, π j,\n{st+1\ni |st, πi, Pi} ∩{st+1\nj |st, π j, Pj} = ∅.\n(3)\nFor example, in an MAS consisting of Unmanned Aerial Vehicle (UAV) and Unmanned Ground Vehicle (UGV), we suppose that UAV and UGV carry different mission cargo, so their Aact are different. Their moving speed and moving dimension (2-D and 3-D) are also different, so their Acom are different. From the same starting state st, UAV and UGV cannot reach the same next-state st+1, because their action spaces are completely different. Therefore, the existence of LTH problem in such MAS is clear.\nAn advantage of our definition is the reliability of pre- senting heterogeneity. We define the LTH problem under the restriction of I O and IC. Our core motivation is to ensure that the local available-action-mask vector AMi(st, i) remains all true, because AMi(st, i) can influence the behav- ior of agents and thus affect the existence of LTH. For instance, if all enemies choose the policy “attack and elimi- nate agent i at the 1st time-step”, then the AMi would be only available for the “dead-action”, since agent i is always dead from the 1st time-step. Therefore, it is impossible for agent i to present LTH. Similarly, ally agents’ actions and poli- cies can also affect the AMi and lead to the same result. In conclusion, our definition avoids unexpected influence from enemies or allies toward the AMi, and is capable of present- ing LTH reliably.\nExistence of LTH in SMAC\nThe original definition formula (3) is inconvenient to judge whether an environment has LTH. We further conclude that the difference of I O or LTF can determine the existence of LTH. First, different I O leads to qualitative LTH. For exam- ple, in a UAV–UGV system with different mission cargo, the\nI O of a UAV is defined to be another UAV, while the I O of a UGV is defined to be another UGV. Their objects and functionalities of Aact are different, leading to LTH. Gen-\n123\n\n--- Page Break ---\n\n5266 Complex & Intelligent Systems (2024) 10:5261–5280\nerally, different interactive action-dim |Aact| is sufficient to prove the difference of I O, and can also be used to prove the existence of LTH. Second, different LTFs lead to quan- titative LTH. For example, in a UAV–UGV system with the same mission cargo, their moving speeds are still different. Typically, UAVs fly faster in the air than UGVs move on the ground. The difference of the dynamics of Acom or Aact leads to different LTF, and thus, LTH occurs.\nIn SMAC, there are two agent types, supporting units Uspt and attacking units Uatk. Uspt can only affect allies, while Uatk can only affect enemies. For example, Medivac is a Uspt who can only heal allies, while Marine is a Uatk who can only attack enemies (see Table 2). In SMAC, Acom are moving and stopping, available for all living agents at any state s and any time-step t. The common action-dim |Acom| also remains identical among all agent types. Aact are attacking or healing. A certain agent type can only attack enemies or heal allies. Therefore, |Aact| should be different between different agent types.\nFirst, the I O of Uatk and Uspt are different, leading to qualitative LTH. ForUatk, its I O is an enemy, and its |Aact| is also the total number of enemies. However, for Uspt, its I O is an ally, so its |Aact| is the total number of allies. Second, the moving speed, shot-range and damage-per-gaming-second (DPS) are different between different types of agents (see Table 2), indicating the existence of quantitative LTH. In conclusion, the existence of LTH in SMAC is clarified, and further analysis and study of LTH are therefore required.\nMethods\nGrouped individual-global-max consistency\nAs is shown in the section “Definition of local transition heterogeneity”, LTH does not change the reward function\nR(s, a) or the available-action-mask. Therefore, any avail- able joint action a is rewarded the same as it in homogeneous scenarios, and the optimal joint action a∗is not affected. As a result, the IGM consistency in LTH still holds and we can further generalize the consistency to a “grouped” situation for solving LTH problems with grouping value factorization.\nDefinition 4 Grouped IGM Consistency (GIGM): Let there be U = {1, ..., u} , (u < k) agent groups in total. An agent group←Gm (m ∈U) consists of agents arbitrarily pre-defined. If the argmax operation performed on the joint function Qtot yields the same result as a set of individual argmax operations performed on all group functions QGm (m ∈U); and the argmax operation performed on each group function QGm yields the same result as a set of individual argmax operations performed on the agent functions Qi (i ∈Gm), then GIGM holds true\narg max a Qtot(τ, s)\n=\n⎛\n⎝\narg maxa QG1(τ←G1, s)\n..., arg maxa QGu(τ←Gu, s)\n⎞\n⎠\n=\n⎛\n⎝\narg maxa Q1(τ1)\n..., arg maxa Qk(τk)\n⎞\n⎠,\n(4)\narg max a QGm(τ←Gm, s)\n=\n\barg maxa Qi(τi)\ni ∈Gm\n\n,\n(5)\nwhere τGm = ∪i∈Gm{τi} is the group trajectory of←Gm, and τ = ∪i∈K {τi} is the global joint trajectory of all agents.\nFurthermore, We conclude a theorem sufficient to prove GIGM:\nTheorem 1 Joint Trajectory Condition (JTC): GIGM holds true if the following two conditions are simultaneously sat- isfied:\n(i) The global joint trajectory is equivalent to the union of\nall group trajectories\nτ = ∪i∈K {τi} = ∪m∈U {τGm}. (6)\n(ii) The intersection of all group trajectories is empty\n∩m∈U {τGm} = ∅. (7)\nThe first condition guarantees the transitivity of argmax operations performed on Q functions. The second condi- tion guarantees the coexistence of argmax operations on all\nQGm. The two conditions jointly guarantee the equivalence of argmax operations on all group Q and agent Q functions\narg max a QGm (m ∈U) = arg max a Qi (i ∈K). (8)\nIdeal object grouping\nTo utilize GIGM to solve the LTH problem, we propose Ideal Object Grouping (IOG), which means partitioning agents into different groups by their different ideal objects I O. As is mentioned in the section “Grouping method”, we need to formally define and describe “ what is the meaning of dif- ferent types of agents” in a universal way. And we point out that the difference in I O is equivalent to the difference of agent types, because fundamentally these differences are all about the difference in agent action space A. This is the exact functionality and property describing the hetero- geneous agents. In general, our goal is to acquire a grouping function g(i,←Gm) (i ∈K, m ∈U) for agent i and group←Gm\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5267\ng(i,←Gm) =\n\n1 if i ∈Gm 0 else\n. (9)\nEach agent group←Gm consists of agents with the same I OGm and the same interactive action-dim |Aact−Gm|. Only one universal agent network is kept for one group, which sig- nificantly reduces the number of agent networks from K to U. Parameter-sharing is only allowed between agents within the same group. Maintaining a proper parameter-sharing structure not only avoids redundant computing resources for individual agent networks, but can also increase in-group cooperating via homophily [35].\nMoreover, IOG is a mapping function from agents to groups g(i,←Gm) : (K →U). The |Aact| of each agent must be assigned during the initialization of SMAC. As a result, one specific agent i can only be assigned to the certain group with I Oi = I OGm and |Aacti | = |AGm|. Therefore, JTC is satisfied and GIGM holds true, indicating that IOG is an appropriate grouping method for value factorization.\nInter-group mutual information loss\nTo enhance inter-group cooperation and correlation, we max- imize the Inter-Group Mutual Information (IGMI) between trajectories of different groups τ←Gm and τ←Gn, written as\nI(τ←Gm; τ←Gn). For encoding trajectories, a common imple- mentation is to use the hidden states of gated recurrent unit (GRU) [65] hGm and hGn. While GRU takes ot\nGm and at\nGm recursively for all t ≤T , we assume that hGm is capable of encoding and representing τ←Gm. After encoding, because the mutual information can only be calculated between two dis- tributions, we add a Gaussian distribution layer in the agent network of every group, marked as lGm and lGn. Therefore, calculating I(τGm; τ←Gn) can be converted into calculating\nI(lGm;lGn|hGm, hGn). Detailed agent network structure is illustrated in Fig. 1a\nhGm = GRU(τ←Gm) = GRU(∪i∈Gm{τi})\nlGm = Gaussian(hGm)\nI(τ←Gm; τ←Gn) = I(lGm;lGn|hGm, hGn).\n(10)\nWe further conduct a lower bound of I(τ←Gm; τ←Gn) for eas- ier calculation\nI(τ←Gm; τ←Gn)\n= I(lGm;lGn|hGm, hGn)\n= ElGm ,lGn ,hGm ,hGn\n\nlog p(lGm|lGn, hGm, hGn)\np(lGm)\n\n= ElGm ,lGn ,hGm ,hGn\n\nlog p(lGm|lGn, hGm, hGn)\n−log p(lGm) + log qGm(lGm|lGn, hGm, hGn)\n−log qGm(lGm|lGn, hGm, hGn)\n\u000e\n= ElGm ,lGn ,hGm ,hGn\n\nlog qGm(lGm|lGn, hGm, hGn)\np(lGm) +α ∗DK L(p(lGm|lGn, hGm, hGn)\n||qGm(lGm|lGn, hGm, hGn))\n\n(11)\nwhere α = p(lGm ) p(lGm |lGn ,hGm ,hGn ) is always non-negative, and DK L is the KL-divergence being also non-negative. qGm is an inference distribution of group←Gm with parameter ψGm, and is independent from hGn. To keep this independence, a mixed input of different groups is forbidden. Therefore, we keep individual inference networks for each group. Finally, we have\nI(τ←Gm; τ←Gn)\n≥ElGm ,lGn ,hGm ,hGn\n\nlog qGm(lGm|lGn, hGm, hGn)\np(lGm)\n\n= ElGm ,lGn ,hGm [log qGm(lGm|lGn, hGm) −log p(lGm)]\n= ElGn ,hGm [−C E(p(lGm)||qGm(lGm|lGn, hGm))\n+←H(p(lGm))]\n= −ElGn ,hGm [DK L(p(lGm)||qGm(lGm|lGn, hGm))]. (12)\nTo maximize the IGMI, the loss is written as\nLM Im(τGm; τGn|ψGm)\n= ED[DK L(p(lGm)||qGm(lGm|lGn, hGm))]. (13)\nAlgorithm 1 GHQ Input: Learning rate α, loss weights λT D and λM I , number of groups U, number of agents K, number of units in each group |Gm|, max total steps T T OT , max steps per episode T E P, batch size B. Initialize: Network parameters θ = {θGm }U\n1 and ψ = {ψGm }U 1 , replay buffer←D = {}, total step tT OT = 0.\n1: while tT OT ≤T T OT do 2: Set episode step t = 0, receive initial state and observation (s0, o0) from environment. 3: while t ≤T E P and not terminated do 4: Choose joint action at = {at\ni }K\n1 with agent networks {θi}K 1 . 5: Receive rt, is_terminated and (st+1, ot+1) from environment using at. 6: Collect a transition tuple at t and update the replay buffer D =←D ∪{(τ t, st,rt)}. 7: t = t + 1. 8: end while 9: Sample a random batch of B episodes from←D. 10: for m = 0, ..., U −1 do 11: Calculate←LM Im following (13). 12: Calculate←LT Dm following (16). 13: end for 14: Calculate total loss←LGH Q following (18) and update network parameters θ and ψ. 15: tT OT = tT OT + t. 16: end while\n123\n\n--- Page Break ---\n\n5268 Complex & Intelligent Systems (2024) 10:5261–5280\n3O^OTM 4KZ]UXQ\u0003( )\n, −1\n( )\n( , )\n'MKTZ 4KZ]UXQ\u0003( )\n\u000eI\u000f \u000eH\u000f \u000eG\u000f \u000eJ\u000f\n/TLKXKTIK\u0003 4KZ]UXQ ( )\n'MKTZ 4KZ]UXQ\u0003( )\n3O^OTM 4KZ]UXQ\u0003( )\n, −1\n( )\n( , )\n( )\n/TLKXKTIK\u0003 4KZ]UXQ ( )\n( ; )\n326\n-G[YYOGT\u0003 *OYZ\u0014\u0003 _\n( )\n326\n-8;\n326\n-G[YYOGT\u0003\n*OYZ\u0014\u0003\n( )\n, −1\n−\n-G[YYOGT\u0003\n*OYZ\u0014\u0003\n326\n326\n326\nFig. 1 An overall framework of GHQ. θGm of group m consists of three parts: agent network θi, mixing network θMm , and inference net- work ψGm . Detailed data-stream for training and executing are shown in\nFig.2. In (a), θi takes ot\ni and at−1\ni as input. It generates Qi for choosing actions, and lGm and hGm for calculating qGm . In (b), θMm takes Q and s for calculating TD loss←LT Dm with hybrid factorization. In (c), ψGm takes lGm , hGm and lGn for calculating IGMI loss←LM Im\nGrouped hybrid Q-learning\nAn ordinary idea to calculate QGm and Qi is to design factor- ization structures for Qtot →QGm and QGm →Qi. Let←CGm and←Ci be the two-factor function. Like IGM [66], the mono- tonicity constraint is also sufficient for GIGM. Therefore, CGm and←Ci can be written as\n∂Qtot(τ, s) ∂QGm(τGm, s) =←CGm ≥0, m ∈U (14)\n∂QGm(τGm, s)\n∂Qi(τi) =←Ci ≥0, i ∈Gm. (15)\nOur key insight is that trivially calculating←CGm and QGm is unnecessary. Instead of hierarchical factorization, we imply independent Q-Learning (IQL) [67] for←CGm, which is called the hybrid factorization. This method makes QGm become an action-value function instead of a utility function [66, 68], and←CGm become a positive constant. As a result, the TD loss of group←Gm is written as\nLT Dm(θGm) = ED\n\u0002\n(yGm −QGm(τGm, s; θGm))2\u0003\nyGm = r + γ max\na′ Qtgt\nGm(τ ′\nGm, s′; θtgt\nGm),\n(16)\nwhere yGm is the TD-target of QGm, Qtgt\nGm is the target Q\nfunction of QGm, and θtgt\nGm and θGm are network parameters\nof Qtgt\nGm and QGm, separately. Group network θGm consists of two parts, agent network θi and mixing network θMm. Their\nlosses are calculated with backward propagation following (15):\n∂LT Dm(θGm)\n∂θi\n= ∂LT Dm(θGm)\n∂θMm\n· ∂θMm ∂θi\n. (17)\nGIGM and the input of state information keep different QGm in relevance, and IGMI further enhances the correlation. Even though IQL methods suffer from non-stationary prob- lems [69], GHQ overcomes this disadvantage and achieves impressive results. The hybrid factorization avoids the calcu- lation hierarchical factorization function. Although the IQL value of QGm following (16) does not equal the factorized value of QGm following (14), the monotonicity of factoriza- tion and GIGM still hold. As a result, the optimal policy of GHQ converges to the same optimal policy provided by the fully factorized structure.\nImplementing details and network architecture\nDetailed network architecture is illustrated in Fig.1, an overview of the data-stream of GHQ is illustrated in Fig. 2, and the pseudo-code of GHQ is given in Algorithm 1. As is shown in Figs.1 and 2, there are three kinds of networks marked with different colors. Agent network θi is marked in green and is shared by all agents (i ∈Gm). θi receives the current observation ot\ni and the last action at−1\ni , and generates Qt\ni. The input is first sent to a Multi-Layer Perceptron (MLP) and then a GRU layer. The hidden state of GRU hGm is sent to the following layers and the next time-step. The following\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5269\n([LLKX\n/TLKX\u0014 4KZ ( )\n/TLKX\u0014 4KZ ( )\n( ) 3O^OTM 4KZ\u0003( ) ( , ) 'MKTZ\u00034KZ\u0003( )\n( ) 3O^OTM\u00034KZ\u0003( ) ( , ) 'MKTZ\u00034KZ\u0003( )\n, −1\n, −1 'MKTZ\u00034KZ\u0003( ) ( )\n'MKTZ\u00034KZ\u0003( ) ( )\nFig. 2 An overview of data-stream of GHQ. During decentralized exe- cuting, agent networks θi and θ j generate Qt\ni and Qt\nj for choosing actions at\ni and at\nj, respectively. The input of θi is the local observation\not\ni and last action at−1\ni of agent i in group←Gm. All necessary transition tuples (τ, s,r) are stored into the replay buffer←D. During central- ized training, a batch of trajectories τ←Gm are sampled from←D as the\ninput of θi for calculating QGm (τ←Gm ). Then, mixing network θMm takes\nQGm (τ←Gm ) and state s for calculating QGm (τ←Gm , s) and TD loss←LT Dm . The GRU hidden states hGm , hGn and the Gaussian distributions lGm , lGn are generated from agent networks θi and θ j, and are used to calcu- late IGMI losses←LM Im and←LM In. Detailed formulas are shown in the section “Inter-group mutual information loss”\nlayer is a Gaussian distribution layer generating lGm using hGm, and then, lGm is sampled and sent to the next two MLP layers. Eventually, a skip connection directly sends hGm to the final MLP layer, and hGm is concatenated with the output of formal MLP layer for generating Qi.\nMixing network θMm is marked in blue. It takes all [Qi] of the group←Gm as input, and mixes with the state s to pro- duce the QGm. Four hyper-networks generate weights and bias (w1, b1, w2, b2) with s, and only the absolute values of weights are used. The weights and bias multiply with the joint [Qi] procedurally and the intermediate results are activated to be non-negative, fulfilling the GIGM requirements.\nInference network ψGm is marked in yellow and is only used to calculate←LM I. It takes the hidden state of GRU hGm of group←Gm and the Gaussian latent lGn of another group Gn as input. The input is first sent to an MLP layer and then a new Gaussian distribution layer to generate the inference distribution qGm(lGm|lGn, hGm). The MI-loss←LM I is calcu-\nlated by the KL-divergence between the original distribution\np(lGm) and the inference distribution qGm(lGm|lGn, hGm).\nFinally, when calculating the total loss←LGH Q, adjusting weights λT D and λM I are introduced. In our implementa- tion, we set λT D = λM I = 1. We choose Adam [70] as the optimizer, with the learning rate of all networks being 3e-4. The total training step is 5M and the maximum step for one episode is 200. The learning rate is scheduled to decay by multiplying the factor 0.5 every 50,000 episodes (averagely about 2M–3.5M steps). The reward discounting factor γ is 0.99. The ε of the ε −greedy action selecting policy starts at 1.0, ends at 0.05, and linearly declines for 50,000 steps. The size of the memory buffer is 5000 and the batch size is 32. A universal buffer saves all data for training, including trajecto- ries of state st, observation ot, action at, and reward rt. After one episode, the latest data are inserted into the buffer and one batch of 32 episode data is sampled from the buffer and used for training. Table 3 summarizes the hyper-parameters mentioned above. In addition, we use the latest version 4.10\n123\n\n--- Page Break ---\n\n5270 Complex & Intelligent Systems (2024) 10:5261–5280\nTable 3 The hyper-parameters of GHQ Hyper_ Value Hyper_ Value parameters parameters\nLearning rate 3e-4 Learning rate annealing factor 0.5\nTraining step 5M Maximum step per episode 200\nγ 0.99 ε 1.0 →0.05\nMemory buffer 5000 Batch size 32\nof StarcraftII game on Linux to perform experiments, instead of the old version 4.6.\nIn summary, the total loss of GHQ is written as\nLGH Q(θ, ψ) = λT DLT D(θ) + λM ILM I (θ, ψ). (18)\nExperiments and results\nDesigning new asymmetric heterogeneous maps in SMAC\nIn the section “Existence of LTH in SMAC”, we prove the existence of LTH in SMAC. However, the default setup of SMAC environment and default implementation of previ- ous algorithms ignore the existence of LTH problem and the importance of asymmetric heterogeneous scenarios.\nFirst, SMAC environment uses a padding vector to deal with the different interactive action-dim |Aact|. It increases the |Aact| of Uspt up to the |Aact| of Uatk with the padding vector, and masks unavailable actions when choosing. This solution covers up the existence of LTH problem. In addi- tion, because of the padding vector, previous algorithms can apply parameter-sharing among all unit types. This imple- mentation further prevents the MAS from learning better coordinating policy. In GHQ, all agents use their true |Aact|, and parameter-sharing is restricted between agents within the same group.\nSecond, it is ignored that the internal AI script of Star- craftII is incapable of coordinating and collaborating among multiple types of agents. As a result, the performance of ene- mies in symmetric heterogeneous maps is limited, and we consider that asymmetric heterogeneous maps are more fitted to perform and study the LTH problem. There are only two asymmetric heterogeneous maps in original SMAC maps: 3s5z_vs_3s6z and MMM2 (see Table 1). However, these two maps have shortages, respectively.\nAll units in 3s5z_vs_3s6z are Uatk, while the difference is their shot-range and health-point. However, the heterogene- ity of this map is restricted, because all Uatk have the same ideal object. Algorithms can acquire high performance with- out any information about the types or other properties of agents. Another map, MMM2, contains Marine, Marauder, and Medivac (see Tables 1 and 2). Uatk and Uspt, ground unit\nTable 4 New asymmetric heterogeneous SMAC maps\nMap Name Ally_ Ally_ Enemy_ Difficulty Marines Medivacs Marines\n6m2m_15m 6 2 15 Easy\n6m2m_16m 6 2 16 Medium\n8m3m_21m 8 3 21 Medium\n8m4m_23m 8 4 23 Hard\n12m4m_30m 12 4 30 Ex-Hard\n15m2m_28m 15 2 28 Hard\n16m2m_30m 16 2 30 Ex-Hard\nand flying unit are all included in the map. However, since both sides contain all of the three types of units, the inter- nal AI script is unable to perform well. Therefore, we need to design new asymmetric heterogeneous maps for experi- ments.\nOur maps, by contrast, avoid the shortages of original maps. For allies, we have Marine and Medivac, a Uatk on the ground and a Uspt in the air, which is similar to the com- mon heterogeneous UAV-UGV MAS in [29]. For enemies controlled by the internal AI script, we have only Marine to prevent the incapability of the script. We increase the num- ber of enemy Marines to balance the difficulty of maps. Lots of pre-experiments are conducted to determine the specific number of all units. Table 4 shows the information of all new maps. Figure 3 shows some examples of original and new maps.\nEnvironmental and experimental details\nIn SMAC, all information provided by the environment is organized into tensors of pure data, all of which are either normalized into [0, 1] or transferred into one-hot vectors. We describe the necessary information details below for a better understanding of the SMAC environment. More details can be accessed in the official repository and source codes.\nThe state S is only accessible by the mixing network θM during training. It consists of two major parts, ally-state and enemy-state:\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5271\nFig. 3 Examples of SMAC maps. The lower two are ours\n• ally-stateincludesthepercentageofhealth-point,weapon cool-down timer, ally unit type, and absolute position of all allies; • enemy-state includes the percentage of health-point, enemy unit type, and absolute position of all enemies.\nThe observations O is the input to the agent network θi for calculating Qi. For agent i, the observation oi consists of four parts, moving-feature, ally-feature, enemy-feature and own-feature:\n• moving-feature includes the ID of available moving action of agent i; • ally-feature includes the percentage of health-point, unit type, relative distance, and relative position of other allies to agent i within its sight-range. Information about the agents out of the sight-range of agent i is not accessible; • enemy-feature includes the percentage of health-point, unit type, relative distance, and relative position of all enemies to agent i within its sight-range. Information about the enemies out of the sight-range of agent i is not accessible; • own-feature includes the percentage of health-point and unit type of agent i.\nAs we have described in the section “Auxiliary definitions and the local transition function”, agent action consists of two parts: common-action Acom and interactive-action Aact. The common action-dim |Acom| is 6 for all agents. Action ID 0 is null action only available for dead agents. Action ID 1 is stop action, and ID 2, 3, 4, and 5 are moving actions\navailable for all living agents. The four moving actions are pre-defined by the SMAC source codes, indicating moving up, down, left, and right with a certain moving_amount step- length. The interactive action-dim |Aact| equals the number of interacting objects of a certain agent type. For Uatk, |Aact| is the number of enemies. For Uspt, |Aact| is the number of allies.\nWe use the default global dense reward function of SMAC. The MAS is rewarded when dealing damage to the enemies, killing enemies, and winning the game. The damage reward equals the value of the health-point changes of enemies after one time-step, which is the absolute damage value dealt to the enemies. The killing reward is 10 for every enemy-kill, and the winning reward is 200 given at the terminal time-step.\nWe use the official implementations of all algorithms with minimal necessary adaptation to our new environmental set- tings. In general, we use the traditional winning-rate (WR) as the measuring criterion. WR is the probability of MARL agents eliminating all enemies and winning the game, and is approximated by the frequency of winning. We use the aver- aged WR of 32 testing episodes. Testing episodes are taken every 10,000 training steps (about 1,000 training episodes). Five rounds of complete experiments with different random seeds are performed for plotting the curve of the averaged WR withthepvaluebeing0.05.AsisshowninFigs.1and2,GHQ uses extra Inference networks to calculate IGMI loss. As a result, the computing time of GHQ is roughly about 1.5 times of the computing time of QMIX. Other value-based methods also consume more time than QMIX, indicating their more complexity than QMIX.\n123\n\n--- Page Break ---\n\n5272 Complex & Intelligent Systems (2024) 10:5261–5280\nTable 5 The Enemy Strength (ES), Proportion of Supporting Units (POS), and Winning-Rate (WR) of QMIX-FT and GHQ on homoge- neous and heterogeneous maps\nMap Name ES POS WR(QMIX-FT) WR(GHQ)\n11m_15m 1.36 / 0.0 /\n12m_15m 1.25 / 0.5 /\n13m_15m 1.15 / 1.0 /\n15m_20m 1.33 / 0.0 /\n16m_20m 1.25 / 0.5 /\n17m_20m 1.18 / 1.0 /\n24m_30m 1.25 / 0.5 /\n25m_30m 1.20 / 0.9 /\n26m_30m 1.15 / 1.0 /\n6m2m_15m 2.50 25.0% 0.8 0.9\n6m2m_16m 2.67 25.0% 0.4 0.6\n6m2m_17m 2.83 25.0% 0.0 0.0\n7m2m_15m 2.14 22.2% 0.9 1.0\n8m3m_19m 2.38 27.3% 0.9 1.0\n8m3m_21m 2.63 27.3% 0.8 0.9\n15m2m_28m 1.87 11.8% 0.8 0.9\n16m2m_28m 1.75 11.1% 0.9 1.0\n17m2m_30m 1.76 10.5% 0.9 0.9\nThe map name XmYm_Zm means that allies consist of X Marines and Y Medivacs while enemies consist of Z Marines\nCriteria for measuring map heterogeneity and difficulty\nAccording to our analysis in the section “Existence of LTH in SMAC”, the existence of LTH in SMAC is clear. However, analyzing and quantifying the influence of LTH on agent policy are still required. Here, we propose objective criteria to measure the heterogeneity and difficulty of maps.\nThe Proportion of Supporting Units (POS) is the propor- tion of the number of ally supporting units |Uspti | divided by the number of overall ally units |Ui|. The Enemy Strength (ES) is the ratio of weighted attacking units Uatk of two sides, for measuring the strength of different Uatk. The result is cal- culated with the enemies divided by the allies\nPOS = |Uspti |\n|Ui| = Ally Medivacs\nAll Ally Units\nES =\n\u000f\nall types we · |UAe| \u000f\nall types wi · |UAi | = Enemy Marines\nAlly Marines\n(19)\nwhere |UAi | and |UAe| are the number of different types of attacking units Uatk for allies and enemies, and wi and we are the correction weights.\nIn our maps, since the only Uspt is Medivac and the only Uatk is Marine, POS equals the proportion of Medi-\nvacs among all ally units. ES equals the ratio of the number of Marines from two sides. It is obvious that high POS repre- sents high heterogeneity, because the high proportion of ally Uspt indicates the serious influence introduced by the policy of Uspt. High ES represents high difficulty, because the only way to win in SMAC is to control ally Uatk eliminating all enemies, and high ES indicates more enemy Uatk than ally Uatk.\nWe design several homogeneous maps consisting of only Marine for both sides. The enemy consists of 15, 20, and 30 Marines, which is almost the same as our heterogeneous maps. The ally consists of Marines slightly less than the enemy (see Table 5). According to the converged (WR), we conclude that in homogeneous maps with only Marines con- trolled by QMIX-FT [21] algorithm, ES and WR are highly related and proportional. When ES is about 1.25, WR is about 0.5; and when ES is less than 1.18, WR keeps being 1.0. Even if the total number of units is doubled, this relation remains unchanged. In symmetric homogeneous maps, ES is at its minimum 1.0, and thus, it can be concluded that the MARL policy is easier to win than in asymmetric maps.\nWe further design additional heterogeneous maps (see Table 5). On the one hand, the ES of heterogeneous maps can be easily increased up to 1.7 to 2.4 in heterogeneous maps, when WR of QMIX-FT is about 0.9. Introducing het- erogeneity into SMAC maps can significantly increase the difficulty of maps, so it is necessary to study and better uti- lize heterogeneity. On the other hand, POS and ES are highly related. To achieve high WR in harder maps with high ES, we need to increase POS simultaneously with increasing attack- ing units. For example, in 6m2m_16m, ES is 2.67 and POS is 25.0%. Both GHQ and QMIX-FT can only achieve the WR about 0.5. By contrast, in 8m3m_21m, ES is 2.63 and POS is 27.3%, and the WR reaches about 0.9.\nIn conclusion, our results prove the shortage of original SMAC symmetric maps, and the ability of GHQ and QMIX- FT to handle the LTH problem with higher POS and ES. The following experiments show that better utilizing LTH helps GHQ to acquire higher WR with smaller variance than QMIX-FT. Additionally, we conclude that the strength of 1 Medivac equals about 3.5 Marines.\nComparison algorithms\nExperiments are taken in our seven new maps (see Table 4) and the MMM2 map as an original asymmetric heteroge- neous map. We mainly choose value-based algorithms to run experiments for comparison, including vanilla QMIX [20], fine-tuned QMIX (QMIX-FT) [21], QPLEX [43], ROMA [60], RODE [71], MAIC [62], and CDS [63]. We also run experiments for policy-based baseline algorithms, including COMA [72], MAPPO [22], and HAPPO [32].\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5273\nRODE and ROMA are role-based algorithms, which learn and apply role policies online, end to end. These two algo- rithms are relatively similar to our group-based algorithms than others. However, ROMA cannot learn effective policy within 5M (5 million) training steps, because the default training step of ROMA is 20M. In RODE, several key hyper- parameters define the clustering and using of role policies. The end-to-end clustering of role policies makes it difficult to focus on the LTH property. Therefore, the performance of RODE is restricted. QPLEX, MAIC, and CDS modify the factorization structure of QMIX with distinct meth- ods. COMA and MAPPO are actor-critic algorithms using the “centralized critic decentralized actor” (CCDA) archi- tecture. These two algorithms apply parameter-sharing in actor networks and use one shared critic network. HAPPO uses independent network parameters for actor networks and proposes a monotonic policy-improving architecture with a theoretical guarantee.\nComparison results\nThe results of value-based algorithms are shown in the sec- tion “Results of value-based algorithms comparison”, Fig.4, and Table 6. We criticize the performance of value-based algorithms with 4 groups of experiments. All of our GHQ results are in red color and the colors for other value- based algorithms are shown in the legend. The results of policy-based algorithms are shown in the section “Results of policy-based algorithms comparison” and Table 8. Gen- erally, all of the comparison algorithms suffer from the LTH problem and cannot acquire high WR with small variance. Previous value-based algorithms are basically modified from QMIX and, to some extent, weaken the ability of QMIX to handle the LTH problem.\nResults of value-based algorithms comparison\nResults for value-based algorithms are shown in Fig.4 and Table 6. In Table 6, the results are the final WR, and are aver- aged across 5 individual tests with different random-seeds. The standard deviations are followed. In Fig.4, the lines and shadows are fitted across the whole data, so the values may be slightly different from the results in Table 6.\n(1) We test all algorithms on the original asymmetric het- erogeneous map MMM2. The results are shown in Fig. 4a. Because the map is relatively easy and almost all algorithms convergeat3Mtrainingsteps,weonlyshowtheresultsended at 3M steps for better presentation. The graph shows that WR of most algorithms converged to 1.0 at about 1.5M steps with arelativelysmallvariance.QPLEXandGHQareslightlybet- ter than QMIX. RODE and MAIC converge at about 2.5M\nsteps, which is slower than other algorithms. ROMA and CDS fail to converge at 3M steps.\n(2) We decrease the heterogeneity of maps through decreas- ing POS. In Fig. 4b, d, g, and h, the number of Medivac remains to be 2, while the number of Marine is increased. Therefore, the POS decreases from 25.0% of (b), to 11.1% of (h) (see Table 5). As a result, algorithms using parameter- sharingamongallagentslearnbetterpolicythanthesettingof increasingPOS.Ingeneral,algorithmsperformwellinsmall- scale maps (b) and (d), but only GHQ and QMIX-FT perform well in both of the large-scale maps (g) and (h). GHQ out- performs QMIX-FT with smaller variance. MAIC and QMIX perform well in (g) but fail in (h), indicating their limitation in handling large-scale problems. QPLEX and RODE cannot learn effective policy in (g) and (h), while ROMA and CDS completely fail in (g) and (h). RODE performs better in (d), (g), and (h) than in (c), (e), and (f), indicating the training of the role-selector requires homogeneous MARL settings.\n(3) We scale up all units of both sides simultaneously. In Fig. 4b and c, the POS remains to be 25.0%, while the number increases from 2 to 4. Theoretically, the optimal policies of map (b) and (c) are similar. However, this scaling method combines the complexity of scalability and heterogeneity, making it harder for comparison algorithms to learn effective policies. In (b), most algorithms achieve high WR within 5M steps, while GHQ converges fastest and RODE suffers from high variance and relatively low WR. ROMA and CDS fail to learn effective policy in (b). However, in (c), almost all comparison algorithms fail to learn effective policy. GHQ and QMIX-FT outperform other algorithms and have not yet convergedat5Msteps.QPLEXalsosuffersfromcomplexity, but generally performs better than QMIX, ROMA, RODE, MAIC, and CDS.\n(4) We increase the heterogeneity of maps through increas- ing POS. In Fig. 4d–f, the POS are 25.0%, 27.2%, and 33.3%, while the number are 2, 3, and 4. The results show that GHQ achieves the best results in all maps with rela- tively small variance, indicating the effectiveness of the IOG method and IGMI loss. IOG allows different types of agents to possess different network parameters and thus reduces the influence of increasing Medivacs. IGMI loss helps to increase the correlation between group trajectories and thus increases cooperation between groups. QMIX-FT achieves relatively similar WR to GHQ against other algorithms, but still suffers from high variance. QPLEX performs well in (d) and (e), but the WR decreases evidently in (f), indicating the influence of LTH. WR of RODE is about 0.2 in (d), but remains zero in other maps. ROMA fails to learn effective policy in all maps. MAIC achieves a WR of about 0.2 in (d) and (e), but fails in (f). CDS has little WR in (d) but fails in other maps.\n123\n\n--- Page Break ---\n\n5274 Complex & Intelligent Systems (2024) 10:5261–5280\nFig. 4 Results of value-based algorithms comparison\nTable 6 Results of value-based algorithms comparison\nMap Name GHQ QMIX-FT QMIX QPLEX RODE ROMA CDS MAIC\nMMM2 1.00(0.00) 1.00(0.00) 1.00(0.00) 1.00(0.00) 1.00(0.00) 0.64(0.46) 0.42(0.40) 0.83(0.06) 6m2m_15m 0.87(0.02) 0.92(0.02) 0.82(0.07) 0.89(0.04) 0.72(0.15) 0.06(0.09) 0.45(0.14) 0.67(0.06) 6m2m_16m 0.62(0.01) 0.42(0.10) 0.44(0.16) 0.39(0.08) 0.23(0.32) 0.00(0.00) 0.11(0.10) 0.20(0.09) 8m3m_21m 0.78(0.08) 0.64(0.10) 0.40(0.19) 0.55(0.25) 0.01(0.02) 0.00(0.00) 0.00(0.00) 0.32(0.13) 8m4m_23m 0.62(0.04) 0.60(0.11) 0.17(0.08) 0.21(0.13) 0.01(0.02) 0.00(0.00) 0.00(0.00) 0.00(0.00) 12m4m_30m 0.48(0.09) 0.38(0.09) 0.02(0.02) 0.08(0.12) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 15m2m_28m 0.72(0.03) 0.48(0.17) 0.43(0.20) 0.08(0.12) 0.19(0.26) 0.00(0.00) 0.00(0.00) 0.42(0.31) 16m2m_30m 0.48(0.04) 0.40(0.13) 0.00(0.00) 0.00(0.00) 0.06(0.09) 0.00(0.00) 0.00(0.00) 0.00(0.00)\nThe bold results are the best results\nFig. 5 Heat-maps of Uspt’ percentage of health-points of GHQ and QMIX-FT in 6m2m_15m and 6m2m_16m\nIndependent t test and further analysis of GHQ against other value-based algorithms\nIn SMAC, we cannot conduct the experiment of two algo- rithms attack against each other. Therefore, we cannot directly count the win-lose relationship between algorithms for the statistical tests in [73]. As an alternative, we use the data in Table 6 to conduct independent t tests between GHQ\nand other value-based algorithms to prove the significance of the obtained results. We assume that the distributions of all results are normal, following the mean values and the stan- dard deviations in the table. We use Scipy to generate the distributions with the size being 500, and then run the inde- pendent t tests. The results of t tests are shown in Table 7. The t-statistics are shown in the table with the p values followed.\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5275\nTable 7 Results of independent t-test of GHQ against other value-based algorithms\nMap Name QMIX-FT QMIX QPLEX RODE ROMA CDS MAIC\nMMM2 0.268(0.788) 0.268(0.788) 0.268(0.788) 0.268(0.788) 36.584(0.000) 81.881(0.000) 993.291(0.000) 6m2m_15m −1962.959(0.000) 225.391(0.000) −278.309(0.000) 143.981(0.000) 218.205(0.000) 479.887(0.000) 1202.379(0.000) 6m2m_16m 435.475(0.000) 155.590(0.000) 829.987(0.000) 82.276(0.000) 140625.813(0.000) 1141.160(0.000) 1128.510(0.000) 8m3m_21m 259.927(0.000) 229.853(0.000) 85.563(0.000) 2723.414(0.000) 2764.715(0.000) 2764.716(0.000) 557.180(0.000) 8m4m_23m 35.853(0.000) 1516.924(0.000) 558.173(0.000) 8364.497(0.000) 8789.821(0.000) 8789.822(0.000) 8789.822(0.000) 12m4m_30m 194.167(0.000) 1286.745(0.000) 557.278(0.000) 1344.418(0.000) 1344.418(0.000) 1344.418(0.000) 1344.418(0.000) 15m2m_28m 180.829(0.000) 160.417(0.000) 1024.268(0.000) 169.331(0.000) 18146.448(0.000) 18146.450(0.000) 68.470(0.000) 16m2m_30m 102.772(0.000) 6805.080(0.000) 6805.081(0.000) 1100.550(0.000) 6805.080(0.000) 6805.081(0.000) 6805.081(0.000)\nIt is obvious that almost all p values are smaller than 0.05, indicating the significance of the results. Only the p values of the results of GHQ against QMIX-FT, QMIX, QPLEX, and RODE in MMM2 are greater than 0.05, indicating that the result of GHQ has no significant difference against the result of the 4 algorithms, which is proved in Table 6. The t-statistics are also almost all positive, indicating the superior performance of GHQ against other algorithms.\nIn 6m2m_15m, the mean value of GHQ is smaller than QMIX-FT and QPLEX. First, we need to point out that, as is shown in Fig. 4b, the curve of the WR of GHQ grows faster than the other two algorithms, indicating the faster learn- ing speed of GHQ. Second, for further analysis, we draw a heat-map of Uspt’ percentage of health-points following the method in the section “Visualization analysis of trained policies”, and the result is shown in Fig.5. It can be con- cluded that GHQ learns similar policies in 6m2m_15m and 6m2m_16m, which is to “let Uspt take damage for preserving Uatk”. However, even though QMIX-FT manages to learn a similar policy with GHQ in 6m2m_15m, it fails to learn the proper policy in 6m2m_16m. This phenomenon indicates the increasing difficulty of 6m2m_16m than 6m2m_15m, as the optimal policy becomes harder to learn.\nResults of policy-based algorithms comparison\nDue to the discrete property of SMAC, value-based algo- rithms generally have achieved better results than policy- based algorithms [20–22]. To support this conclusion, we conduct experiments of COMA, MAPPO, and HAPPO against GHQ and QMIX-FT. Results for these algorithms are shown in Table 8. The final WRs are shown in the table, and the results are averaged across 3 individual tests with differ- ent random-seeds and the standard deviations are followed. Original papers of MAPPO and HAPPO run experiments in SMAC for 10M training steps, so we list the results of 5M and 10M training steps separately. COMA can only acquire WR in MMM2 and fail in all other maps. MAPPO performs the best among the 3 policy-based algorithms, especially in 6m2m_15m, 8m4m_23m, and 12m4m_30m. These maps have relatively high ES and POS, indicating the potential of MAPPO handling LTH problems. HAPPO performs worse than other policy-based algorithms. One possible reason is that HAPPO implements Multi-Agent Advantage Decom- position (MAAD) via the random sequential update and execute scheme. However, in the LTH problem, the sequen- tial partial order of agent actions can significantly affect the final joint policy. In conclusion, the results show that value- based algorithms generally perform better than policy-based algorithms, and GHQ outperforms all policy-based baseline algorithms.\n123\n\n--- Page Break ---\n\n5276 Complex & Intelligent Systems (2024) 10:5261–5280\nTable 8 Results of policy-based algorithms comparison Map Name COMA MAPPO MAPPO HAPPO HAPPO QMIX-FT GHQ Training steps 5M 5M 10M 5M 10M 5M 5M\nMMM2 0.63(0.14) 0.72(0.23) 0.84(0.09) 0.05(0.02) 0.10(0.02) 1.00(0.00) 1.00(0.00) 6m2m_15m 0.00(0.00) 0.18(0.31) 0.15(0.25) 0.00(0.00) 0.00(0.00) 0.92(0.02) 0.87(0.02) 6m2m_16m 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.42(0.10) 0.62(0.01) 8m3m_21m 0.00(0.00) 0.06(0.11) 0.00(0.00) 0.04(0.01) 0.07(0.01) 0.64(0.10) 0.78(0.08) 8m4m_23m 0.00(0.00) 0.22(0.20) 0.55(0.05) 0.00(0.00) 0.00(0.00) 0.60(0.11) 0.62(0.04) 12m4m_30m 0.00(0.00) 0.10(0.08) 0.21(0.13) 0.00(0.00) 0.00(0.00) 0.38(0.09) 0.48(0.09) 15m2m_28m 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.48(0.17) 0.72(0.03) 16m2m_30m 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.00(0.00) 0.40(0.13) 0.48(0.04)\nThe bold results are the best results\nFig. 6 Results for ablation tests about IOG and IGMI\nAblation study\nThe ablation study consists of two experiments. The sec- tion “Ablation tests about IOG and IGMI” is the ablation test about two component parts of GHQ, IOG, and IGMI. BecausetheIGMImustbeappliedbetweentwoagentgroups, it is incapable of testing “QMIX-FT+IGMI” individually. Therefore, 3 groups of ablation tests are taken in 4 maps, as is shown in Fig.6. Another experiment in the section “Visu- alization analysis of trained policies” is the visualization analysis of trained policies about GHQ and QMIX-FT in 6m2m_16m. We visualize the trained policies of the two algorithms in heat-maps to show the influence of IOG and IGMI on policy learning. The temperature of heat-maps is\nthe counting sum of corresponding agents. The results are shown in Fig. 7.\nAblation tests about IOG and IGMI\nTo analyze the effectiveness of IOG method and IGMI loss in different maps, we take ablation tests in (a) MMM2, (b) 6m2m_16m, (c) 8m4m_23m, and (d) 16m2m_30m. QMIX- FT and QMIX-FT+IOG are the ablation groups. The results are shown in Fig. 6.\nIn general, as our expectation, IOG method helps to improve the performance of QMIX-FT, and IGMI loss helps to reduce variance. Figure6a shows that all algorithms are able to conquer the MMM2 map within 1.5M steps, while\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5277\nQMIX-FT+IOG and GHQ are converged slightly faster than QMIX-FT. In (b) 6m2m_16m, IOG and IGMI are perform- ing well. They not only improve the WR, but also reduce the variance. In (c) 8m4m_23m, the WR of QMIX-FT increases faster than the other two algorithms before 3M steps. How- ever, IOG method manages to find a good cooperating policy, and converges to a better WR at 5M steps with smaller vari- ance. A higher derivative of IOG method at 3M to 4M steps indicates the progress of learning better policy. In (d) 16m2m_30m, GHQ outperforms QMIX-FT with higher WR and smaller variance. QMIX-FT+IOG receives a similar result with QMIX-FT, but has even larger variance. The main reason is that the difference between two groups is so large. Introducing IGMI loss helps to restrict the difference and improve the correlation between groups. Therefore, GHQ achieves the best result among the three testing algorithms.\nVisualization analysis of trained policies\nWe choose the trained policies of GHQ and QMIX-FT in 6m2m_16m at 5M training steps for analysis. The two algo- rithms are implemented with the same hyper-parameter and similar network capacity. The differences in choosing action and health-points of the two unit types controlled by GHQ and QMIX-FT are visualized in Fig.7. We test the two poli- cies 50 times and record their trajectories. We calculate the sum of agents’ chosen-actions and agents’ percentage of health-points, and visualize them in heat-maps of Fig.7. The horizontal coordinates of all heat-maps are the time-step T , and the vertical coordinates are the every 10th percentile of health-points in (a), (b), (e) and (f), or the action ID num- ber in (c), (d), (g) and (h). The temperature is the counting sum of corresponding agents at certain time-step with cer- tain status. In action heat-maps, action ID 0 to 5 are common actions Acom for moving and stopping, while the rest are interactive actions Aact for attacking or healing. The chosen network parameters of GHQ and QMIX-FT reach the same WR of about 0.8 after 5M training steps, noting that GHQ learns faster than QMIX-FT. Figure 7 clearly shows that the twoalgorithmsachievesimilarresultsthroughdifferentagent policies. We observe three key phenomena.\n(1) Parameter-sharing among different agent types do influ-\nence agent policy. As is suggested in [32], parameter- sharing restricts network parameters from being diverse. Red boxes in Fig. 7c and g show a similar policy pattern of “first move and then stop to attack/heal” for two types of agents in QMIX-FT. Specifically, both types of agents prefer to choose action 2 and 5 in the first 14 time-steps. In GHQ, however, the diversity of different groups is guar- anteed, as is generally shown in (d) and (h). In addition, comparing the Medivac policy of QMIX-FT and GHQ in (g) and (h), it is clear that the QMIX-FT Medivac policy\nin (g) is more similar to the QMIX-FT Marine policy in (c) than the GHQ policies in (h) and (d). (2) GHQ improves group policy learning. Green boxes in\nFig. 7c and d indicate that Marine controlled by GHQ learns better “focusing and firing” policy, as the temper- ature of Aact are notably hotter than QMIX-FT. GHQ agents learn to focus and fire at one specific enemy tar- get within several time-steps, which makes them quickly eliminate enemies and reduces their damage. By con- trast, QMIX-FT agents learn to fire at several targets at the same time, which reduces the speed of elimination and causes more damage. Yellow box in Fig.7d shows that the moving policies of GHQ Marines are also sig- nificantly different from QMIX-FT. GHQ Marines finish their movement in the first 4 time-steps with decisive actions and form a tight front. They tend to stay together and therefore take enemy damage simultaneously, which leads to a similar decreasing tendency of health-point and the two obvious temperature valleys at 80 and 40 percentile in the yellow box of (b). (3) GHQ improves inter-group cooperating. Orange boxes\nin Fig. 7e and f represent the decreasing curves of the health-point of Medivacs. GHQ Medivacs learns a better “distracting” policy than QMIX-FT Medivacs. One GHQ Medivac first moves toward enemies and attracts fire to prevent enemies from attacking ally Marines. This policy is proved by the orange box in (h) with the “action 0 line”, indicatingthedeathofoneMedivacagent.Then,theother Medivac agent moves on to keep attracting enemy fire. As a result, the figure in (f) consists of two independent curves. The distraction policy performed by GHQ Medi- vacs is a fabulous tactic and significantly differs from the policies of GHQ Marines, indicating that GHQ is capable of utilizing LTH for better cooperation.\nConclusion\nIn this paper, we focus on the cooperative heterogeneous MARL problem, especially the asymmetric heterogeneous MARL problems. To describe and study the heterogeneous MARL problem, we propose the Local Transition Het- erogeneity (LTH) with a formal definition. To support the definition of LTH, we first define the Local Transition Func- tion (LTF) and several auxiliary concepts. Furthermore, we study the existence and influence of LTH in SMAC.\nTo primarily solve the LTH problem, we first propose the Grouped Individual-Global-Max (GIGM) consistency. Fol- lowing the restriction of GIGM, we further propose the Ideal Object Grouping (IOG), the Inter-Group Mutual Informa- tion (IGMI) loss, and the hybrid factorization structure. The combination of these three methods is our novel Grouped Hybrid Q-learning (GHQ) algorithm. Experiments are con-\n123\n\n--- Page Break ---\n\n5278 Complex & Intelligent Systems (2024) 10:5261–5280\nFig. 7 Heat-maps for the trained policies of GHQ and QMIX-FT in 6m2m_16m\nducted in asymmetric heterogeneous SMAC maps to show that GHQ outperforms other state-of-the-art algorithms. The results prove the necessity to study and utilize LTH for study- ing more complex scenarios in SMAC.\nWe believe that the study of heterogeneity is indispensable for future MARL studies, and we hope that the mathematical definitions and analysis can help future studies on the coop- erative heterogeneous MARL problem. Due to the restriction of computing resources and network structure, we are unable to study large-scale problems or transfer learning problems in heterogeneous MARL. In the future, we will try to solve more large-scale and complex heterogeneous MARL prob- lems in other maps and environments.\nAuthor Contributions Conceptualization: [Xiaoyang Yu, Kai Lv, and Xiangsen Wang]; methodology: [Xiaoyang Yu and Kai Lv]; formal analysis and investigation: [Xiaoyang Yu]; writing—original draft preparation: [Xiaoyang Yu]; writing—review and editing: [Xiaoyang Yu, Youfang Lin, Xiangsen Wang, Sheng Han, and Kai Lv]; funding acquisition: [Youfang Lin and Sheng Han]; resources: [Youfang Lin and Sheng Han]; supervision: [Youfang Lin, Sheng Han, and Kai Lv].\nFunding This work is supported by the Fundamental Research Funds for the Central Universities [grant number: 2023JBZX011].\nAvailability of data and materials The datasets generated during and/or analyzed during the current study are available from the corresponding author on reasonable request.\nCode Availability The codes for this article are available from the cor- responding author on reasonable request.\nDeclarations\nConflict of interest The authors have no conflict of interest to declare that are relevant to the content of this article.\nEthical approval This article does not involve any ethical problem which needs approval.\nConsent to participate All authors have seen and approved the final version of the manuscript being submitted.\nConsent for publication All authors warrant that the article is our original work, has not received prior publication, and is not under consideration for publication elsewhere. A preprint version of our manuscript has been submitted to arXiv, and the page is https://arxiv. org/abs/2303.01070. The journal version improves the overall structure of the article, and enhances with more definitions, demonstrations, and experiments.\nOpen Access This article is licensed under a Creative Commons Attribution 4.0 International License, which permits use, sharing, adap- tation, distribution and reproduction in any medium or format, as long as you give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indi- cate if changes were made. The images or other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the material. If material is not included in the article’s Creative Commons licence and your\n123\n\n--- Page Break ---\n\nComplex & Intelligent Systems (2024) 10:5261–5280 5279\nintended use is not permitted by statutory regulation or exceeds the permitteduse,youwillneedtoobtainpermissiondirectlyfromthecopy- right holder. To view a copy of this licence, visit http://creativecomm ons.org/licenses/by/4.0/.\nReferences\n1. Oroojlooy A, Hajinezhad D (2022) A review of cooperative multi- agent deep reinforcement learning. Appl Intell 53(11):13677–722 2. Sujil A, Verma J, Kumar R (2018) Multi agent system: concepts, platforms and applications in power systems. Artif Intell Rev 49(2):153–182 3. Gao X, Liu R, Kaushik A (2020) Hierarchical multi-agent opti- mization for resource allocation in cloud computing. IEEE Trans Parallel Distrib Syst 32(3):692–707 4. Li F, Liu Z, Zhang X et al (2022) Dynamic power allocation in iiot based on multi-agent deep reinforcement learning. Neurocomput- ing 505:10–18 5. Chen H, Liu Y, Zhou Z et al (2020) Gama: graph attention multi- agent reinforcement learning algorithm for cooperation. Appl Intell 50:4195–4205 6. Sun Q, Yao Y, Yi P et al (2022) Learning controlled and targeted communication with the centralized critic for the multi-agent sys- tem. Appl Intell 53(12):14819–37 7. Ye Z, Chen Y, Jiang X et al (2022) Improving sample efficiency in multi-agent actor-critic methods. Appl Intell 52:3691–3704 8. KravarisT,LentzosK,SantipantakisGetal(2023)Explainingdeep reinforcement learning decisions in complex multiagent settings: towards enabling automation in air traffic flow management. Appl Intell 53(4):4063–4098 9. Qiao Z, Ke L, Wang X (2023) Traffic signal control using a cooper- ative ewma-based multi-agent reinforcement learning. Appl Intell 53(4):4483–4498 10. Yang S, Yang B (2021) A semi-decentralized feudal multi-agent learned-goal algorithm for multi-intersection traffic signal control. Knowl-Based Syst 213:106708 11. Liu B, Ding Z (2022) A distributed deep reinforcement learning method for traffic light control. Neurocomputing 490:390–399 12. Zhuang Z, Tao H, Chen Y et al (2023) An optimal iterative learn- ing control approach for linear systems with nonuniform trial lengths under input constraints. IEEE Trans Syst, Man, Cybern Syst 53(6):3461–3473. https://doi.org/10.1109/TSMC.2022.3225381 13. Malakar S, Ghosh M, Bhowmik S et al (2020) A ga based hierar- chical feature selection approach for handwritten word recognition. Neural Comput Appl 32:2533–2552 14. Shen L, Tao H, Ni Y et al (2023) Improved yolov3 model with feature map cropping for multi-scale road object detection. Meas Sci Technol 34(4):045406. https://doi.org/10.1088/1361- 6501/acb075 15. Tao H, Qiu J, Chen Y et al (2023) Unsupervised cross-domain rolling bearing fault diagnosis based on time-frequency informa- tion fusion. J Frankl Inst 360(2):1454–1477 16. Bacanin N, Stoean R, Zivkovic M et al (2021) Performance of a novel chaotic firefly algorithm with enhanced exploration for tackling global optimization problems: application for dropout reg- ularization. Mathematics 9(21):2705 17. Hernandez-Leal P, Kartal B, Taylor ME (2019) A survey and cri- tique of multiagent deep reinforcement learning. Auton Agents Multi-Agent Syst 33(6):750–797 18. Gronauer S, Diepold K (2022) Multi-agent deep reinforcement learning: a survey. Artif Intell Rev 55(2):895–943 19. Samvelyan M, Rashid T, De Witt CS et al (2019) The starcraft multi-agent challenge. arXiv preprint arXiv:1902.04043\n20. Rashid T, Samvelyan M, Schroeder C et al (2018) Qmix: Mono- tonic value function factorisation for deep multi-agent reinforce- ment learning. In: International conference on machine learning 21. Hu J, Jiang S, Harding SA et al (2021) Rethinking the implementa- tion tricks and monotonicity constraint in cooperative multi-agent reinforcement learning. arXiv e-prints pp arXiv–2102 22. Yu C, Velu A, Vinitsky E et al (2021) The surprising effective- ness of ppo in cooperative, multi-agent games. arXiv preprint arXiv:2103.01955 23. Clauset A, Shalizi CR, Newman ME (2009) Power-law distribu- tions in empirical data. SIAM Rev 51(4):661–703 24. Wang S, Wu Z, Hu X et al (2024) What effects the generalization in visual reinforcement learning: policy consistency with truncated return prediction. In: Proceedings of the AAAI conference on arti- ficial intelligence, vol. 38, no. 1 25. Wang S, Wu Z, Hu X et al (2023) Skill-based hierarchical reinforce- ment learning for target visual navigation. In: IEEE Transactions on Multimedia 26. Lv K, Wang S, Han S et al (2023) Spatially-regularized features for vehicle re-identification: An explanation of where deep models should focus. In: IEEE Transactions on Intelligent Transportation Systems 27. Lv K, Sheng H, Xiong Z et al (2020) Pose-based view synthesis for vehicles: a perspective aware method. IEEE Trans Image Process 29:5163–5174 28. Yu Y, Liew SC, Wang T (2021) Multi-agent deep reinforcement learning multiple access for heterogeneous wireless networks with imperfect channels. IEEE Trans Mob Comput 21(10):3718–30 29. Ivi ́c S (2020) Motion control for autonomous heterogeneous mul- tiagent area search in uncertain conditions. IEEE Trans Cybern 52(5):3123–35 30. Yoon HJ, Chen H, Long K et al (2019) Learning to communicate: A machinelearningframeworkforheterogeneousmulti-agentrobotic systems. In: AIAA Scitech 2019 Forum, p 1456 31. Zhong Y, Kuba JG, Hu S et al (2023) Heterogeneous-agent rein- forcement learning. arXiv preprint arXiv:2304.09870 32. Kuba JG, Chen R, Wen M et al (2021) Trust region policy opti- misation in multi-agent reinforcement learning. arXiv preprint arXiv:2109.11251 33. Bono G, Dibangoye JS, Matignon L et al (2018) Cooperative multi- agent policy gradient. In: Joint European Conference on Machine Learning and Knowledge Discovery in Databases, pp 459–476 34. Bettini M, Shankar A, Prorok A (2023) Heterogeneous multi-robot reinforcement learning. In: Proceedings of the 2023 International Conference on Autonomous Agents and Multiagent Systems, pp 1485–1494 35. Dong H, Wang T, Liu J et al (2021) Birds of a feather flock together: A close look at cooperation emergence via multi-agent rl. arXiv preprint arXiv:2104.11455 36. Son K, Kim D, Kang WJ et al (2019) Qtran: Learning to factor- ize with transformation for cooperative multi-agent reinforcement learning. In: International conference on machine learning, pp 5887–5896 37. Foerster J, Assael IA, De Freitas N et al (2016) Learning to com- municate with deep multi-agent reinforcement learning. Advances in neural information processing systems 29 38. Kraemer L, Banerjee B (2016) Multi-agent reinforcement learning as a rehearsal for decentralized planning. Neurocomputing 190:82– 94 39. Gupta JK, Egorov M, Kochenderfer M (2017) Cooperative multi- agent control using deep reinforcement learning. In: International conference on autonomous agents and multiagent systems, pp 66– 83 40. Sunehag P, Lever G, Gruslys A et al (2017) Value-decomposition networks for cooperative multi-agent learning. arXiv preprint arXiv:1706.05296\n123\n\n--- Page Break ---\n\n5280 Complex & Intelligent Systems (2024) 10:5261–5280\n41. Rashid T, Farquhar G, Peng B et al (2020) Weighted qmix: expand- ing monotonic value function factorisation for deep multi-agent reinforcement learning. Adv Neural Inf Process Syst 33:10199– 10210 42. Yang Y, Hao J, Liao B et al (2020) Qatten: A general framework for cooperative multiagent reinforcement learning. arXiv preprint arXiv:2002.03939 43. Wang J, Ren Z, Liu T et al (2020) Qplex: Duplex dueling multi- agent q-learning. arXiv preprint arXiv:2008.01062 44. Liang W, Wang J, Bao W et al (2022) Qauxi: cooperative multi- agent reinforcement learning with knowledge transferred from auxiliary task. Neurocomputing 504:163–173 45. Ge H, Ge Z, Sun L et al (2022) Enhancing cooperation by cognition differences and consistent representation in multi-agent reinforce- ment learning. Appl Intell 52:9701–9716 46. Wang H, Xie X, Zhou L (2022) Transform networks for cooperative multi-agent deep reinforcement learning. Appl Intell 53(8):9261–9 47. He X, Ge H, Sun L et al (2023) Brgr: multi-agent cooperative rein- forcementlearningwithbidirectionalreal-timegainrepresentation. Appl Intell 53(16):19044–59 48. Yang Q, Parasuraman R (2021) How can robots trust each other for better cooperation? a relative needs entropy based robot-robot trust assessment model. In: 2021 IEEE International Conference on Systems, Man, and Cybernetics (SMC), pp 2656–2663 49. Hartmann VN, Orthey A, Driess D et al (2021) Long-horizon multi- robot rearrangement planning for construction assembly. arXiv preprint arXiv:2106.02489 50. Jiang H, Shi D, Xue C et al (2021) Multi-agent deep reinforcement learning with type-based hierarchical group communication. Appl Intell 51:5793–5808 51. Liu Y, Shen J, He H (2020) Multi-attention deep reinforcement learning and re-ranking for vehicle re-identification. Neurocom- puting 414:27–35 52. Li X, Wang L, Jiang Q et al (2021) Differential evolution algorithm with multi-population cooperation and multi-strategy integration. Neurocomputing 421:285–302 53. Cheng Z, Song H, Wang J et al (2021) Hybrid firefly algorithm with grouping attraction for constrained optimization problem. Knowl- Based Syst 220:106937 54. Li Y, Li J, Zhang M (2021) Deep transformer modeling via group- ing skip connection for neural machine translation. Knowl-Based Syst 234:107556 55. Rotman D, Yaroker Y, Amrani E et al (2020) Learnable optimal sequential grouping for video scene detection. In: Proceedings of the 28th ACM International Conference on Multimedia, pp 1958– 1966 56. Ling Z, Yue Z, Xia J et al (2022) Fedentropy: efficient device group- ing for federated learning using maximum entropy judgment. arXiv preprint arXiv:2205.12038 57. Hou J, Zhou X, Gan Z et al (2022) Enhanced decentralized autonomous aerial swarm with group planning. arXiv preprint arXiv:2203.01069 58. Al Faiya B, Athanasiadis D, Chen M et al (2021) A self-organizing multi-agent system for distributed voltage regulation. IEEE Trans Smart Grid 12(5):4102–4112\n59. Mahajan A, Rashid T, Samvelyan M et al (2019) Maven: multi- agent variational exploration. Advances in Neural Information Processing Systems 32 60. Wang T, Dong H, Lesser V et al (2020) Roma: Multi-agent reinforcement learning with emergent roles. arXiv preprint arXiv:2003.08039 61. Li P, Tang H, Yang T et al (2022) Pmic: improving multi-agent reinforcement learning with progressive mutual information col- laboration. arXiv preprint arXiv:2203.08553 62. Yuan L, Wang J, Zhang F et al (2022) Multi-agent incentive com- munication via decentralized teammate modeling. Association for the Advancement of Artificial Intelligence 63. Li C, Wang T, Wu C et al (2021) Celebrating diversity in shared multi-agent reinforcement learning. Adv Neural Inf Process Syst 34:3991–4002 64. Oliehoek FA, Amato C (2016) A concise introduction to decentral- ized POMDPs. Springer 65. Cho K, van Merrienboer B, Gülçehre Ç et al (2014) Learning phrase representations using rnn encoder-decoder for statistical machine translation. EMNLP 66. Rashid T, Samvelyan M, De Witt CS et al (2020) Monotonic value function factorisation for deep multi-agent reinforcement learning. J Mach Learn Res 21(1):7234–7284 67. Tan M (1993) Multi-agent reinforcement learning: Independent vs. cooperative agents. In: Proceedings of the tenth international conference on machine learning, pp 330–337 68. Guestrin C, Koller D, Parr R (2001) Multiagent planning with fac- tored mdps. Advances in neural information processing systems 14 69. Foerster J, Nardelli N, Farquhar G et al (2017) Stabilising expe- rience replay for deep multi-agent reinforcement learning. In: International conference on machine learning, pp 1146–1155 70. Kingma DP, Ba J (2014) Adam: a method for stochastic optimiza- tion. arXiv preprint arXiv:1412.6980 71. Wang T, Gupta T, Mahajan A et al (2020) Rode: learning roles to decompose multi-agent tasks. arXiv preprint arXiv:2010.01523 72. Foerster J, Farquhar G, Afouras T et al (2018) Counterfactual multi- agent policy gradients. In: Proceedings of the AAAI conference on artificial intelligence, vol. 32, no. 1 73. Derrac J, García S, Molina D et al (2011) A practical tutorial on the use of nonparametric statistical tests as a methodology for compar- ing evolutionary and swarm intelligence algorithms. Swarm Evol Comput 1(1):3–18\nPublisher’s Note Springer Nature remains neutral with regard to juris- dictional claims in published maps and institutional affiliations.\n123",
+  "equations": [
+    {
+      "page": 3,
+      "raw_extracted": "L(θ) = ED",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "(r + γ max",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "tot(τ ′, s′; θtgt)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "−Qtot(τ, s; θ))2\u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "where ED means sampling a batch of tuples (τ, s,r) from replay buffer←D and calculating expectation across the batch. π is the action policy, which is commonly the ε-greedy policy or argmax policy of Q function in value-based algorithms.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "tot is the target function and of Qtot. θ and θtgt are the net- work parameter of Qtot and Qtgt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "arg max a Qtot(τ, s) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "⎛",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "⎝",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "arg maxa Q1(τ1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "..., arg maxa Qk(τk)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "⎞",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "⎠. (2)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Computing the variational bound of mutual information (MI) has been proven to enhance cooperation in MARL. MAVEN [59] maximizes a variational lower bound of the MI between the latent variable z and the agent-specific Boltzmann pol- icy σ(τ) to encourage exploration of the algorithm. ROMA [60] computes two MI-related losses to learn identifiable and specialized role policies. PMIC [61] maintains positive and negative trajectory memories to compute the upper bound and lower bound of the MI between global state s and joint action a. MAIC [62] maximizes the MI between the trajec- tory of agent i and the ID of another agent j for teammate",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "modeling and communication. CDS [63] maximizes the MI between the trajectory τi of agent i and its own agent ID to maintain diverse individual local Q functions.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "In this paper, we study the cooperative MARL problems that can be modeled as the decentralized partially observable Markov decision process (Dec-POMDP) [64]. The problem is described with a tuple G = ⟨S, A, P, R, \u0004, O; γ, K, T ⟩. s ∈S denotes the true state of environment with complete information, K = {1, ..., k} denotes the finite set of k agents, and γ ∈[0, 1) is the discount factor. At each time-step t ≤T , agent i ∈K receives an individual partial observation ot",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "i ∈Ai from local action set Ai, with the local action-dim |Ai|. Actions of all agents form a joint action at = (at",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "1, ..., at k) ∈A = (A1, ..., Ak). The envi- ronment receives a joint action at and returns a next-state st+1 according to the joint transition function P(st+1|st, at), and a reward rt = R(s, at) shared by all agents. The joint observation ot = (ot",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "1, ..., ot k) ∈\u0004 is generated according to the observation function Ot(st, i). Observation-action tra- jectory history τ t = ∪t",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "1{(ot−1, at−1)} (t ≥1; τ 0 = o0) is the summary of partial transition tuples before t. Specifically, τi = τ T",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "i indicates the overall trajectory of agent i through all time-steps t ≤T . Replay buffer←D = ∪(τ, s,r) stores all data for batch sampling. Network parameters are notated by θ and ψ.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Definition 3 Local Transition Heterogeneity (LTH): Let there be two agents i, j ∈K. Their policies are πi(ai|s) and π j(a j|s),andtheirLTFsare Pi(st+1|st, at",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "i |st, πi, Pi} and {st+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "j |st, π j, Pj} are generated by πi and π j individually",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "∃i, j ∈K, ∀πi, π j,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "i |st, πi, Pi} ∩{st+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "j |st, π j, Pj} = ∅.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "R(s, a) or the available-action-mask. Therefore, any avail- able joint action a is rewarded the same as it in homogeneous scenarios, and the optimal joint action a∗is not affected. As a result, the IGM consistency in LTH still holds and we can further generalize the consistency to a “grouped” situation for solving LTH problems with grouping value factorization.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Definition 4 Grouped IGM Consistency (GIGM): Let there be U = {1, ..., u} , (u < k) agent groups in total. An agent group←Gm (m ∈U) consists of agents arbitrarily pre-defined. If the argmax operation performed on the joint function Qtot yields the same result as a set of individual argmax operations performed on all group functions QGm (m ∈U); and the argmax operation performed on each group function QGm yields the same result as a set of individual argmax operations performed on the agent functions Qi (i ∈Gm), then GIGM holds true",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "arg max a Qtot(τ, s)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎛",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎝",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "arg maxa QG1(τ←G1, s)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "..., arg maxa QGu(τ←Gu, s)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎞",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎠",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎛",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎝",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "arg maxa Q1(τ1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "..., arg maxa Qk(τk)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎞",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "⎠,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "arg max a QGm(τ←Gm, s)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "\barg maxa Qi(τi)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "i ∈Gm",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "where τGm = ∪i∈Gm{τi} is the group trajectory of←Gm, and τ = ∪i∈K {τi} is the global joint trajectory of all agents.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "τ = ∪i∈K {τi} = ∪m∈U {τGm}. (6)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "∩m∈U {τGm} = ∅. (7)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "QGm. The two conditions jointly guarantee the equivalence of argmax operations on all group Q and agent Q functions",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "arg max a QGm (m ∈U) = arg max a Qi (i ∈K). (8)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "To utilize GIGM to solve the LTH problem, we propose Ideal Object Grouping (IOG), which means partitioning agents into different groups by their different ideal objects I O. As is mentioned in the section “Grouping method”, we need to formally define and describe “ what is the meaning of dif- ferent types of agents” in a universal way. And we point out that the difference in I O is equivalent to the difference of agent types, because fundamentally these differences are all about the difference in agent action space A. This is the exact functionality and property describing the hetero- geneous agents. In general, our goal is to acquire a grouping function g(i,←Gm) (i ∈K, m ∈U) for agent i and group←Gm",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "g(i,←Gm) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1 if i ∈Gm 0 else",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Each agent group←Gm consists of agents with the same I OGm and the same interactive action-dim |Aact−Gm|. Only one universal agent network is kept for one group, which sig- nificantly reduces the number of agent networks from K to U. Parameter-sharing is only allowed between agents within the same group. Maintaining a proper parameter-sharing structure not only avoids redundant computing resources for individual agent networks, but can also increase in-group cooperating via homophily [35].",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Moreover, IOG is a mapping function from agents to groups g(i,←Gm) : (K →U). The |Aact| of each agent must be assigned during the initialization of SMAC. As a result, one specific agent i can only be assigned to the certain group with I Oi = I OGm and |Aacti | = |AGm|. Therefore, JTC is satisfied and GIGM holds true, indicating that IOG is an appropriate grouping method for value factorization.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "To enhance inter-group cooperation and correlation, we max- imize the Inter-Group Mutual Information (IGMI) between trajectories of different groups τ←Gm and τ←Gn, written as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "I(τ←Gm; τ←Gn). For encoding trajectories, a common imple- mentation is to use the hidden states of gated recurrent unit (GRU) [65] hGm and hGn. While GRU takes ot",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Gm and at",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Gm recursively for all t ≤T , we assume that hGm is capable of encoding and representing τ←Gm. After encoding, because the mutual information can only be calculated between two dis- tributions, we add a Gaussian distribution layer in the agent network of every group, marked as lGm and lGn. Therefore, calculating I(τGm; τ←Gn) can be converted into calculating",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "I(lGm;lGn|hGm, hGn). Detailed agent network structure is illustrated in Fig. 1a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "hGm = GRU(τ←Gm) = GRU(∪i∈Gm{τi})",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "lGm = Gaussian(hGm)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "I(τ←Gm; τ←Gn) = I(lGm;lGn|hGm, hGn).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "We further conduct a lower bound of I(τ←Gm; τ←Gn) for eas- ier calculation",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "I(τ←Gm; τ←Gn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= I(lGm;lGn|hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= ElGm ,lGn ,hGm ,hGn",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "log p(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "p(lGm)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= ElGm ,lGn ,hGm ,hGn",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "log p(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "−log p(lGm) + log qGm(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "−log qGm(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "\u000e",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= ElGm ,lGn ,hGm ,hGn",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "log qGm(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "p(lGm) +α ∗DK L(p(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "||qGm(lGm|lGn, hGm, hGn))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "where α = p(lGm ) p(lGm |lGn ,hGm ,hGn ) is always non-negative, and DK L is the KL-divergence being also non-negative. qGm is an inference distribution of group←Gm with parameter ψGm, and is independent from hGn. To keep this independence, a mixed input of different groups is forbidden. Therefore, we keep individual inference networks for each group. Finally, we have",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "I(τ←Gm; τ←Gn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "≥ElGm ,lGn ,hGm ,hGn",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "log qGm(lGm|lGn, hGm, hGn)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "p(lGm)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= ElGm ,lGn ,hGm [log qGm(lGm|lGn, hGm) −log p(lGm)]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= ElGn ,hGm [−C E(p(lGm)||qGm(lGm|lGn, hGm))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "+←H(p(lGm))]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= −ElGn ,hGm [DK L(p(lGm)||qGm(lGm|lGn, hGm))]. (12)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "LM Im(τGm; τGn|ψGm)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "= ED[DK L(p(lGm)||qGm(lGm|lGn, hGm))]. (13)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Algorithm 1 GHQ Input: Learning rate α, loss weights λT D and λM I , number of groups U, number of agents K, number of units in each group |Gm|, max total steps T T OT , max steps per episode T E P, batch size B. Initialize: Network parameters θ = {θGm }U",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1 and ψ = {ψGm }U 1 , replay buffer←D = {}, total step tT OT = 0.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1: while tT OT ≤T T OT do 2: Set episode step t = 0, receive initial state and observation (s0, o0) from environment. 3: while t ≤T E P and not terminated do 4: Choose joint action at = {at",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "1 with agent networks {θi}K 1 . 5: Receive rt, is_terminated and (st+1, ot+1) from environment using at. 6: Collect a transition tuple at t and update the replay buffer D =←D ∪{(τ t, st,rt)}. 7: t = t + 1. 8: end while 9: Sample a random batch of B episodes from←D. 10: for m = 0, ..., U −1 do 11: Calculate←LM Im following (13). 12: Calculate←LT Dm following (16). 13: end for 14: Calculate total loss←LGH Q following (18) and update network parameters θ and ψ. 15: tT OT = tT OT + t. 16: end while",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "3O^OTM 4KZ]UXQ\u0003( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": ", −1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( , )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "'MKTZ 4KZ]UXQ\u0003( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "/TLKXKTIK\u0003 4KZ]UXQ ( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "'MKTZ 4KZ]UXQ\u0003( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "3O^OTM 4KZ]UXQ\u0003( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": ", −1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( , )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "/TLKXKTIK\u0003 4KZ]UXQ ( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( ; )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "-G[YYOGT\u0003 *OYZ\u0014\u0003 _",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": ", −1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "−",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Fig. 1 An overall framework of GHQ. θGm of group m consists of three parts: agent network θi, mixing network θMm , and inference net- work ψGm . Detailed data-stream for training and executing are shown in",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Fig.2. In (a), θi takes ot",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "i and at−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "i as input. It generates Qi for choosing actions, and lGm and hGm for calculating qGm . In (b), θMm takes Q and s for calculating TD loss←LT Dm with hybrid factorization. In (c), ψGm takes lGm , hGm and lGn for calculating IGMI loss←LM Im",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "An ordinary idea to calculate QGm and Qi is to design factor- ization structures for Qtot →QGm and QGm →Qi. Let←CGm and←Ci be the two-factor function. Like IGM [66], the mono- tonicity constraint is also sufficient for GIGM. Therefore, CGm and←Ci can be written as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∂Qtot(τ, s) ∂QGm(τGm, s) =←CGm ≥0, m ∈U (14)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∂QGm(τGm, s)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∂Qi(τi) =←Ci ≥0, i ∈Gm. (15)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Our key insight is that trivially calculating←CGm and QGm is unnecessary. Instead of hierarchical factorization, we imply independent Q-Learning (IQL) [67] for←CGm, which is called the hybrid factorization. This method makes QGm become an action-value function instead of a utility function [66, 68], and←CGm become a positive constant. As a result, the TD loss of group←Gm is written as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "LT Dm(θGm) = ED",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "\u0002",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(yGm −QGm(τGm, s; θGm))2\u0003",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "yGm = r + γ max",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Gm(τ ′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Gm, s′; θtgt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Gm),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where yGm is the TD-target of QGm, Qtgt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Gm is the target Q",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "function of QGm, and θtgt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Gm and θGm are network parameters",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Gm and QGm, separately. Group network θGm consists of two parts, agent network θi and mixing network θMm. Their",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∂LT Dm(θGm)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∂θi",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "= ∂LT Dm(θGm)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∂θMm",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "· ∂θMm ∂θi",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "GIGM and the input of state information keep different QGm in relevance, and IGMI further enhances the correlation. Even though IQL methods suffer from non-stationary prob- lems [69], GHQ overcomes this disadvantage and achieves impressive results. The hybrid factorization avoids the calcu- lation hierarchical factorization function. Although the IQL value of QGm following (16) does not equal the factorized value of QGm following (14), the monotonicity of factoriza- tion and GIGM still hold. As a result, the optimal policy of GHQ converges to the same optimal policy provided by the fully factorized structure.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Detailed network architecture is illustrated in Fig.1, an overview of the data-stream of GHQ is illustrated in Fig. 2, and the pseudo-code of GHQ is given in Algorithm 1. As is shown in Figs.1 and 2, there are three kinds of networks marked with different colors. Agent network θi is marked in green and is shared by all agents (i ∈Gm). θi receives the current observation ot",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "i and the last action at−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "i. The input is first sent to a Multi-Layer Perceptron (MLP) and then a GRU layer. The hidden state of GRU hGm is sent to the following layers and the next time-step. The following",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "/TLKX\u0014 4KZ ( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "/TLKX\u0014 4KZ ( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "( ) 3O^OTM 4KZ\u0003( ) ( , ) 'MKTZ\u00034KZ\u0003( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "( ) 3O^OTM\u00034KZ\u0003( ) ( , ) 'MKTZ\u00034KZ\u0003( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ", −1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ", −1 'MKTZ\u00034KZ\u0003( ) ( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "'MKTZ\u00034KZ\u0003( ) ( )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Fig. 2 An overview of data-stream of GHQ. During decentralized exe- cuting, agent networks θi and θ j generate Qt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "j, respectively. The input of θi is the local observation",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "i and last action at−1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "i of agent i in group←Gm. All necessary transition tuples (τ, s,r) are stored into the replay buffer←D. During central- ized training, a batch of trajectories τ←Gm are sampled from←D as the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "input of θi for calculating QGm (τ←Gm ). Then, mixing network θMm takes",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "QGm (τ←Gm ) and state s for calculating QGm (τ←Gm , s) and TD loss←LT Dm . The GRU hidden states hGm , hGn and the Gaussian distributions lGm , lGn are generated from agent networks θi and θ j, and are used to calcu- late IGMI losses←LM Im and←LM In. Detailed formulas are shown in the section “Inter-group mutual information loss”",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "layer is a Gaussian distribution layer generating lGm using hGm, and then, lGm is sampled and sent to the next two MLP layers. Eventually, a skip connection directly sends hGm to the final MLP layer, and hGm is concatenated with the output of formal MLP layer for generating Qi.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Mixing network θMm is marked in blue. It takes all [Qi] of the group←Gm as input, and mixes with the state s to pro- duce the QGm. Four hyper-networks generate weights and bias (w1, b1, w2, b2) with s, and only the absolute values of weights are used. The weights and bias multiply with the joint [Qi] procedurally and the intermediate results are activated to be non-negative, fulfilling the GIGM requirements.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Inference network ψGm is marked in yellow and is only used to calculate←LM I. It takes the hidden state of GRU hGm of group←Gm and the Gaussian latent lGn of another group Gn as input. The input is first sent to an MLP layer and then a new Gaussian distribution layer to generate the inference distribution qGm(lGm|lGn, hGm). The MI-loss←LM I is calcu-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "p(lGm) and the inference distribution qGm(lGm|lGn, hGm).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Finally, when calculating the total loss←LGH Q, adjusting weights λT D and λM I are introduced. In our implementa- tion, we set λT D = λM I = 1. We choose Adam [70] as the optimizer, with the learning rate of all networks being 3e-4. The total training step is 5M and the maximum step for one episode is 200. The learning rate is scheduled to decay by multiplying the factor 0.5 every 50,000 episodes (averagely about 2M–3.5M steps). The reward discounting factor γ is 0.99. The ε of the ε −greedy action selecting policy starts at 1.0, ends at 0.05, and linearly declines for 50,000 steps. The size of the memory buffer is 5000 and the batch size is 32. A universal buffer saves all data for training, including trajecto- ries of state st, observation ot, action at, and reward rt. After one episode, the latest data are inserted into the buffer and one batch of 32 episode data is sampled from the buffer and used for training. Table 3 summarizes the hyper-parameters mentioned above. In addition, we use the latest version 4.10",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "γ 0.99 ε 1.0 →0.05",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "LGH Q(θ, ψ) = λT DLT D(θ) + λM ILM I (θ, ψ). (18)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "The state S is only accessible by the mixing network θM during training. It consists of two major parts, ally-state and enemy-state:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "The observations O is the input to the agent network θi for calculating Qi. For agent i, the observation oi consists of four parts, moving-feature, ally-feature, enemy-feature and own-feature:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "\u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "all types we · |UAe| \u000f",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "MMM2 0.268(0.788) 0.268(0.788) 0.268(0.788) 0.268(0.788) 36.584(0.000) 81.881(0.000) 993.291(0.000) 6m2m_15m −1962.959(0.000) 225.391(0.000) −278.309(0.000) 143.981(0.000) 218.205(0.000) 479.887(0.000) 1202.379(0.000) 6m2m_16m 435.475(0.000) 155.590(0.000) 829.987(0.000) 82.276(0.000) 140625.813(0.000) 1141.160(0.000) 1128.510(0.000) 8m3m_21m 259.927(0.000) 229.853(0.000) 85.563(0.000) 2723.414(0.000) 2764.715(0.000) 2764.716(0.000) 557.180(0.000) 8m4m_23m 35.853(0.000) 1516.924(0.000) 558.173(0.000) 8364.497(0.000) 8789.821(0.000) 8789.822(0.000) 8789.822(0.000) 12m4m_30m 194.167(0.000) 1286.745(0.000) 557.278(0.000) 1344.418(0.000) 1344.418(0.000) 1344.418(0.000) 1344.418(0.000) 15m2m_28m 180.829(0.000) 160.417(0.000) 1024.268(0.000) 169.331(0.000) 18146.448(0.000) 18146.450(0.000) 68.470(0.000) 16m2m_30m 102.772(0.000) 6805.080(0.000) 6805.081(0.000) 1100.550(0.000) 6805.080(0.000) 6805.081(0.000) 6805.081(0.000)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

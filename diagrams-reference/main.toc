@@ -1,0 +1,5 @@
+\beamer@sectionintoc {1}{System Flow}{2}{0}{1}
+\beamer@sectionintoc {2}{System Architecture}{3}{0}{2}
+\beamer@sectionintoc {3}{Database Schema}{4}{0}{3}
+\beamer@sectionintoc {4}{Multi-Agent Swarm Algorithm}{5}{0}{4}
+\beamer@sectionintoc {5}{Conclusion}{10}{0}{5}

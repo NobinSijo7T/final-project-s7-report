@@ -1,0 +1,76 @@
+%==================================symbol.tex================================
+% List of Symbols and Abbreviations
+\chapter*{List of Symbols and Abbreviations}
+\addcontentsline{toc}{chapter}{List of Symbols and Abbreviations}%
+\vspace{-25pt}
+
+\begin{spacing}{1.02}
+\noindent \textbf{Abbreviations}
+\vspace{4pt}
+
+\noindent\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{2.8cm} p{11.2cm}@{}}
+\textbf{MCP} & Model Context Protocol \\
+\textbf{LLM} & Large Language Model \\
+\textbf{DAG} & Directed Acyclic Graph \\
+\textbf{ReAct} & Reason and Act (Autonomous Agent Paradigm) \\
+\textbf{ORPO} & Odds Ratio Preference Optimization \\
+\textbf{DPO} & Direct Preference Optimization \\
+\textbf{RLHF} & Reinforcement Learning from Human Feedback \\
+\textbf{SFT} & Supervised Fine-Tuning \\
+\textbf{LoRA} & Low-Rank Adaptation \\
+\textbf{PEFT} & Parameter-Efficient Fine-Tuning \\
+\textbf{GAT} & Graph Attention Network \\
+\textbf{SSE} & Server-Sent Events \\
+\textbf{API} & Application Programming Interface \\
+\textbf{REST} & Representational State Transfer \\
+\textbf{RPC} & Remote Procedure Call \\
+\textbf{IDB} & Indexed Database API (IndexedDB) \\
+\textbf{ACID} & Atomicity, Consistency, Isolation, Durability \\
+\textbf{WASM} & WebAssembly \\
+\textbf{TF-IDF} & Term Frequency--Inverse Document Frequency \\
+\textbf{ECE} & Expected Calibration Error \\
+\textbf{ROC-AUC} & Receiver Operating Characteristic -- Area Under Curve \\
+\textbf{AUPRC} & Area Under the Precision-Recall Curve \\
+\textbf{MAE} & Mean Absolute Error \\
+\textbf{RMSE} & Root Mean Squared Error \\
+\textbf{HUD} & Heads-Up Display \\
+\textbf{CUA} & Computer Use Agent \\
+\textbf{GUI} & Graphical User Interface \\
+\textbf{SRS} & System Requirements Specification \\
+\end{tabular*}
+
+\vspace{6pt}
+\noindent \textbf{Mathematical Notations}
+\nopagebreak[4]
+\vspace{4pt}
+\nopagebreak[4]
+
+\noindent\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}p{2.8cm} p{11.2cm}@{}}
+$\mathcal{G}(V, E)$ & Multi-agent collaboration graph (Vertices $V$, Edges $E$) \\
+$\mathbf{A} \in \mathbb{R}^{|V| \times |V|}$ & Swarm interaction adjacency matrix \\
+$v_i \in V$ & Autonomous agent persona or MCP tool endpoint $i$ \\
+$\mathbf{h}_i \in \mathbb{R}^d$ & Node feature embedding vector for agent $i$ \\
+$\mathbf{W} \in \mathbb{R}^{d' \times d}$ & GAT trainable projection weight matrix \\
+$e_{ij}$ & Raw attention coefficient between agent nodes $i$ and $j$ \\
+$\alpha_{ij}$ & Softmax normalized attention weight between nodes $i$ and $j$ \\
+$K$ & Number of multi-head attention projections ($K = 4$) \\
+$\mathcal{T}_{\text{task}}$ & User natural language task specification \\
+$\mathbf{x}_{\text{query}}$ & Joint lexical and numeric prompt feature vector \\
+$\hat{\mathbf{y}}_{\text{route}}$ & Multi-provider probability distribution vector \\
+$\hat{\mathbf{y}}_{\text{agent}}$ & Multi-label agent dispatch activation vector \\
+$\tau_{\text{dispatch}}$ & Confidence decision threshold for agent swarm dispatch \\
+$\tau_{\text{safety}}$ & Safety gating policy decision threshold \\
+$\mathcal{L}_{\text{CE}}$ & Multi-class cross-entropy routing loss function \\
+$\mathcal{L}_{\text{BCE}}$ & Binary cross-entropy multi-label dispatch loss \\
+$\mathcal{L}_{\text{SFT}}$ & Supervised fine-tuning loss on favored responses \\
+$\mathcal{L}_{\text{OR}}$ & Odds ratio preference divergence penalty \\
+$\mathcal{L}_{\text{ORPO}}$ & Unified Odds Ratio Preference Optimization objective \\
+$\beta$ & Balancing hyperparameter for odds ratio penalty \\
+$\hat{\ell}$ & Predicted task execution latency (seconds) \\
+$\hat{c}$ & Predicted monetary token cost (USD) \\
+$R^2$ & Coefficient of determination for regression evaluation \\
+\end{tabular*}
+\end{spacing}
+
+\thispagestyle{plain}
+%============================================================================

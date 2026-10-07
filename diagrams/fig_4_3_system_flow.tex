@@ -1,0 +1,60 @@
+% Figure 4.3: End-to-End System Flow Architecture
+% Clean Academic Style matching reference
+\begin{tikzpicture}[
+    auto,
+    font=\small,
+    startstop/.style={
+        rectangle, draw=black, line width=0.8pt, fill=white,
+        rounded corners=8pt, minimum height=0.65cm, minimum width=3.2cm,
+        align=center, font=\small\bfseries
+    },
+    process/.style={
+        rectangle, draw=black, line width=0.8pt, fill=white,
+        rounded corners=1.5pt, minimum height=0.65cm, text width=6.2cm,
+        align=center, inner sep=3.5pt, font=\small
+    },
+    decision/.style={
+        diamond, draw=black, line width=0.8pt, fill=white,
+        aspect=2.0, inner sep=2pt, align=center, font=\footnotesize
+    },
+    cylinder_node/.style={
+        cylinder, draw=black, line width=0.8pt, fill=white,
+        shape border rotate=90, aspect=0.25, minimum height=0.75cm, minimum width=2.4cm,
+        align=center, font=\small
+    },
+    arrow/.style={
+        -{Stealth[scale=0.9]}, line width=0.8pt, draw=black
+    }
+]
+
+    % --- NODES ---
+    \node [startstop] (start) at (0, 11.0) {Start: User Prompt Ingestion};
+    \node [process, below=0.45cm of start] (p_prep) {Input Normalization \& Outlier Filtering};
+    \node [process, below=0.45cm of p_prep] (p_feat) {TF-IDF \& 5D Lexical Feature Extraction};
+    \node [process, below=0.45cm of p_feat] (p_intent) {Intent Classification \& Provider Routing};
+    \node [decision, below=0.55cm of p_intent] (dec_safe) {Safety Risk $\ge \tau_{\text{safety}}$?};
+    \node [process, right=1.2cm of dec_safe, text width=3.0cm] (p_human) {Human-in-the-Loop\\Approval Modal};
+    \node [process, below=0.55cm of dec_safe] (p_dag) {DAG Workflow Construction $\mathcal{G}(V, E)$};
+    \node [process, below=0.45cm of p_dag] (p_react) {ReAct Execution Loop \& MCP Tool Calling};
+    \node [process, below=0.45cm of p_react] (p_sse) {Real-Time SSE Streaming to Client UI};
+    \node [process, below=0.45cm of p_sse] (p_verify) {ORPO Preference Verification Scoring};
+    \node [cylinder_node, below=0.45cm of p_verify] (db_persist) {PrismDB Local Persistence};
+    \node [startstop, below=0.45cm of db_persist] (end_node) {End: Final Deliverable Rendered};
+
+    % --- CONNECTING ARROWS ---
+    \draw [arrow] (start) -- (p_prep);
+    \draw [arrow] (p_prep) -- (p_feat);
+    \draw [arrow] (p_feat) -- (p_intent);
+    \draw [arrow] (p_intent) -- (dec_safe);
+
+    \draw [arrow] (dec_safe) -- node[above, font=\footnotesize]{Yes} (p_human);
+    \draw [arrow] (p_human) |- node[near start, right, font=\footnotesize]{Approved} (p_dag);
+    \draw [arrow] (dec_safe) -- node[right, font=\footnotesize]{No} (p_dag);
+
+    \draw [arrow] (p_dag) -- (p_react);
+    \draw [arrow] (p_react) -- (p_sse);
+    \draw [arrow] (p_sse) -- (p_verify);
+    \draw [arrow] (p_verify) -- (db_persist);
+    \draw [arrow] (db_persist) -- (end_node);
+
+\end{tikzpicture}

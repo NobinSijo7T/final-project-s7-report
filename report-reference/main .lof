@@ -1,0 +1,16 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Empirical Cosine Similarity: Same-Location (Cross-Domain) vs. Cross-Location Data}}{10}{figure.caption.8}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Illustration of Three Model Sharing Schemes in Federated Learning: (a) All-Sharing, (b) $G$-Sharing, and (c) Adaptive-Sharing (FedASA).}}{10}{figure.caption.9}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Comprehensive Workflow Pipeline of the Proposed FedASA Framework.}}{12}{figure.caption.10}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Structural Architectures of the Modular Cell-Based Models: (a) Hyper-Model, (b) Auxiliary Model, and (c) Client Local Model.}}{14}{figure.caption.11}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Prototype System Architecture with Parameter Server and 4 Edge Servers Simulating 12 Distributed IoT Devices.}}{20}{figure.caption.13}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Uplink Communication Payload per Client per Training Round.}}{23}{figure.caption.17}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces Accuracy Comparison across Fixed Shared Architectures ($\alpha _0$ to $\alpha _4$).}}{24}{figure.caption.18}%
+\contentsline {figure}{\numberline {6.4}{\ignorespaces Impact of Auxiliary Model Depth ($l = 0, 1, 2, 3, 4$) on Diagnostic Accuracy.}}{24}{figure.caption.18}%
+\contentsline {figure}{\numberline {6.5}{\ignorespaces Two-Dimensional t-SNE Feature Representation Visualization of Bearing Fault Classes under the FedASA Framework.}}{25}{figure.caption.19}%
+\addvspace {10\p@ }

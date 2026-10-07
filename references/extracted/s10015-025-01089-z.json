@@ -1,0 +1,794 @@
+{
+  "source_file": "s10015-025-01089-z.pdf",
+  "num_pages": 11,
+  "full_text": "Vol:.(1234567890)\nArtificial Life and Robotics (2026) 31:484–494 https://doi.org/10.1007/s10015-025-01089-z\nORIGINAL ARTICLE\nDeep reinforcement learning for multi‐agent coordination\nKehinde O. Aina1 · Sehoon Ha1\nReceived: 31 August 2022 / Accepted: 4 October 2025 / Published online: 26 November 2025  This is a U.S. Government work and not under copyright protection in the US; foreign copyright protection may apply 2025\nAbstract We address the challenge of coordinating multiple robots in narrow and confined environments, where congestion and  interference often hinder collective task performance. Drawing inspiration from insect colonies, which achieve robust coor- dination through stigmergy—modifying and interpreting environmental traces—we propose a stigmergic multi-agent deep  reinforcement learning (S-MADRL) framework that leverages virtual pheromones to model local and social interactions,  enabling decentralized emergent coordination without explicit communication. To overcome the convergence and scalabil- ity limitations of existing algorithms such as MADQN, MADDPG, and MAPPO, we leverage curriculum learning, which  decomposes complex tasks into progressively harder sub-problems. Simulation results show that our framework achieves  the most effective coordination of up to eight agents, where robots self-organize into asymmetric workload distributions that  reduce congestion and modulate group performance. This emergent behavior, analogous to strategies observed in nature,  demonstrates a scalable solution for decentralized multi-agent coordination under crowded environments with communica- tion constraints.\nKeywords  Deep reinforcement learning · Multi-agent systems · Swarm robotics · Stigmergy · Emergent coordination\n1  Introduction\nSocial insect such as ants exhibit remarkable emergent coor- dination in tasks like nest construction or tunnel excavation.  These behaviors remain robust regardless of colony size and  rely on simple decentralized mechanisms such as local and  social interactions like stigmergy, where agents leave traces  in the environment that guide the actions of others  [1, 2].  Such mechanisms allow large groups to operate effectively  in constrained, shared environments where congestion and  jamming would otherwise occur. In particular, stigmergy  provides a bio-inspired form of indirect communication that\nenables efficient group performance in crowded and con- fined environments  [3–5].\nTranslating these strategies into multi-robot systems,  however, poses significant challenges  [6, 7]. Achieving  comparable levels of coordination and efficiency is hindered  by the difficulty of accurately modeling the sensing and  communication capabilities that underpin biological swarm  interactions. In swarm robotics, researchers have often  attempted to address this challenge through ad hoc con- trol laws or optimization methods. These typically rely on  detailed modeling of the environment and robot interactions,  frequently under assumptions such as full state observability  that rarely hold in practice. An alternative approach involves  designing simple behavioral rules or heuristics inspired by  biological systems. While effective at producing complex  group behaviors, such methods often require substantial re- modeling and adaptation when applied to new scenarios,  thereby limiting their scalability and generalization.\nDeep reinforcement learning (DRL) offers the potential to  discover complex behaviors from simple task descriptions.  DRL has shown success in diverse domains including com- puter games [8], autonomous driving [9], and robotic manip- ulation [10]. However, extending DRL to swarm robotics  or multi-agent systems presents significant challenges that\nThis work was presented in part at the joint symposium of the  27th International Symposium on Artificial Life and Robotics,  the 7th International Symposium on BioComplexity, and the 5th  International Symposium on Swarm Behavior and Bio-Inspired  Robotics (Online, January 25–27, 2022).\n*\t Sehoon Ha  \t sehoonha@gatech.edu\nKehinde O. Aina  \t kaina3@gatech.edu\n1\t Institute for Robotics and Intelligent Machines, Georgia  Institute of Technology, Atlanta, USA\n\n--- Page Break ---\n\n485 Artificial Life and Robotics (2026) 31:484–494\nhinder effective learning and stable convergence. First,  agents face partial observability, as they lack access to  global environmental information and rely solely on local  observations. Second, the system is inherently non-station- ary, with agents continuously adapting their behaviors or  evolve their policies in response to others, destabilizing the  learning process. Finally, non-scalability arises as state and  action spaces grow exponentially with the number of agents,  exacerbating the “curse of dimensionality.\"\nIn this work, we introduce the Stigmergic multi-agent  deep reinforcement learning (S-MADRL) framework, based  on the conventional deep Q-network (DQN) algorithm [11],  to discover cooperative policies for collective pellet retrieval  in crowded environments (see Fig. 1). Our framework trains  decentralized policies that operate without relying on global  state information or joint actions of other agents, enabling  effective coordination among homogeneous agents, reducing  traffic jams, and enhancing overall pellet retrieval efficiency.  The novelty of our approach lies in two key contributions.  First, we implement the stigmergic communication, mod- eled as virtual pheromones, which locally encode traces of  other agents’ activities to enable indirect communication and  foster cooperative behaviors. Second, we incorporate cur- riculum learning to address the issue of unstable learning in  complex or crowded scenarios. By decomposing the problem  into simpler sub-tasks, curriculum learning enables agents to  effectively tackle increasingly complex scenarios, improving  the stability and scalability of the learning process.\nWe evaluate our proposed framework on the collective  pellet retrieval task, modeled using the OpenAI Gym plat- form [12]. The results show that the SMADRL framework  can effectively learn decentralized coordination behaviors\nfor up to five agents in deterministic environments, and  up to eight agents in stochastic environments. In contrast,  state-of-the-art algorithms such as multi-agent deep deter- ministic policy gradient (MADDPG) fail to scale beyond  two agents. Furthermore, the learned cooperative behaviors  exhibit emergent strategies similar to those observed in bio- logical systems  [3], emphasizing the potential of stigmergy- inspired approaches for scalable and robust multi-agent  coordination in dynamic environments.\n2  \u0007Literature survey\nThe recent advancement of deep reinforcement learning  (DRL) in tackling real-world tasks has established it as a  powerful tool for solving complex problems characterized by  high-dimensional information representation through trial- and-error methods  [11]. Its extension to multi-agent systems  (MAS) has gained substantial traction in recent years, ena- bling innovative collaborative and distributed solutions to  challenges that traditional methods struggle to address  [13].  However, applying DRL to MAS presents significant chal- lenges, including non-stationarity and non-convergence,  primarily arising from the concurrent actions of agents and  the partial observability of the state of the environment  [14].  To address these issues and enable convergence and scal- ability, prior research has explored several approaches, such  as incorporating explicit communication channels between  agents, training with joint action and full state information,  and directly modeling the behavior of other agents  [14–16].\nExplicit communication in multi-agent systems often  incurs significant computational costs, which do not scale  well with an increasing number of agents. To address this  limitation, recent works have explored implicit communi- cation mechanisms or shared memory frameworks among  agents  [14, 17]. Stigmergy, in particular, has been inves- tigated as a coherent and effective method of decentralized  communication via local stimuli  [1]. Stigmergy  [18] ena- bles agents to leave traces or signals in the environment,  which guide the swarm towards desired emergent behav- iors. This form of communication uses the environment as  a shared external memory, where agents exchange useful  information as cues. By interacting with these environmental  cues, agents can infer the actions of neighbors, or approxi- mate most recent activity history or state of their immediate  environment  [19]. Due to its scalability, robustness, low  computational overhead, and adaptability  [20], stigmergy  has been widely adopted in multi-agent coordination and  control. Applications include solving several NP-hard prob- lems, such as implicit spatial clustering of multi-agent sys- tems without direct inter-agent communication  [21] and  coordination of unmanned vehicles  [22].\nFig. 1   Experimental setup of the multi-robot excavation task. a Real- world top view of the excavation arena, consisting of a pellet source,  a narrow tunnel, excavating robots, and a home area. b Correspond- ing abstracted simulation model used for training and evaluation. The  simplified representation preserves essential components in the real- world model, and enables scalable and varied experiment scenarios\n\n--- Page Break ---\n\n486 \t Artificial Life and Robotics (2026) 31:484–494\nIn multi-agent reinforcement learning (MARL) settings,  adapting the concept of stigmergy offers the potential for  better learning convergence and scalability, yet it remains  under-explored. Conventional approaches to addressing the  issues of non-stationarity and non-convergence often involve  introducing direct communication between the agents, or  training agents with joint actions and joint observations of  all agents. However, these methods suffer from significant  communication overhead, and the curse of dimensionality  respectively  [14, 17]. Consequently, such direct approaches  face limitations in achieving scalability and convergence,  particularly in congested or highly constrained environ- ments. Recent studies have begun exploring the inherent  advantages of stigmergy to improve learning in multi-agent  settings [23–27].\nOf particular relevance to our work is the Stigmergic  Independent RL framework developed by Xu et al. [23].  Their framework establishes an indirect communication  bridge indirect communication bridge between agents via a  stigmergy medium, represented as a digital pheromone map.  This medium enables agents to communicate and observe  environmental states through an explicit feedback loop. In  contrast, our work adopts the concept of digital pheromones  but employs a virtual map that stores localized information  about different regions of the environment, avoiding direct  information propagation. Furthermore, while Xu et al.  applied their framework to UAV flight formation without  addressing scalability, we focus on collective coordination  in a highly constrained and crowded environment, provid- ing a comparative scalability analysis with other popular  MARL methods.\nSimilarly, Zhang et al [24] developed the Pheromone Col- laborative DQN framework to address the minefield naviga- tion task. Their model uses a network structure where nodes  emit pheromone information to attract nearby agents. Agents  select “attractors” based on a random-proportional equation  that depend on the attractor’s signal strength. Unlike our  model of digital pheromone model which directly influences  agent decision-making through localized information, their  approach relies on probabilistic attraction without analyz- ing scalability to larger numbers of agents. In contrast, we  demonstrate our framework’s effectiveness and scalability  compared to other popular MADRL methods, specifically  in dynamic and stochastic environments.\n3  \u0007Background\n3.1  \u0007Deep reinforcement learning\nDeep reinforcement learning (DRL) typically models prob- lems using a Markov Decision Process (MDP). An MDP  is defined by the state space S , action space A , transition\nfunction p(s\u001e|s, a) , reward function r(s, a), and the distribu- tion of initial states s0 ∼p0(s) , where s is the current state, s′  is the next state, and a is the action. A widely-used method  for solving MDPs is Q-learning, which learns the value  Q(s, a) of an action a in a state, s, based on the temporal  difference (TD) update rule below:\nwhere 훼 is the learning rate, 훾 is the discount factor, r is the  reward, and maxa\u001f Q(s\u001f, a\u001f) is the maximum future reward of  the next state s′ . Once Q(s, a) is learned, the optimal policy  휋(s) selects the action that maximizes the expected return:\nDeep Q-network (DQN) extends Q-learning by approximat- ing the Q −function using deep neural networks parameter- ized by 휃 . Instead of directly updating individual Q −values ,  the network’s parameters are updated by minimizing a dif- ferentiable loss function at each iteration i:\nwhere the target yDQN is given by:\nThis approach enables the agent to generalize across high- dimensional state and action spaces, making DQN effective  for a variety of complex tasks.\n3.2  \u0007Multi‐agent deep reinforcement learning\nMulti-agent deep reinforcement learning (MADRL) extends  the principles of DRL to address problems in multi-agent  reinforcement learning (MARL). In these settings, the state  transition function depends on the joint actions of all agents,  introducing significant complexity. A naïve approach would  involve learning a single policy for the joint actions and state  spaces of all agents. However, this quickly becomes imprac- tical due to the curse of dimensionality, where the state and  action spaces grow exponentially with the number of agents.\nTo address this, a common approach is to provide each  agent with partial knowledge of the environment’s state and  to assign them individual policy learners. This reformulation  is often modeled as a partially observable Markov decision  process (POMDP). Under this framework, each agent oper- ates based on a local observation rather than global state  information, and learns separate decentralized policies tai- lored to their individual observations. While this approach  mitigates the scalability issue, it introduces a significant  challenge: the non-stationarity problem. This arises because  each agent continually updates its policy in response to the\nQ(s, a) ←Q(s, a) + 훼(r + 훾max\na\u001c Q(s\u001c, a\u001c) −Q(s, a)),\n휋(s) = arg max aQ(s, a).\nL(휃) = 피s,a,r,s\u001c[(yDQN\ni −Q(s, a;휃i))2],\nyDQN = r + 훾max\na\u001d Q(s\u001d, a\u001d;휃).\n\n--- Page Break ---\n\n487 Artificial Life and Robotics (2026) 31:484–494\nevolving behaviors of other agents, leading to a “moving  target\" problem.\nSeveral strategies have been proposed to address this  issue: (1) team rewards which encourages cooperative behav- ior by providing agents with shared rewards that align their  objectives, and (2) direct communication channels allowing  agents to exchange information to reduce uncertainty and  improve coordination [28]. Despite these advancements,  achieving scalable and stable learning in MADRL remains  a key area of research, particularly in environments with  high congestion.\n4  \u0007Multi‐agent clog control\nThe coordination of multi-agent systems has garnered sig- nificant research interest in recent years, with the complex- ity of the problem increasing exponentially as the number  of agents rises  [29]. In this work, we address the challenge  of multi-agent coordination within a collective excavation  task, where a group of homogeneous robots is assigned  the task of continuously retrieving pellets (or food items)  in a narrow, confined 2D grid-world environment  [6, 7].  The goal is to maximize pellet collection within a speci- fied time frame. The robots involved typically operate under  constraints of limited sensing and communication capabili- ties, without centralized control or access to global state  information regarding the actions and states of other agents.  Consequently, much of the system’s activity is spent resolv- ing conflicts arising from overcrowding and competition for  space. We model this collective excavation problem as a  decentralized partially observable Markov decision process  (Dec-POMDP)  [30], using independent deep Q-network  (DQN) learners (IQL). Coordination between agents is  achieved through specialized social interactions facilitated  by stigmergy, allowing agents to infer the actions of others  indirectly through the environment. To address more com- plex scenarios, we incorporate curriculum learning, which  simplifies the learning process by training agents sequen- tially, focusing on one agent at a time.\n4.1  \u0007Decentralized POMDP\nIn this section, we formalize the collective excavation task  as a decentralized partially observable Markov decision pro- cess (Dec-POMDP) to model the decision-making process  of agents with partial and localized observations.\nState and observation Consider a system of N agents operating within the environ- ment (as depicted in Figure  1). At each time step, each agent  obtains a local observation consisting of two components: an  egocentric, non-spatial discrete component and a geocentric,  spatial component. The egocentric state encodes the internal\nmode of the agent, which can be one of the following states:  Going-to-dig, Digging, Exit-digging, Going-home, Dumping,  Exit-home, or Collision. The geocentric components capture  the agent’s position, orientation, previous action, number of  collisions, distance to home, and distance to pellet source.  These observations form an 8-dimensional vector space for  each agent, which is further augmented with “virtual phero- mone” information from neighboring cells within the agent’s  restricted field-of-view. This design ensures that each agent  has a compact, private observation space, enabling the tech- nique to scale efficiently with a larger number of agents with- out necessitating changes to the network’s input size.\nAction space We adopted a discrete space representation consisting of  a set of five actions. At each time step, the agents can choose  one possible action within the set, namely: North, South, West,  East, and Stop. If the target location is occupied, the agent  incurs a penalty and enters the collision state or mode, remain- ing stationary until it selects an unoccupied position.\nReward function To facilitate rapid convergence, a reward shaping strategy is  applied. The dense reward function is designed to encourage  efficient learning and prompt the agents to achieve their objec- tives quickly while contributing to the collective mission. The  reward function incorporates four distinct signals:\n•\t Distance Reward,  rd(s, t) : The agent receives a reward of  +2.5 for moving closer to the goal (either the pellet location  or home area depending on the internal state) compared to  the previous time step. •\t Collision Reward,  rc(s, t) : A penalty of −2.0 if an unladen  or unloaded agent collides with another agent. •\t Pellet Pickup Reward,  rp(s, t) : A reward of +50 is received  when an agent successfully locates the pellet or food item.  In global reward settings, this reward value is distributed  equally among all agents, encouraging collective coopera- tion rather than individual competition. To clarify, a global  reward assigns the same reward value to all agents, regard- less of their individual contributions, explicitly encour- aging cooperative behavior. In contrast, a local reward  allocates rewards based solely on each agent’s individual  performance, which often promotes competitive rather than  collaborative behavior. •\t Successful Trip Reward,  rs(s, t) : A reward of +50 is  received when an agent successfully delivers a pellet to the  home area. Again, in the global reward settings, this reward  is distributed to all agents to further promote cooperative  behavior.\nThe complete reward function is defined as:\nr(s, t) = wdrd(s, t) + wcrc(s, t) + wprp(s, t) + wsrs(s, t),\n\n--- Page Break ---\n\n488 \t Artificial Life and Robotics (2026) 31:484–494\nwhere the weights wd, wc, wp, and ws are set to 0.2, 0.2, 0.2,   and 0.4,  respectively, for all the experiments.\n4.2  \u0007Digital pheromone as stigmergy\nFigure 2 illustrates our proposed stigmergic multi-agent deep  reinforcement learning (SMADRL) framework, designed  for scalable decentralized learning through the use of stig- mergic communication. In this framework, we model stig- mergy using a virtual map overlaid on the environment,  which serves as an asynchronous, indirect communication  medium. As agents navigate the environment, they update  this virtual map. A digital pheromone is essentially a virtual  map that stores the distribution of “activity signals” across\nthe environment. The map’s keys represent distinct coordi- nates or positions within the space, while the values encode  specific state information about agents’ actions. Each time  an agent moves from one cell to another in the grid world (as  depicted in Fig. 3), the value of the corresponding map posi- tion is updated to reflect the agent’s state—such as its occu- pancy status, internal state, laden or unladen condition (rep- resented as 1 and 0, respectively), and current action. The  occupancy status is initialized to a value of 휌0 , and decays  over time based the function: 휌(t + 1) = (1 −훼) 휌(t) + 훽 ,  where 훼 is the decay rate and 훽 is the reinforcement incre- ment. This enables the pheromone concentration to reflect  recent activity in the environment, encouraging indirect  coordination. This digital pheromone mechanism allows\nFig. 2   Proposed scalable decentralized MADRL framework with  stigmergic communication. Each agent i receives a local observa- tion Oi and selects an action ai based on its policy 휋i . The environ- ment provides the resulting state Si and reward ri , while agents leave  and sense pheromone traces 휌i that diffuse and decay over time. This\nindirect communication channel encodes recent occupancy and agent  activity, enabling decentralized coordination without explicit message  passing. Learning and execution are fully independent for each agent,  ensuring scalability to large team sizes\nFig. 3   Schematic of the digital pheromone map and agents’ restricted  field of view. Agents deposit virtual pheromones while moving, gen- erating spatial gradients (shown in different shades of gray) that dif- fuse and decay over time. Each agent perceives only a limited local  region (red arrows), mimicking partial observability. The blue agent\nis laden with pellet and returning to the home area, while green  agents are searching for pellets. Stigmergic communication provides  environmental memory that supports implicit coordination among  agents\n\n--- Page Break ---\n\n489 Artificial Life and Robotics (2026) 31:484–494\nagents to implicitly communicate information regarding  their internal states and the environment, analogous to the  pheromone traces left by social insects. Agents can then  observe the encoded information within their neighboring  cells, within their limited field of view, and incorporate it  into their observation space during training and decision- making (see Figs. 2 and  3). This approach enables agents  to infer the actions and intentions of other agents, as well as  gain insights into the state of the environment, facilitating  coordinated behavior.\n4.3  \u0007Curriculum learning\nCurriculum learning (CL) is an instructional strategy that  sequences training experiences to enhance the learning  process, either by accelerating learning or improving final  performance. In reinforcement learning (RL) contexts, CL  typically involves designing a progression of tasks, begin- ning with simple problems and gradually increasing their  complexity. This progression aims to optimize both the  asymptotic performance and training efficiency  [31]. In  multi-agent reinforcement learning (MARL) settings, CL  plays a crucial role in mitigating the challenges posed by  non-stationarity, particularly when multiple agents concur- rently adapt their policies in response to each other’s chang- ing behaviors. By limiting concurrent policy updates to a  single agent at a time, while incrementally adding more  agents, this approach can lead to substantial improvements  in performance and convergence.\nIn our framework, CL is employed to enhance learning  convergence in more complex and congested scenarios,  particularly when the number of agents exceeds four. The  process begins with two agents learning decentralized poli- cies for collective pellet retrieval in parallel. These two fully  trained agents are referred to as the old agents. Subsequently,  additional agents are introduced sequentially, with each new  agent learning its policy from scratch while the policies of  the old agents remain fixed. This strategy reduces the non- stationarity issues by minimizing the “moving target\" effect  caused by multiple concurrent learners. Our experiments  demonstrate that this method facilitates scalability, allow- ing us to effectively train systems with up to eight agents,  especially when combined with the stigmergic communica- tion technique.\n5  \u0007Experimental setup\nTo evaluate the effectiveness of our proposed approach, we  conducted simulation experiments using the setup illustrated  in Fig. 1. The Markov decision process (MDP) was imple- mented through OpenAI’s Gym interface  [12], where the  environment’s step function takes actions as inputs and returns\nthe subsequent states, rewards, and terminal flags. The envi- ronment is designed to accommodate a variable number of  agents, which can be specified at the outset of each experiment,  along with the length of the tunnel in terms of grid cells or the  agents’ body length (BL). The agents operate within a shared  environment but employ separate policy learners and distinct  experiences. At each time step, the agents act simultaneously  and receive private observations, including either a global or  local reward. To enhance training stability, we employed dou- ble Q-learning  [32] and experience replay  [8]. The policy  architecture consists of three hidden layers, each containing  128 neurons. An 휖-greedy action-selection strategy was used  to ensure comprehensive exploration of the state and action  spaces, with the exploration rate decaying from 100% to 2%  over the first 10% of the total training duration.\nWe compared four distinct learning techniques, varying  the number of agents from one to five:\n•\t Independent Q-learning (IQL): This is our baseline  method which utilizes independent DQNs with local  rewards to train agents separately. •\t IQL with Global Reward (IQL+G): This method incor- porates global rewards into the baseline method, to  encourage cooperation among agents. •\t IQL with Global Reward and Stigmergy (IQL+GS):  Building on (IQL+G), this method adds a virtual phero- mone map, discussed in previous section, to mitigate  non-staionarity and facilitate agent cooperation. •\t Stigmergy with curriculum learning (IQL+GSC): This  approach combines the (IQL+GS) method with curric- ulum learning, introducing one agent at a time during  training to improve stability and convergence.\nThe training and testing were conducted on a desktop com- puter featuring an AMD Ryzen 12-core processor at 3.4  GHz, 32 GB RAM, and an Nvidia RTX 2070 GPU. Each  experimental setup was run multiple times, with consist- ent learning curves observed across trials. During testing,  we recorded the number of pellets excavated by individual  agents and logged the cumulative total for all agents at each  time step. The comparison of total pellets excavated across  different learning methods is shown in Fig. 4.\nDue to the simulation’s latency, training a single agent  from scratch for a fully converged policy on the GPU takes  approximately twelve hours. Training time scales linearly  with the number of concurrent agents. However, curricu- lum learning (CL) significantly reduces training time by  introducing new agents sequentially to a team of previously  trained agents. Convergence typically begins after around  200 episodes, each comprising 5000 time steps, after which  the environment is reset to its initial conditions. The learning  rate was set to 10−4 , with a discount factor of 0.99. A batch\n\n--- Page Break ---\n\n490 \t Artificial Life and Robotics (2026) 31:484–494\nsize of 64 was found to be optimal, and the Adam optimizer  was used for agent training.\n6  \u0007Simulation results\nFigure 4 shows a comparison of total pellets excavated  for each technique. For one and two agent scenarios, the  baseline algorithm (IQL) performed well with both local  and global rewards. However, as the number of agents  increases, the performance drops drastically. At this stage,  we introduce stigmergy to facilitate cooperation and to  improve convergence. This is achieved by augmenting the  observation space of each agent with information encoded  in the virtual maps or “pheromone trails\". This technique  improves performance for three and four team sizes, but  not so well for five agent scenario. In this case, coordina- tion becomes more challenging, and achieving successful  convergence would require more powerful training tech- nique. Our curriculum learning approach (IQL+GSC)  addresses this by reducing the difficulty in four and five  agent scenarios, training one agent at a time.\nFigure 5 shows the learning curve for the different  MADRL techniques described above, for one to five agents  in a shared environment. Clearly, stigmergy helps address  convergence issues, since the baseline methods (IQL and  IQL+G) could not handle three agents and higher. Cur- riculum learning improves learning convergence for four  and five agent scenarios. Also, learning did not start from  zero with the CL method, since the old agents were using  their learned policies.\nFigure 6 shows the comparison of the workload distri- bution for the two best learning approaches using Lorenz  curves [33]. Lorenz curves describe the workload distribu- tion of a team by linking the cumulative share of number  of agents to the cumulative share of total number of pellets  or food items retrieved. This curve is convex by definition.  An equal workload distribution appears as a straight line  between (0,0) and (1,1). A divergence from this straight line  indicates unequal workload distribution, where for example,  half of the team retrieved less than half of the total number of  pellets. According to the curves in Fig. 6, it is clear that for  three agent scenario, all workers excavated equal amounts  of pellets as indicated by the straight line in both figures.  For four and five agents, however, the curves diverge further  from the straight line, with the curriculum learning tech- nique (Fig. 6B) having the greater divergence or “higher”  unequal workload distribution. This translates to: more  agents should participate less as the team size increases.  Thus, we can infer from the Lorenz curves and Fig. 4 that the  best strategy to achieve the highest pellet retrieval successes  is through asymmetric or unequal workload distribution\nFig. 4   Cumulative excavation results comparing four multi-agent  deep reinforcement learning (MADRL) methods (IQL baseline,  IQL+G, IQL+GS, and IQL+GSC) for teams of up to five agents.  While the baseline (IQL) performs adequately for one and two agents,  performance declines as team size increases. Incorporating stig- mergy (IQL+GS) improves coordination for three and four agents,  but struggles at five. Combining stigmergy with curriculum learning  (IQL+GSC) achieves the highest excavation performance across all  team sizes, demonstrating superior scalability and robustness in mod- erately congested environments\nEpisodes\nRewards\n0\n1500\n3000\n(A): IQL\n1 agent 2 agents 3 agents 4 agents 5 agents\n(B): IQL+G\n0 200 0\n1500\n3000\n(C): IQL+GS\n0 200\n(D): IQL+GSC\nFig. 5   Learning curve comparison of the four MADRL techniques  (IQL, IQL+G, IQL+GS, and IQL+GSC) for one to five agents. Base- line methods (IQL, IQL+G) fail to converge beyond three agents.  Stigmergic communication (IQL+GS) enhances learning stability,  while curriculum learning (IQL+GSC) further accelerates conver- gence and achieves the highest rewards in four- and five-agent sce- narios\n\n--- Page Break ---\n\n491 Artificial Life and Robotics (2026) 31:484–494\nwhen the agent density is above a threshold, in this case,  four agents. This strategy greatly minimizes jamming and  collision in the tunnel. Lorenz curves for one and two team  sizes were not shown here because they all produce similar  curves which are equal workload distributions.\nFigure 7 illustrates representative behaviors discovered by  the different training methods. Figure 7A is a typical “clog- ging” or “jamming\" scenario we encounter during testing  when agents are trained without incorporating stigmergy,  even though global reward was used. The agents get stuck  due to lack of cooperation. On the contrary, Fig. 7B shows  the coordinated behavior that emerges when virtual phero- mone is employed. The agents learned to carefully avoid  clogging by spacing out when outside the tunnel and yield- ing to each other when inside the tunnel. This is effective to  avoid getting stuck in three to four agent scenarios. In five  agent scenario, the agents can still get stuck even with virtual  pheromones (Fig. 7C). This is due to the complexity of the  problem: high non-stationarity. Incorporating curriculum\nlearning resolves this: some agents strategically remain  idle, while others complete retrieval tasks (Fig. 7D). The  snapshot shows that two agents are “idle\" or “resting\" by  not participating in the pellet retrieval task (followlink for  video demonstration). This emergent division of labor mir- rors biological findings that idleness and asymmetric work- load distribution are effective congestion-control strategies  in crowded environments [3].\n7  \u0007Discussion\nScaling multi-agent deep reinforcement learning to dense  and dynamic environments remains a central challenge due  to the compounded non-stationarity introduced by many  concurrent learners interacting in a shared evolving envi- ronment. As shown in Table 1 and Fig. 8, conventional  approaches such as I-DQN, I-A2C, MA-DQN, MA-A2C,  MADDPG, and MAPPO degrade rapidly as the number\nFig. 6   Lorenz curve com- parison of workload distribution  under stigmergy-only learning  (IQL+GS, panel a) and stig- mergy with curriculum learning  (IQL+GSC, panel b). For three  agents, both methods result in  equal workload distribution. For  four and five agents, however,  workload becomes increasingly  unequal, especially under cur- riculum learning\nFig. 7   Snapshots of various  scenarios during testing. a Four  agents often get stuck in the  tunnel when trained without  stigmergy. b Stigmergy prevents  agents from getting stuck, which  enables effective coordination.  c Five agents with stigmergy  can still get stuck due to the  difficulty of the scenario. d  Curriculum learning enables  efficient learning in difficult  scenarios, and the discovery of  a bio-inspired strategy: unequal  work distribution to avoid  clogging\n\n--- Page Break ---\n\n492 \t Artificial Life and Robotics (2026) 31:484–494\nof agents increases, often failing to converge beyond 3–4  agents. By contrast, our proposed S-MADRL framework  maintains stability and scales effectively up to eight agents,\nrepresenting a significant improvement over state-of-the-art  baselines.\nA key driver of this scalability is the incorporation of  tunnel density information ( 휌= n∕L , where n is the number\nTable 1   Quantitative  comparison of excavation  performance across multiple  multi-agent deep reinforcement  learning algorithms,  measured as the total number  of successful trips (pellets  delivered per episode) for teams  of 1–8 agents\nOur proposed S-MADRL framework consistently scales up to 8 agents, maintaining robust performance  under severe congestion\nMethod 1 Agent 2 Agents 3 Agents 4 Agents 5 Agents 6 Agents 7 Agents 8 Agents\nI-DQN 43 63 99 73 79 43 32 35 I-A2C 53 69 79 49 22 8 6 3 MA-DQN 32 15 11 8 1 2 0 0 MA-A2C 52 36 5 0 0 0 0 0 MADDPG 33 33 17 28 3 3 1 1 MAPPO 43 99 92 57 21 22 3 2 S-MADRL 46 87 102 115 114 105 109 110\nEpisodes\nRewards\n0\n1500\n3000\n1 Agent\nI-DQN I-A2C MA-DQN MA-A2C MADDPG MAPPO S-MADRL\n2 Agents 3 Agents 4 Agents\n0 400 800 0\n1500\n3000\n5 Agents\n0 400 800\n6 Agents\n0 400 800\n7 Agents\n0 400 800\n8 Agents\nFig. 8   Learning curve comparison of our proposed S-MADRL frame- work against state-of-the-art multi-agent deep RL baseline algorithms  for team sizes from 1 to 8 agents. Each subplot shows cumulative  rewards over training episodes. Baseline methods achieve moder- ate success with 1–3 agents but collapse beyond 4 agents due to high\ndimensional state and action spaces. In contrast, S-MADRL demon- strates stable convergence and sustained high rewards even with 7–8  agents, confirming its superior scalability and coordination capabili- ties in crowded environments\n\n--- Page Break ---\n\n493 Artificial Life and Robotics (2026) 31:484–494\nof agents in the tunnel and L the tunnel length) into the  pheromone map. This density signal enables agents to infer  congestion levels and adaptively switch between active mode  (entering the tunnel) and passive mode (remaining idle at  home). This emergent behavior mirrors strategies observed  in social insects, where temporary idleness prevents clog- ging. By leveraging environmental memory via stigmergy,  agents coordinate indirectly, mitigating non-stationarity  without explicit communication or centralized critics.\nFrom qualitative analysis, we observed two recurring  optimal policy strategies:\n•\t One-at-a-Time (OAT) strategy [5, 6]: This is more fre- quently observed in joint-action learners (JALs) such as  MA-DQN, MADDPG, and MAPPO, where only two  agents operate at a time while others wait. While this  reduces tunnel congestion, it creates bottlenecks at the  home area as team size grows, limiting group perfor- mance and scalability. •\t Bucket-Brigade (BB) strategy [34]: This is common in  independent learners (I-DQN, I-A2C) and strongly rein- forced by our S-MADRL. Here, agents self-organize  into a bi-directional flow pattern: one lane for unladen  robots entering the tunnel and the other for laden robots  returning home. This continuous flow minimizes interfer- ence and scales efficiently with team size (Table 1 and  Fig. 8), underpinning the superior performance of our  S-MADRL framework.\nOur results suggest that indirect communication through  stigmergic traces is not only biologically plausible, but also  computationally advantageous: it provides a spatio-temporal  signal that agents can exploit for traffic coordination, avoid- ing the exponential growth of state-action spaces typical in  explicit communication or centralized learning settings.\nBeyond simulation, S-MADRL offers direct applica- tions for real-world robotic swarms operating in highly  constrained domains such as mining excavations or search- and-rescue missions. Training can be carried out in simula- tion to learn robust policies, which can then be transferred  to physical robots provided that the extracted features in  observation remain consistent, or are fine-tuned during  deployment. In practice, virtual pheromone maps could be  approximated through several mechanisms: for instance, via  synchronized distributed servers aggregating and diffusing  local agent observations; or through physical environmental  cues such as dynamically updated QR-code projections or  RFID markers that allow agents to project and sense shared  state information.\nUnlike many existing MADRL approaches, our method  does not require direct inter-agent communication or shar- ing of policy parameters, or centralized training and execu- tion, which typically suffer from scalability bottlenecks due\nto exponential state–action growth. Instead, S-MADRL  remains fully decentralized in both training and execution,  making it especially suitable for hardware deployment in  environments with unreliable or degraded communica- tions. Nevertheless, our approach assumes accurate sensing  of pheromone intensities which may be affected by noise  in real-world systems, and the restriction to homogeneous  agents. Future work will extend S-MADRL to heterogene- ous roles (e.g., specialized excavators vs. transporters) and  refine curriculum learning to reduce its linear dependence  on team size.\n8  \u0007Conclusion and future work\nThis work advances the field of multi-agent deep reinforce- ment learning by demonstrating how stigmergic commu- nication and curriculum learning together enable robust  scalability in environments that are otherwise dominated  by congestion and non-stationarity. Simulation results dem- onstrate that S-MADRL not only improves excavation effi- ciency but also yields emergent, biologically inspired strat- egies such as selective idleness and asymmetric workload  distribution, which reduce congestion in confined tunnels.  Benchmark comparisons confirm that our framework scales  reliably up to eight agents, outperforming state-of-the-art  baselines. The emergence of biologically inspired behaviors  such as asymmetric workload distribution and selective idle- ness, underscores the value of indirect communication as a  robust and scalable multi-agent coordination mechanism.  Looking forward, we believe that our approach holds prom- ise for addressing other multi-agent coordination problems,  in particular those that required decentralized and scalable  control framework, in both static and dynamic contexts.\nAcknowledgements  We gratefully acknowledge Professor Daniel I.  Goldman of the Georgia Institute of Technology for his invaluable  guidance and support throughout the course of this research. His  insights and feedback were instrumental in shaping both the conceptual  framework and the successful completion of this manuscript.\nFunding  This research has been funded by the Industrial Technol- ogy Innovation Program (P0028404, development of a product level  humanoid mobile robot for medical assistance equipped with bidirec- tional customizable human–robot interaction, autonomous semantic  navigation, and dual-arm complex manipulation capabilities using  large-scale artificial intelligence models) of the Ministry of Industry,  Trade and Energy of Korea.\nOpen Access  This article is licensed under a Creative Commons Attri- bution 4.0 International License, which permits use, sharing, adapta- tion, distribution and reproduction in any medium or format, as long  as you give appropriate credit to the original author(s) and the source,  provide a link to the Creative Commons licence, and indicate if changes  were made. The images or other third party material in this article are  included in the article’s Creative Commons licence, unless indicated  otherwise in a credit line to the material. If material is not included in\n\n--- Page Break ---\n\n494 \t Artificial Life and Robotics (2026) 31:484–494\nthe article’s Creative Commons licence and your intended use is not  permitted by statutory regulation or exceeds the permitted use, you will  need to obtain permission directly from the copyright holder. To view a  copy of this licence, visit http://creativecommons.org/licenses/by/4.0/.\nReferences\n1.\t Theraulaz G, Gautrais J, Camazine S, Deneubourg JL (2003) The\nformation of spatial patterns in social insects: from simple behav- iours to complex structures. Philos Trans R Soc Lond Ser A Math  Phys Eng Sci 361(1807):1263–82 \t 2.\t Holland OE (1996) Multiagent systems: lessons from social\ninsects and collective robotics. In: Adaptation, coevolution and  learning in multiagent systems: papers from the 1996 AAAI  Spring Symposium, pp 57–62 \t 3.\t Aguilar J, Monaenkova D, Linevich V, Savoie W, Dutta B, Kuan\nHS, Betterton MD, Goodisman MA, Goldman DI (2018) Collec- tive clog control: Optimizing traffic flow in confined biological  and robophysical excavation. Science. 361(6403):672–7 \t 4.\t Bruce AI, Pérez-Escudero A, Czaczkes TJ, Burd M (2019) The\ndigging dynamics of ant tunnels: movement, encounters, and nest  space. Insectes Soc 66(1):119–127 \t 5.\t Avinery R, Aina KO, Dyson CJ, Kuan H, Betterton MD , Good-\nisman MAD, Goldman DI (2023) Agitated ants: regulation and  self-organization of incipient nest excavation via collisional cues.  J R Soc Interface 20 \t 6.\t Aina KO, Avinery R, Kuan HS, Betterton MD, Goodisman MA,\nGoldman DI (2022) Toward task capable active matter: learning  to avoid clogging in confined collectives via collisions. Front Phys  9(10):735667 \t 7.\t Aina KO, Bagheri H, Goldman DI (2025) Fault-tolerant multi-\nrobot coordination with limited sensing within confined environ- ments. arXiv:​2505.​15036 \t 8.\t Mnih V, Kavukcuoglu K, Silver D, Graves A, Antonoglou I, Wier-\nstra D, Riedmiller M (2013) Playing atari with deep reinforcement  learning. arXiv:​1312.​5602 \t 9.\t Sallab AEL, Abdou M, Perot E, Yogamani S (2017) Deep rein-\nforcement learning framework for autonomous driving. Electron  Imaging 2017(19):70–76 \t10.\t Gu S, Holly E, Lillicrap T, Levine S (2016) Deep reinforcement\nlearning for robotic manipulation. ArXiv, abs/1610.00633 \t11.\t Mnih V, Kavukcuoglu K, Silver D, Rusu AA, Veness J, Belle-\nmare MG, Graves A, Riedmiller M, Fidjeland AK, Ostrovski G,  Petersen S (2015) Human-level control through deep reinforce- ment learning. Nature 518:529–533 \t12.\t Brockman G, Cheung V, Pettersson L, Schneider J, Schulman J,\nTang J, Zaremba W(2016) Openai gym \t13.\t Vinyals O, Babuschkin I, Czarnecki WM, Mathieu M, Dudzik A,\nChung J, Choi DH, Powell R, Ewalds T, Georgiev P, Oh J (2019)  Grandmaster level in starcraft ii using multi-agent reinforcement  learning. Nature 575(7782):350–354 \t14.\t Busoniu L, Babuska R, De Schutter B (2008) A comprehensive\nsurvey of multiagent reinforcement learning. Syst Man Cybern  Part C Appl Rev IEEE Trans 38:156 – 172 \t15.\t Hernandez-Leal P, Kartal B, Taylor ME (2019) A survey and cri-\ntique of multiagent deep reinforcement learning. Auton Agents  Multi-Agent Syst 33(6):750–797 \t16.\t Gronauer S, Diepold K (2021) Multi-agent deep reinforcement\nlearning: a survey. Artif Intell Rev 1–49 \t17.\t Lowe R , Wu Y, Tamar A, Harb J, Abbeel P, Mordatch I (2017)\nMulti-agent actor-critic for mixed cooperative-competitive\nenvironments. In: Proceedings of the 31st International Confer- ence on Neural Information Processing Systems, NIPS’17, Curran  Associates Inc, Red Hook, NY, USA, pp 6382–6393 \t18.\t Theraulaz G, Bonabeau E (1999) A brief history of stigmergy.\nArtif Life 5:97–116 \t19.\t Nayak S (2020) Chapter ten—nature-inspired optimization. In:\nNayak S (eds) Fundamentals of optimization techniques with  algorithms. Academic Press, pp 271–296 \t20.\t Dorigo M, Gambardella LM (1997) Ant colony system: a coopera-\ntive learning approach to the traveling salesman problem. IEEE  Trans Evol Comput 1(1):53–66 \t21.\t Holland O, Melhuish C (1999) Stimergy, self-organization, and\nsorting in collective robotics. Artif Life 5:173–202 \t22.\t Parunak HD, Brueckner SA, Sauter J (2005) Digital pheromones\nfor coordination of unmanned vehicles. In: Weyns D, Parunak  HVD, Michel F (eds) Environments for multi-agent systems.  Springer, Berlin, pp 246–263 \t23.\t Xu X, Li R, Zhao Z, Zhang H (2021) Stigmergic independent\nreinforcement learning for multiagent collaboration. IEEE Trans  Neural Netw Learn Syst 1–15 \t24.\t Zhang K, Hou Y, Yu H, Zhu W, Feng L, Zhang Q (2021) Phero-\nmone based independent reinforcement learning for multiagent  navigation. In: Zhang H, Yang Z, Zhang Z, Wu Z, Hao T (eds)  Neural computing for advanced applications. Springer, Singapore,  pp 44–58 \t25.\t Nguyen AA (2021) Scalable, decentralized multi-agent reinforce-\nment learning methods inspired by stigmergy and ant colonies.  arXiv:​2105.​03546 \t26.\t Monekosso DN, Remagnino P (2001) Phe-q: a pheromone\nbased q-learning. In: Australian Joint Conference on Artificial  Intelligence \t27.\t Monekosso N, Remagnino P, Szarowicz A (2001) An improved\nq-learning algorithm using synthetic pheromones. In: Interna- tional Workshop of Central and Eastern Europe on Multi-Agent  Systems. Springer, pp 197–206 \t28.\t Foerster J, Assael IA, De Freitas N, Whiteson S (2016) Learning\nto communicate with deep multi-agent reinforcement learning.  In: Proceedings of the 30th International Conference on Neural  Information Processing Systems, NIPS’16, Curran Associates Inc,  Red Hook, NY, USA, pp 2145–2153 \t29.\t Samvelyan M, Rashid T, De Witt CS, Farquhar G, Nardelli N,\nRudner TG, Hung CM, Torr PH, Foerster J, Whiteson S (2019)  The starcraft multi-agent challenge. arXiv:​1902.​04043 \t30.\t Oliehoek FA, Spaan MTJ, Vlassis N (2008) Optimal and approxi-\nmate q-value functions for decentralized pomdps. J Artif Intell  Res 32:289–353 \t31.\t Narvekar S, Peng B, Leonetti M, Sinapov J, Taylor ME, Stone P\n(2020) Curriculum learning for reinforcement learning domains:  a framework and survey. J Mach Learn Res 21(181):1–50 \t32.\t Van Hasselt H, Guez A, Silver D (2016) Deep reinforcement\nlearning with double q-learning. In: Proceedings of the AAAI  conference on artificial intelligence, vol 30 \t33.\t Fellman J (2011) Lorenz Curve. Springer, Berlin, pp 760–762 \t34.\t Anderson C, Boomsma JJ, Bartholdi JJ III (2002) Task parti-\ntioning in insect societies: bucket brigades. Insectes Sociaux  49(2):171–180\nPublisher's Note  Springer Nature remains neutral with regard to  jurisdictional claims in published maps and institutional affiliations.",
+  "equations": [
+    {
+      "page": 1,
+      "raw_extracted": "Abstract We address the challenge of coordinating multiple robots in narrow and confined environments, where congestion and  interference often hinder collective task performance. Drawing inspiration from insect colonies, which achieve robust coor- dination through stigmergy—modifying and interpreting environmental traces—we propose a stigmergic multi-agent deep  reinforcement learning (S-MADRL) framework that leverages virtual pheromones to model local and social interactions,  enabling decentralized emergent coordination without explicit communication. To overcome the convergence and scalabil- ity limitations of existing algorithms such as MADQN, MADDPG, and MAPPO, we leverage curriculum learning, which  decomposes complex tasks into progressively harder sub-problems. Simulation results show that our framework achieves  the most effective coordination of up to eight agents, where robots self-organize into asymmetric workload distributions that  reduce congestion and modulate group performance. This emergent behavior, analogous to strategies observed in nature,  demonstrates a scalable solution for decentralized multi-agent coordination under crowded environments with communica- tion constraints.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Keywords  Deep reinforcement learning · Multi-agent systems · Swarm robotics · Stigmergy · Emergent coordination",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Social insect such as ants exhibit remarkable emergent coor- dination in tasks like nest construction or tunnel excavation.  These behaviors remain robust regardless of colony size and  rely on simple decentralized mechanisms such as local and  social interactions like stigmergy, where agents leave traces  in the environment that guide the actions of others  [1, 2].  Such mechanisms allow large groups to operate effectively  in constrained, shared environments where congestion and  jamming would otherwise occur. In particular, stigmergy  provides a bio-inspired form of indirect communication that",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "enables efficient group performance in crowded and con- fined environments  [3–5].",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Translating these strategies into multi-robot systems,  however, poses significant challenges  [6, 7]. Achieving  comparable levels of coordination and efficiency is hindered  by the difficulty of accurately modeling the sensing and  communication capabilities that underpin biological swarm  interactions. In swarm robotics, researchers have often  attempted to address this challenge through ad hoc con- trol laws or optimization methods. These typically rely on  detailed modeling of the environment and robot interactions,  frequently under assumptions such as full state observability  that rarely hold in practice. An alternative approach involves  designing simple behavioral rules or heuristics inspired by  biological systems. While effective at producing complex  group behaviors, such methods often require substantial re- modeling and adaptation when applied to new scenarios,  thereby limiting their scalability and generalization.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Deep reinforcement learning (DRL) offers the potential to  discover complex behaviors from simple task descriptions.  DRL has shown success in diverse domains including com- puter games [8], autonomous driving [9], and robotic manip- ulation [10]. However, extending DRL to swarm robotics  or multi-agent systems presents significant challenges that",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "This work was presented in part at the joint symposium of the  27th International Symposium on Artificial Life and Robotics,  the 7th International Symposium on BioComplexity, and the 5th  International Symposium on Swarm Behavior and Bio-Inspired  Robotics (Online, January 25–27, 2022).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "*\t Sehoon Ha  \t sehoonha@gatech.edu",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Kehinde O. Aina  \t kaina3@gatech.edu",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "1\t Institute for Robotics and Intelligent Machines, Georgia  Institute of Technology, Atlanta, USA",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "hinder effective learning and stable convergence. First,  agents face partial observability, as they lack access to  global environmental information and rely solely on local  observations. Second, the system is inherently non-station- ary, with agents continuously adapting their behaviors or  evolve their policies in response to others, destabilizing the  learning process. Finally, non-scalability arises as state and  action spaces grow exponentially with the number of agents,  exacerbating the “curse of dimensionality.\"",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "In this work, we introduce the Stigmergic multi-agent  deep reinforcement learning (S-MADRL) framework, based  on the conventional deep Q-network (DQN) algorithm [11],  to discover cooperative policies for collective pellet retrieval  in crowded environments (see Fig. 1). Our framework trains  decentralized policies that operate without relying on global  state information or joint actions of other agents, enabling  effective coordination among homogeneous agents, reducing  traffic jams, and enhancing overall pellet retrieval efficiency.  The novelty of our approach lies in two key contributions.  First, we implement the stigmergic communication, mod- eled as virtual pheromones, which locally encode traces of  other agents’ activities to enable indirect communication and  foster cooperative behaviors. Second, we incorporate cur- riculum learning to address the issue of unstable learning in  complex or crowded scenarios. By decomposing the problem  into simpler sub-tasks, curriculum learning enables agents to  effectively tackle increasingly complex scenarios, improving  the stability and scalability of the learning process.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "We evaluate our proposed framework on the collective  pellet retrieval task, modeled using the OpenAI Gym plat- form [12]. The results show that the SMADRL framework  can effectively learn decentralized coordination behaviors",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "for up to five agents in deterministic environments, and  up to eight agents in stochastic environments. In contrast,  state-of-the-art algorithms such as multi-agent deep deter- ministic policy gradient (MADDPG) fail to scale beyond  two agents. Furthermore, the learned cooperative behaviors  exhibit emergent strategies similar to those observed in bio- logical systems  [3], emphasizing the potential of stigmergy- inspired approaches for scalable and robust multi-agent  coordination in dynamic environments.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "The recent advancement of deep reinforcement learning  (DRL) in tackling real-world tasks has established it as a  powerful tool for solving complex problems characterized by  high-dimensional information representation through trial- and-error methods  [11]. Its extension to multi-agent systems  (MAS) has gained substantial traction in recent years, ena- bling innovative collaborative and distributed solutions to  challenges that traditional methods struggle to address  [13].  However, applying DRL to MAS presents significant chal- lenges, including non-stationarity and non-convergence,  primarily arising from the concurrent actions of agents and  the partial observability of the state of the environment  [14].  To address these issues and enable convergence and scal- ability, prior research has explored several approaches, such  as incorporating explicit communication channels between  agents, training with joint action and full state information,  and directly modeling the behavior of other agents  [14–16].",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "Explicit communication in multi-agent systems often  incurs significant computational costs, which do not scale  well with an increasing number of agents. To address this  limitation, recent works have explored implicit communi- cation mechanisms or shared memory frameworks among  agents  [14, 17]. Stigmergy, in particular, has been inves- tigated as a coherent and effective method of decentralized  communication via local stimuli  [1]. Stigmergy  [18] ena- bles agents to leave traces or signals in the environment,  which guide the swarm towards desired emergent behav- iors. This form of communication uses the environment as  a shared external memory, where agents exchange useful  information as cues. By interacting with these environmental  cues, agents can infer the actions of neighbors, or approxi- mate most recent activity history or state of their immediate  environment  [19]. Due to its scalability, robustness, low  computational overhead, and adaptability  [20], stigmergy  has been widely adopted in multi-agent coordination and  control. Applications include solving several NP-hard prob- lems, such as implicit spatial clustering of multi-agent sys- tems without direct inter-agent communication  [21] and  coordination of unmanned vehicles  [22].",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "Fig. 1   Experimental setup of the multi-robot excavation task. a Real- world top view of the excavation arena, consisting of a pellet source,  a narrow tunnel, excavating robots, and a home area. b Correspond- ing abstracted simulation model used for training and evaluation. The  simplified representation preserves essential components in the real- world model, and enables scalable and varied experiment scenarios",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "In multi-agent reinforcement learning (MARL) settings,  adapting the concept of stigmergy offers the potential for  better learning convergence and scalability, yet it remains  under-explored. Conventional approaches to addressing the  issues of non-stationarity and non-convergence often involve  introducing direct communication between the agents, or  training agents with joint actions and joint observations of  all agents. However, these methods suffer from significant  communication overhead, and the curse of dimensionality  respectively  [14, 17]. Consequently, such direct approaches  face limitations in achieving scalability and convergence,  particularly in congested or highly constrained environ- ments. Recent studies have begun exploring the inherent  advantages of stigmergy to improve learning in multi-agent  settings [23–27].",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Of particular relevance to our work is the Stigmergic  Independent RL framework developed by Xu et al. [23].  Their framework establishes an indirect communication  bridge indirect communication bridge between agents via a  stigmergy medium, represented as a digital pheromone map.  This medium enables agents to communicate and observe  environmental states through an explicit feedback loop. In  contrast, our work adopts the concept of digital pheromones  but employs a virtual map that stores localized information  about different regions of the environment, avoiding direct  information propagation. Furthermore, while Xu et al.  applied their framework to UAV flight formation without  addressing scalability, we focus on collective coordination  in a highly constrained and crowded environment, provid- ing a comparative scalability analysis with other popular  MARL methods.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Similarly, Zhang et al [24] developed the Pheromone Col- laborative DQN framework to address the minefield naviga- tion task. Their model uses a network structure where nodes  emit pheromone information to attract nearby agents. Agents  select “attractors” based on a random-proportional equation  that depend on the attractor’s signal strength. Unlike our  model of digital pheromone model which directly influences  agent decision-making through localized information, their  approach relies on probabilistic attraction without analyz- ing scalability to larger numbers of agents. In contrast, we  demonstrate our framework’s effectiveness and scalability  compared to other popular MADRL methods, specifically  in dynamic and stochastic environments.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Deep reinforcement learning (DRL) typically models prob- lems using a Markov Decision Process (MDP). An MDP  is defined by the state space S , action space A , transition",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "function p(s\u001e|s, a) , reward function r(s, a), and the distribu- tion of initial states s0 ∼p0(s) , where s is the current state, s′  is the next state, and a is the action. A widely-used method  for solving MDPs is Q-learning, which learns the value  Q(s, a) of an action a in a state, s, based on the temporal  difference (TD) update rule below:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "where 훼 is the learning rate, 훾 is the discount factor, r is the  reward, and maxa\u001f Q(s\u001f, a\u001f) is the maximum future reward of  the next state s′ . Once Q(s, a) is learned, the optimal policy  휋(s) selects the action that maximizes the expected return:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Deep Q-network (DQN) extends Q-learning by approximat- ing the Q −function using deep neural networks parameter- ized by 휃 . Instead of directly updating individual Q −values ,  the network’s parameters are updated by minimizing a dif- ferentiable loss function at each iteration i:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "where the target yDQN is given by:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "This approach enables the agent to generalize across high- dimensional state and action spaces, making DQN effective  for a variety of complex tasks.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Multi-agent deep reinforcement learning (MADRL) extends  the principles of DRL to address problems in multi-agent  reinforcement learning (MARL). In these settings, the state  transition function depends on the joint actions of all agents,  introducing significant complexity. A naïve approach would  involve learning a single policy for the joint actions and state  spaces of all agents. However, this quickly becomes imprac- tical due to the curse of dimensionality, where the state and  action spaces grow exponentially with the number of agents.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "To address this, a common approach is to provide each  agent with partial knowledge of the environment’s state and  to assign them individual policy learners. This reformulation  is often modeled as a partially observable Markov decision  process (POMDP). Under this framework, each agent oper- ates based on a local observation rather than global state  information, and learns separate decentralized policies tai- lored to their individual observations. While this approach  mitigates the scalability issue, it introduces a significant  challenge: the non-stationarity problem. This arises because  each agent continually updates its policy in response to the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Q(s, a) ←Q(s, a) + 훼(r + 훾max",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "a\u001c Q(s\u001c, a\u001c) −Q(s, a)),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "휋(s) = arg max aQ(s, a).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "L(휃) = 피s,a,r,s\u001c[(yDQN",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "i −Q(s, a;휃i))2],",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "yDQN = r + 훾max",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "a\u001d Q(s\u001d, a\u001d;휃).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "evolving behaviors of other agents, leading to a “moving  target\" problem.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Several strategies have been proposed to address this  issue: (1) team rewards which encourages cooperative behav- ior by providing agents with shared rewards that align their  objectives, and (2) direct communication channels allowing  agents to exchange information to reduce uncertainty and  improve coordination [28]. Despite these advancements,  achieving scalable and stable learning in MADRL remains  a key area of research, particularly in environments with  high congestion.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "The coordination of multi-agent systems has garnered sig- nificant research interest in recent years, with the complex- ity of the problem increasing exponentially as the number  of agents rises  [29]. In this work, we address the challenge  of multi-agent coordination within a collective excavation  task, where a group of homogeneous robots is assigned  the task of continuously retrieving pellets (or food items)  in a narrow, confined 2D grid-world environment  [6, 7].  The goal is to maximize pellet collection within a speci- fied time frame. The robots involved typically operate under  constraints of limited sensing and communication capabili- ties, without centralized control or access to global state  information regarding the actions and states of other agents.  Consequently, much of the system’s activity is spent resolv- ing conflicts arising from overcrowding and competition for  space. We model this collective excavation problem as a  decentralized partially observable Markov decision process  (Dec-POMDP)  [30], using independent deep Q-network  (DQN) learners (IQL). Coordination between agents is  achieved through specialized social interactions facilitated  by stigmergy, allowing agents to infer the actions of others  indirectly through the environment. To address more com- plex scenarios, we incorporate curriculum learning, which  simplifies the learning process by training agents sequen- tially, focusing on one agent at a time.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "In this section, we formalize the collective excavation task  as a decentralized partially observable Markov decision pro- cess (Dec-POMDP) to model the decision-making process  of agents with partial and localized observations.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "State and observation Consider a system of N agents operating within the environ- ment (as depicted in Figure  1). At each time step, each agent  obtains a local observation consisting of two components: an  egocentric, non-spatial discrete component and a geocentric,  spatial component. The egocentric state encodes the internal",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "mode of the agent, which can be one of the following states:  Going-to-dig, Digging, Exit-digging, Going-home, Dumping,  Exit-home, or Collision. The geocentric components capture  the agent’s position, orientation, previous action, number of  collisions, distance to home, and distance to pellet source.  These observations form an 8-dimensional vector space for  each agent, which is further augmented with “virtual phero- mone” information from neighboring cells within the agent’s  restricted field-of-view. This design ensures that each agent  has a compact, private observation space, enabling the tech- nique to scale efficiently with a larger number of agents with- out necessitating changes to the network’s input size.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Action space We adopted a discrete space representation consisting of  a set of five actions. At each time step, the agents can choose  one possible action within the set, namely: North, South, West,  East, and Stop. If the target location is occupied, the agent  incurs a penalty and enters the collision state or mode, remain- ing stationary until it selects an unoccupied position.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Reward function To facilitate rapid convergence, a reward shaping strategy is  applied. The dense reward function is designed to encourage  efficient learning and prompt the agents to achieve their objec- tives quickly while contributing to the collective mission. The  reward function incorporates four distinct signals:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "•\t Distance Reward,  rd(s, t) : The agent receives a reward of  +2.5 for moving closer to the goal (either the pellet location  or home area depending on the internal state) compared to  the previous time step. •\t Collision Reward,  rc(s, t) : A penalty of −2.0 if an unladen  or unloaded agent collides with another agent. •\t Pellet Pickup Reward,  rp(s, t) : A reward of +50 is received  when an agent successfully locates the pellet or food item.  In global reward settings, this reward value is distributed  equally among all agents, encouraging collective coopera- tion rather than individual competition. To clarify, a global  reward assigns the same reward value to all agents, regard- less of their individual contributions, explicitly encour- aging cooperative behavior. In contrast, a local reward  allocates rewards based solely on each agent’s individual  performance, which often promotes competitive rather than  collaborative behavior. •\t Successful Trip Reward,  rs(s, t) : A reward of +50 is  received when an agent successfully delivers a pellet to the  home area. Again, in the global reward settings, this reward  is distributed to all agents to further promote cooperative  behavior.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "The complete reward function is defined as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "r(s, t) = wdrd(s, t) + wcrc(s, t) + wprp(s, t) + wsrs(s, t),",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "where the weights wd, wc, wp, and ws are set to 0.2, 0.2, 0.2,   and 0.4,  respectively, for all the experiments.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Figure 2 illustrates our proposed stigmergic multi-agent deep  reinforcement learning (SMADRL) framework, designed  for scalable decentralized learning through the use of stig- mergic communication. In this framework, we model stig- mergy using a virtual map overlaid on the environment,  which serves as an asynchronous, indirect communication  medium. As agents navigate the environment, they update  this virtual map. A digital pheromone is essentially a virtual  map that stores the distribution of “activity signals” across",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "the environment. The map’s keys represent distinct coordi- nates or positions within the space, while the values encode  specific state information about agents’ actions. Each time  an agent moves from one cell to another in the grid world (as  depicted in Fig. 3), the value of the corresponding map posi- tion is updated to reflect the agent’s state—such as its occu- pancy status, internal state, laden or unladen condition (rep- resented as 1 and 0, respectively), and current action. The  occupancy status is initialized to a value of 휌0 , and decays  over time based the function: 휌(t + 1) = (1 −훼) 휌(t) + 훽 ,  where 훼 is the decay rate and 훽 is the reinforcement incre- ment. This enables the pheromone concentration to reflect  recent activity in the environment, encouraging indirect  coordination. This digital pheromone mechanism allows",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Fig. 2   Proposed scalable decentralized MADRL framework with  stigmergic communication. Each agent i receives a local observa- tion Oi and selects an action ai based on its policy 휋i . The environ- ment provides the resulting state Si and reward ri , while agents leave  and sense pheromone traces 휌i that diffuse and decay over time. This",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "indirect communication channel encodes recent occupancy and agent  activity, enabling decentralized coordination without explicit message  passing. Learning and execution are fully independent for each agent,  ensuring scalability to large team sizes",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Fig. 3   Schematic of the digital pheromone map and agents’ restricted  field of view. Agents deposit virtual pheromones while moving, gen- erating spatial gradients (shown in different shades of gray) that dif- fuse and decay over time. Each agent perceives only a limited local  region (red arrows), mimicking partial observability. The blue agent",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "is laden with pellet and returning to the home area, while green  agents are searching for pellets. Stigmergic communication provides  environmental memory that supports implicit coordination among  agents",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "agents to implicitly communicate information regarding  their internal states and the environment, analogous to the  pheromone traces left by social insects. Agents can then  observe the encoded information within their neighboring  cells, within their limited field of view, and incorporate it  into their observation space during training and decision- making (see Figs. 2 and  3). This approach enables agents  to infer the actions and intentions of other agents, as well as  gain insights into the state of the environment, facilitating  coordinated behavior.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Curriculum learning (CL) is an instructional strategy that  sequences training experiences to enhance the learning  process, either by accelerating learning or improving final  performance. In reinforcement learning (RL) contexts, CL  typically involves designing a progression of tasks, begin- ning with simple problems and gradually increasing their  complexity. This progression aims to optimize both the  asymptotic performance and training efficiency  [31]. In  multi-agent reinforcement learning (MARL) settings, CL  plays a crucial role in mitigating the challenges posed by  non-stationarity, particularly when multiple agents concur- rently adapt their policies in response to each other’s chang- ing behaviors. By limiting concurrent policy updates to a  single agent at a time, while incrementally adding more  agents, this approach can lead to substantial improvements  in performance and convergence.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "In our framework, CL is employed to enhance learning  convergence in more complex and congested scenarios,  particularly when the number of agents exceeds four. The  process begins with two agents learning decentralized poli- cies for collective pellet retrieval in parallel. These two fully  trained agents are referred to as the old agents. Subsequently,  additional agents are introduced sequentially, with each new  agent learning its policy from scratch while the policies of  the old agents remain fixed. This strategy reduces the non- stationarity issues by minimizing the “moving target\" effect  caused by multiple concurrent learners. Our experiments  demonstrate that this method facilitates scalability, allow- ing us to effectively train systems with up to eight agents,  especially when combined with the stigmergic communica- tion technique.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "To evaluate the effectiveness of our proposed approach, we  conducted simulation experiments using the setup illustrated  in Fig. 1. The Markov decision process (MDP) was imple- mented through OpenAI’s Gym interface  [12], where the  environment’s step function takes actions as inputs and returns",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "the subsequent states, rewards, and terminal flags. The envi- ronment is designed to accommodate a variable number of  agents, which can be specified at the outset of each experiment,  along with the length of the tunnel in terms of grid cells or the  agents’ body length (BL). The agents operate within a shared  environment but employ separate policy learners and distinct  experiences. At each time step, the agents act simultaneously  and receive private observations, including either a global or  local reward. To enhance training stability, we employed dou- ble Q-learning  [32] and experience replay  [8]. The policy  architecture consists of three hidden layers, each containing  128 neurons. An 휖-greedy action-selection strategy was used  to ensure comprehensive exploration of the state and action  spaces, with the exploration rate decaying from 100% to 2%  over the first 10% of the total training duration.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "We compared four distinct learning techniques, varying  the number of agents from one to five:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "•\t Independent Q-learning (IQL): This is our baseline  method which utilizes independent DQNs with local  rewards to train agents separately. •\t IQL with Global Reward (IQL+G): This method incor- porates global rewards into the baseline method, to  encourage cooperation among agents. •\t IQL with Global Reward and Stigmergy (IQL+GS):  Building on (IQL+G), this method adds a virtual phero- mone map, discussed in previous section, to mitigate  non-staionarity and facilitate agent cooperation. •\t Stigmergy with curriculum learning (IQL+GSC): This  approach combines the (IQL+GS) method with curric- ulum learning, introducing one agent at a time during  training to improve stability and convergence.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "The training and testing were conducted on a desktop com- puter featuring an AMD Ryzen 12-core processor at 3.4  GHz, 32 GB RAM, and an Nvidia RTX 2070 GPU. Each  experimental setup was run multiple times, with consist- ent learning curves observed across trials. During testing,  we recorded the number of pellets excavated by individual  agents and logged the cumulative total for all agents at each  time step. The comparison of total pellets excavated across  different learning methods is shown in Fig. 4.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Due to the simulation’s latency, training a single agent  from scratch for a fully converged policy on the GPU takes  approximately twelve hours. Training time scales linearly  with the number of concurrent agents. However, curricu- lum learning (CL) significantly reduces training time by  introducing new agents sequentially to a team of previously  trained agents. Convergence typically begins after around  200 episodes, each comprising 5000 time steps, after which  the environment is reset to its initial conditions. The learning  rate was set to 10−4 , with a discount factor of 0.99. A batch",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "size of 64 was found to be optimal, and the Adam optimizer  was used for agent training.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Figure 4 shows a comparison of total pellets excavated  for each technique. For one and two agent scenarios, the  baseline algorithm (IQL) performed well with both local  and global rewards. However, as the number of agents  increases, the performance drops drastically. At this stage,  we introduce stigmergy to facilitate cooperation and to  improve convergence. This is achieved by augmenting the  observation space of each agent with information encoded  in the virtual maps or “pheromone trails\". This technique  improves performance for three and four team sizes, but  not so well for five agent scenario. In this case, coordina- tion becomes more challenging, and achieving successful  convergence would require more powerful training tech- nique. Our curriculum learning approach (IQL+GSC)  addresses this by reducing the difficulty in four and five  agent scenarios, training one agent at a time.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Figure 5 shows the learning curve for the different  MADRL techniques described above, for one to five agents  in a shared environment. Clearly, stigmergy helps address  convergence issues, since the baseline methods (IQL and  IQL+G) could not handle three agents and higher. Cur- riculum learning improves learning convergence for four  and five agent scenarios. Also, learning did not start from  zero with the CL method, since the old agents were using  their learned policies.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Figure 6 shows the comparison of the workload distri- bution for the two best learning approaches using Lorenz  curves [33]. Lorenz curves describe the workload distribu- tion of a team by linking the cumulative share of number  of agents to the cumulative share of total number of pellets  or food items retrieved. This curve is convex by definition.  An equal workload distribution appears as a straight line  between (0,0) and (1,1). A divergence from this straight line  indicates unequal workload distribution, where for example,  half of the team retrieved less than half of the total number of  pellets. According to the curves in Fig. 6, it is clear that for  three agent scenario, all workers excavated equal amounts  of pellets as indicated by the straight line in both figures.  For four and five agents, however, the curves diverge further  from the straight line, with the curriculum learning tech- nique (Fig. 6B) having the greater divergence or “higher”  unequal workload distribution. This translates to: more  agents should participate less as the team size increases.  Thus, we can infer from the Lorenz curves and Fig. 4 that the  best strategy to achieve the highest pellet retrieval successes  is through asymmetric or unequal workload distribution",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Fig. 4   Cumulative excavation results comparing four multi-agent  deep reinforcement learning (MADRL) methods (IQL baseline,  IQL+G, IQL+GS, and IQL+GSC) for teams of up to five agents.  While the baseline (IQL) performs adequately for one and two agents,  performance declines as team size increases. Incorporating stig- mergy (IQL+GS) improves coordination for three and four agents,  but struggles at five. Combining stigmergy with curriculum learning  (IQL+GSC) achieves the highest excavation performance across all  team sizes, demonstrating superior scalability and robustness in mod- erately congested environments",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Fig. 5   Learning curve comparison of the four MADRL techniques  (IQL, IQL+G, IQL+GS, and IQL+GSC) for one to five agents. Base- line methods (IQL, IQL+G) fail to converge beyond three agents.  Stigmergic communication (IQL+GS) enhances learning stability,  while curriculum learning (IQL+GSC) further accelerates conver- gence and achieves the highest rewards in four- and five-agent sce- narios",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "when the agent density is above a threshold, in this case,  four agents. This strategy greatly minimizes jamming and  collision in the tunnel. Lorenz curves for one and two team  sizes were not shown here because they all produce similar  curves which are equal workload distributions.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Figure 7 illustrates representative behaviors discovered by  the different training methods. Figure 7A is a typical “clog- ging” or “jamming\" scenario we encounter during testing  when agents are trained without incorporating stigmergy,  even though global reward was used. The agents get stuck  due to lack of cooperation. On the contrary, Fig. 7B shows  the coordinated behavior that emerges when virtual phero- mone is employed. The agents learned to carefully avoid  clogging by spacing out when outside the tunnel and yield- ing to each other when inside the tunnel. This is effective to  avoid getting stuck in three to four agent scenarios. In five  agent scenario, the agents can still get stuck even with virtual  pheromones (Fig. 7C). This is due to the complexity of the  problem: high non-stationarity. Incorporating curriculum",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "learning resolves this: some agents strategically remain  idle, while others complete retrieval tasks (Fig. 7D). The  snapshot shows that two agents are “idle\" or “resting\" by  not participating in the pellet retrieval task (followlink for  video demonstration). This emergent division of labor mir- rors biological findings that idleness and asymmetric work- load distribution are effective congestion-control strategies  in crowded environments [3].",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Scaling multi-agent deep reinforcement learning to dense  and dynamic environments remains a central challenge due  to the compounded non-stationarity introduced by many  concurrent learners interacting in a shared evolving envi- ronment. As shown in Table 1 and Fig. 8, conventional  approaches such as I-DQN, I-A2C, MA-DQN, MA-A2C,  MADDPG, and MAPPO degrade rapidly as the number",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Fig. 6   Lorenz curve com- parison of workload distribution  under stigmergy-only learning  (IQL+GS, panel a) and stig- mergy with curriculum learning  (IQL+GSC, panel b). For three  agents, both methods result in  equal workload distribution. For  four and five agents, however,  workload becomes increasingly  unequal, especially under cur- riculum learning",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Fig. 7   Snapshots of various  scenarios during testing. a Four  agents often get stuck in the  tunnel when trained without  stigmergy. b Stigmergy prevents  agents from getting stuck, which  enables effective coordination.  c Five agents with stigmergy  can still get stuck due to the  difficulty of the scenario. d  Curriculum learning enables  efficient learning in difficult  scenarios, and the discovery of  a bio-inspired strategy: unequal  work distribution to avoid  clogging",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "of agents increases, often failing to converge beyond 3–4  agents. By contrast, our proposed S-MADRL framework  maintains stability and scales effectively up to eight agents,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "representing a significant improvement over state-of-the-art  baselines.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "A key driver of this scalability is the incorporation of  tunnel density information ( 휌= n∕L , where n is the number",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Table 1   Quantitative  comparison of excavation  performance across multiple  multi-agent deep reinforcement  learning algorithms,  measured as the total number  of successful trips (pellets  delivered per episode) for teams  of 1–8 agents",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Our proposed S-MADRL framework consistently scales up to 8 agents, maintaining robust performance  under severe congestion",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Method 1 Agent 2 Agents 3 Agents 4 Agents 5 Agents 6 Agents 7 Agents 8 Agents",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "I-DQN 43 63 99 73 79 43 32 35 I-A2C 53 69 79 49 22 8 6 3 MA-DQN 32 15 11 8 1 2 0 0 MA-A2C 52 36 5 0 0 0 0 0 MADDPG 33 33 17 28 3 3 1 1 MAPPO 43 99 92 57 21 22 3 2 S-MADRL 46 87 102 115 114 105 109 110",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Fig. 8   Learning curve comparison of our proposed S-MADRL frame- work against state-of-the-art multi-agent deep RL baseline algorithms  for team sizes from 1 to 8 agents. Each subplot shows cumulative  rewards over training episodes. Baseline methods achieve moder- ate success with 1–3 agents but collapse beyond 4 agents due to high",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "dimensional state and action spaces. In contrast, S-MADRL demon- strates stable convergence and sustained high rewards even with 7–8  agents, confirming its superior scalability and coordination capabili- ties in crowded environments",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "of agents in the tunnel and L the tunnel length) into the  pheromone map. This density signal enables agents to infer  congestion levels and adaptively switch between active mode  (entering the tunnel) and passive mode (remaining idle at  home). This emergent behavior mirrors strategies observed  in social insects, where temporary idleness prevents clog- ging. By leveraging environmental memory via stigmergy,  agents coordinate indirectly, mitigating non-stationarity  without explicit communication or centralized critics.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "From qualitative analysis, we observed two recurring  optimal policy strategies:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "•\t One-at-a-Time (OAT) strategy [5, 6]: This is more fre- quently observed in joint-action learners (JALs) such as  MA-DQN, MADDPG, and MAPPO, where only two  agents operate at a time while others wait. While this  reduces tunnel congestion, it creates bottlenecks at the  home area as team size grows, limiting group perfor- mance and scalability. •\t Bucket-Brigade (BB) strategy [34]: This is common in  independent learners (I-DQN, I-A2C) and strongly rein- forced by our S-MADRL. Here, agents self-organize  into a bi-directional flow pattern: one lane for unladen  robots entering the tunnel and the other for laden robots  returning home. This continuous flow minimizes interfer- ence and scales efficiently with team size (Table 1 and  Fig. 8), underpinning the superior performance of our  S-MADRL framework.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Our results suggest that indirect communication through  stigmergic traces is not only biologically plausible, but also  computationally advantageous: it provides a spatio-temporal  signal that agents can exploit for traffic coordination, avoid- ing the exponential growth of state-action spaces typical in  explicit communication or centralized learning settings.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Beyond simulation, S-MADRL offers direct applica- tions for real-world robotic swarms operating in highly  constrained domains such as mining excavations or search- and-rescue missions. Training can be carried out in simula- tion to learn robust policies, which can then be transferred  to physical robots provided that the extracted features in  observation remain consistent, or are fine-tuned during  deployment. In practice, virtual pheromone maps could be  approximated through several mechanisms: for instance, via  synchronized distributed servers aggregating and diffusing  local agent observations; or through physical environmental  cues such as dynamically updated QR-code projections or  RFID markers that allow agents to project and sense shared  state information.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Unlike many existing MADRL approaches, our method  does not require direct inter-agent communication or shar- ing of policy parameters, or centralized training and execu- tion, which typically suffer from scalability bottlenecks due",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "to exponential state–action growth. Instead, S-MADRL  remains fully decentralized in both training and execution,  making it especially suitable for hardware deployment in  environments with unreliable or degraded communica- tions. Nevertheless, our approach assumes accurate sensing  of pheromone intensities which may be affected by noise  in real-world systems, and the restriction to homogeneous  agents. Future work will extend S-MADRL to heterogene- ous roles (e.g., specialized excavators vs. transporters) and  refine curriculum learning to reduce its linear dependence  on team size.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "This work advances the field of multi-agent deep reinforce- ment learning by demonstrating how stigmergic commu- nication and curriculum learning together enable robust  scalability in environments that are otherwise dominated  by congestion and non-stationarity. Simulation results dem- onstrate that S-MADRL not only improves excavation effi- ciency but also yields emergent, biologically inspired strat- egies such as selective idleness and asymmetric workload  distribution, which reduce congestion in confined tunnels.  Benchmark comparisons confirm that our framework scales  reliably up to eight agents, outperforming state-of-the-art  baselines. The emergence of biologically inspired behaviors  such as asymmetric workload distribution and selective idle- ness, underscores the value of indirect communication as a  robust and scalable multi-agent coordination mechanism.  Looking forward, we believe that our approach holds prom- ise for addressing other multi-agent coordination problems,  in particular those that required decentralized and scalable  control framework, in both static and dynamic contexts.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Acknowledgements  We gratefully acknowledge Professor Daniel I.  Goldman of the Georgia Institute of Technology for his invaluable  guidance and support throughout the course of this research. His  insights and feedback were instrumental in shaping both the conceptual  framework and the successful completion of this manuscript.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Funding  This research has been funded by the Industrial Technol- ogy Innovation Program (P0028404, development of a product level  humanoid mobile robot for medical assistance equipped with bidirec- tional customizable human–robot interaction, autonomous semantic  navigation, and dual-arm complex manipulation capabilities using  large-scale artificial intelligence models) of the Ministry of Industry,  Trade and Energy of Korea.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Open Access  This article is licensed under a Creative Commons Attri- bution 4.0 International License, which permits use, sharing, adapta- tion, distribution and reproduction in any medium or format, as long  as you give appropriate credit to the original author(s) and the source,  provide a link to the Creative Commons licence, and indicate if changes  were made. The images or other third party material in this article are  included in the article’s Creative Commons licence, unless indicated  otherwise in a credit line to the material. If material is not included in",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "the article’s Creative Commons licence and your intended use is not  permitted by statutory regulation or exceeds the permitted use, you will  need to obtain permission directly from the copyright holder. To view a  copy of this licence, visit http://creativecommons.org/licenses/by/4.0/.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "1.\t Theraulaz G, Gautrais J, Camazine S, Deneubourg JL (2003) The",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "formation of spatial patterns in social insects: from simple behav- iours to complex structures. Philos Trans R Soc Lond Ser A Math  Phys Eng Sci 361(1807):1263–82 \t 2.\t Holland OE (1996) Multiagent systems: lessons from social",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "insects and collective robotics. In: Adaptation, coevolution and  learning in multiagent systems: papers from the 1996 AAAI  Spring Symposium, pp 57–62 \t 3.\t Aguilar J, Monaenkova D, Linevich V, Savoie W, Dutta B, Kuan",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "HS, Betterton MD, Goodisman MA, Goldman DI (2018) Collec- tive clog control: Optimizing traffic flow in confined biological  and robophysical excavation. Science. 361(6403):672–7 \t 4.\t Bruce AI, Pérez-Escudero A, Czaczkes TJ, Burd M (2019) The",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "digging dynamics of ant tunnels: movement, encounters, and nest  space. Insectes Soc 66(1):119–127 \t 5.\t Avinery R, Aina KO, Dyson CJ, Kuan H, Betterton MD , Good-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "isman MAD, Goldman DI (2023) Agitated ants: regulation and  self-organization of incipient nest excavation via collisional cues.  J R Soc Interface 20 \t 6.\t Aina KO, Avinery R, Kuan HS, Betterton MD, Goodisman MA,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Goldman DI (2022) Toward task capable active matter: learning  to avoid clogging in confined collectives via collisions. Front Phys  9(10):735667 \t 7.\t Aina KO, Bagheri H, Goldman DI (2025) Fault-tolerant multi-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "robot coordination with limited sensing within confined environ- ments. arXiv:​2505.​15036 \t 8.\t Mnih V, Kavukcuoglu K, Silver D, Graves A, Antonoglou I, Wier-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "stra D, Riedmiller M (2013) Playing atari with deep reinforcement  learning. arXiv:​1312.​5602 \t 9.\t Sallab AEL, Abdou M, Perot E, Yogamani S (2017) Deep rein-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "forcement learning framework for autonomous driving. Electron  Imaging 2017(19):70–76 \t10.\t Gu S, Holly E, Lillicrap T, Levine S (2016) Deep reinforcement",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "learning for robotic manipulation. ArXiv, abs/1610.00633 \t11.\t Mnih V, Kavukcuoglu K, Silver D, Rusu AA, Veness J, Belle-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "mare MG, Graves A, Riedmiller M, Fidjeland AK, Ostrovski G,  Petersen S (2015) Human-level control through deep reinforce- ment learning. Nature 518:529–533 \t12.\t Brockman G, Cheung V, Pettersson L, Schneider J, Schulman J,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Tang J, Zaremba W(2016) Openai gym \t13.\t Vinyals O, Babuschkin I, Czarnecki WM, Mathieu M, Dudzik A,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Chung J, Choi DH, Powell R, Ewalds T, Georgiev P, Oh J (2019)  Grandmaster level in starcraft ii using multi-agent reinforcement  learning. Nature 575(7782):350–354 \t14.\t Busoniu L, Babuska R, De Schutter B (2008) A comprehensive",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "survey of multiagent reinforcement learning. Syst Man Cybern  Part C Appl Rev IEEE Trans 38:156 – 172 \t15.\t Hernandez-Leal P, Kartal B, Taylor ME (2019) A survey and cri-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "tique of multiagent deep reinforcement learning. Auton Agents  Multi-Agent Syst 33(6):750–797 \t16.\t Gronauer S, Diepold K (2021) Multi-agent deep reinforcement",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "learning: a survey. Artif Intell Rev 1–49 \t17.\t Lowe R , Wu Y, Tamar A, Harb J, Abbeel P, Mordatch I (2017)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Multi-agent actor-critic for mixed cooperative-competitive",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "environments. In: Proceedings of the 31st International Confer- ence on Neural Information Processing Systems, NIPS’17, Curran  Associates Inc, Red Hook, NY, USA, pp 6382–6393 \t18.\t Theraulaz G, Bonabeau E (1999) A brief history of stigmergy.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Artif Life 5:97–116 \t19.\t Nayak S (2020) Chapter ten—nature-inspired optimization. In:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Nayak S (eds) Fundamentals of optimization techniques with  algorithms. Academic Press, pp 271–296 \t20.\t Dorigo M, Gambardella LM (1997) Ant colony system: a coopera-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "tive learning approach to the traveling salesman problem. IEEE  Trans Evol Comput 1(1):53–66 \t21.\t Holland O, Melhuish C (1999) Stimergy, self-organization, and",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "sorting in collective robotics. Artif Life 5:173–202 \t22.\t Parunak HD, Brueckner SA, Sauter J (2005) Digital pheromones",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "for coordination of unmanned vehicles. In: Weyns D, Parunak  HVD, Michel F (eds) Environments for multi-agent systems.  Springer, Berlin, pp 246–263 \t23.\t Xu X, Li R, Zhao Z, Zhang H (2021) Stigmergic independent",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "reinforcement learning for multiagent collaboration. IEEE Trans  Neural Netw Learn Syst 1–15 \t24.\t Zhang K, Hou Y, Yu H, Zhu W, Feng L, Zhang Q (2021) Phero-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "mone based independent reinforcement learning for multiagent  navigation. In: Zhang H, Yang Z, Zhang Z, Wu Z, Hao T (eds)  Neural computing for advanced applications. Springer, Singapore,  pp 44–58 \t25.\t Nguyen AA (2021) Scalable, decentralized multi-agent reinforce-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "ment learning methods inspired by stigmergy and ant colonies.  arXiv:​2105.​03546 \t26.\t Monekosso DN, Remagnino P (2001) Phe-q: a pheromone",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "based q-learning. In: Australian Joint Conference on Artificial  Intelligence \t27.\t Monekosso N, Remagnino P, Szarowicz A (2001) An improved",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "q-learning algorithm using synthetic pheromones. In: Interna- tional Workshop of Central and Eastern Europe on Multi-Agent  Systems. Springer, pp 197–206 \t28.\t Foerster J, Assael IA, De Freitas N, Whiteson S (2016) Learning",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "to communicate with deep multi-agent reinforcement learning.  In: Proceedings of the 30th International Conference on Neural  Information Processing Systems, NIPS’16, Curran Associates Inc,  Red Hook, NY, USA, pp 2145–2153 \t29.\t Samvelyan M, Rashid T, De Witt CS, Farquhar G, Nardelli N,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Rudner TG, Hung CM, Torr PH, Foerster J, Whiteson S (2019)  The starcraft multi-agent challenge. arXiv:​1902.​04043 \t30.\t Oliehoek FA, Spaan MTJ, Vlassis N (2008) Optimal and approxi-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "mate q-value functions for decentralized pomdps. J Artif Intell  Res 32:289–353 \t31.\t Narvekar S, Peng B, Leonetti M, Sinapov J, Taylor ME, Stone P",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "(2020) Curriculum learning for reinforcement learning domains:  a framework and survey. J Mach Learn Res 21(181):1–50 \t32.\t Van Hasselt H, Guez A, Silver D (2016) Deep reinforcement",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "learning with double q-learning. In: Proceedings of the AAAI  conference on artificial intelligence, vol 30 \t33.\t Fellman J (2011) Lorenz Curve. Springer, Berlin, pp 760–762 \t34.\t Anderson C, Boomsma JJ, Bartholdi JJ III (2002) Task parti-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "tioning in insect societies: bucket brigades. Insectes Sociaux  49(2):171–180",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Publisher's Note  Springer Nature remains neutral with regard to  jurisdictional claims in published maps and institutional affiliations.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

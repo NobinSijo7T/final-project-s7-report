@@ -1,0 +1,1922 @@
+{
+  "source_file": "s10791-022-09413-y.pdf",
+  "num_pages": 28,
+  "full_text": "Vol:.(1234567890)\nInformation Retrieval Journal (2022) 25:386–413 https://doi.org/10.1007/s10791-022-09413-y\n1 3\nReinforcement online learning to rank with unbiased reward  shaping\nShengyao Zhuang1 · Zhihao Qiao1 · Guido Zuccon1\nReceived: 16 June 2021 / Accepted: 30 May 2022 / Published online: 4 August 2022  © The Author(s) 2022\nAbstract Online learning to rank (OLTR) aims to learn a ranker directly from implicit feedback  derived from users’ interactions, such as clicks. Clicks however are a biased signal: spe- cifically, top-ranked documents are likely to attract more clicks than documents down the  ranking (position bias). In this paper, we propose a novel learning algorithm for OLTR  that uses reinforcement learning to optimize rankers: Reinforcement Online Learning to  Rank (ROLTR). In ROLTR, the gradients of the ranker are estimated based on the rewards  assigned to clicked and unclicked documents. In order to de-bias the users’ position bias  contained in the reward signals, we introduce unbiased reward shaping functions that  exploit inverse propensity scoring for clicked and unclicked documents. The fact that our  method can also model unclicked documents provides a further advantage in that less users  interactions are required to effectively train a ranker, thus providing gains in efficiency.  Empirical evaluation on standard OLTR datasets shows that ROLTR achieves state-of- the-art performance, and provides significantly better user experience than other OLTR  approaches. To facilitate the reproducibility of our experiments, we make all experiment  code available at https://​github.​com/​ielab/​OLTR.\nKeywords  Online learning to rank · Unbiased reward shaping · Reinforcement learning\n1  Introduction\nLearning to rank (LTR) is a supervised machine learning technique that has been widely  used in modern search engines to learn rankers. Explicit feedback, consisting of asses- sors manually judging the relevance of query-document pairs, is required for LTR (Liu,  2011; Li, 2011). This labelled dataset requirement poses obvious limitations: these  datasets take substantial effort and cost to compile (Qin et al., 2010; Qin & Liu, 2013;\n*\t Guido Zuccon  \t g.zuccon@uq.edu.au\nShengyao Zhuang  \t s.zhuang@uq.edu.au\nZhihao Qiao  \t zhihao.qiao@uq.edu.au\n1\t The University of Queensland, St Lucia, Australia\n\n--- Page Break ---\n\n387 Information Retrieval Journal (2022) 25:386–413\n1 3\nChapelle & Chang, 2011), labelling personal documents is unethical and often impos- sible (Wang et  al., 2016), static datasets cannot model user intent change over time  (Lefortier et al., 2014; Zhuang & Zuccon, 2021), and user preferences may not agree  with that of annotators (Sanderson, 2010).\nIn order to overcome these limitations, implicit feedback, such as clicks, has been  leveraged. This type of training signal is not affected by the above limitations and has  been an attractive alternative to annotated datasets (Joachims, 2002). However, train- ing rankers with implicit feedback has its own drawbacks and challenges. For exam- ple, clicks are a weak relevance signal because they often are affected by a number of  biases and noise. One of the most prominent bias in web search is the position bias,  where higher ranked documents have a higher chance to be observed and thus gain more  clicks, even if they may be not relevant (Guan & Cutrell, 2007; Pan et al., 2007; Hof- mann et al., 2016; Joachims et al., 2017). Therefore, it is important to consider the influ- ence of such biases.\nTwo main families of approaches have emerged that attempt to learn effective rankers  from users’ implicit feedback (Jagerman et al., 2019): counterfactual learning to rank  (CLTR) (Joachims et al., 2017) and online learning to rank (OLTR) (Yue & Joachims,  2009). In CLTR, given a historical click through log, clicks are treated as pure binary  relevance labels and inverse propensity scoring (IPS) is used to re-weight clicks in order  to discount the effect of biases. Rankers are trained in an offline manner and deployed  online after training. This offline batch updates pipeline can avoid the risk of exposing  users to low-quality results since it only displays the best search engine results that are  possible for a given CLTR algorithm and training data.\nOn the other hand, OLTR algorithms interactively update rankers after each user  interaction has taken place, thus being more responsive to a non-stationary user envi- ronment (Zhuang & Zuccon, 2021). In contrast to CLTR, current OLTR methods do not  directly model position or selection bias, and only assume relevant documents are more  likely to be clicked than non-relevant documents (Joachims, 2002). The biases and noise  of users clicks are handled by online interventions (Jagerman et al., 2019), i.e., slightly  perturbated result lists are displayed and preferences towards rankers are informed by  users clicks. This is one of the key aspects of OLTR, but also one of its biggest disad- vantages that limits OLTR’s uptake in practice: such online interventions carry the risk  of displaying a “sub-optimal” ranking list directly to the user, thus hurting user experi- ence (as measured by online evaluation metrics). Hence, it is a requirement for OLTR  methods to efficiently leverage the click feedback so that a good ranker is learnt as fast  as possible to avoid displaying low quality search results to a large number of users.\nTo move beyond the limitations of existing OLTR methods, in this article, we pro- pose a novel OLTR algorithm called Reinforcement Online Learning to Rank (ROLTR),  which exploits the reinforcement learning (RL) approach adapting it to OLTR. Our  motivation for using RL in OLTR is based on the following observations:\n1.\t RL suits OLTR setting very well: RL is powerful for modeling interactive environments  and maximizing the long-term rewards yield from the environment. In the OLTR set- ting, the interactive environment is composed by the users and the search system, and  the rewards are the users’ satisfaction. 2.\t RL with carefully designed reward functions allows OLTR algorithms to directly remove  the biases present in the user clicks: this is currently hard for other OLTR algorithms to  achieve.\n\n--- Page Break ---\n\n388 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nAs we show in this article, our proposed ROLTR can directly remove position bias and  thus effectively and, importantly, efficiently (i.e. within less impressions) update the ranker.  To achieve this, we formalize OLTR as a Markov Decision Process (MDP) problem and  use policy gradient with rewards assigned on clicked and unclicked documents to estimate  the update gradients. In order to de-bias users’ clicks, we further introduce unbiased reward  shaping functions that re-weight the rewards for both clicked and unclicked documents. We  mathematically prove that the gradient estimation of ROLTR is unbiased with respect to  position bias, and it can directly optimize IR metrics such as discounted cumulative gain  (DCG). The idea of leveraging unclicked data has been recently explored in offline coun- terfactual learning studies (Hu et al., 2019; Wang et al., 2021a), however, our method is  currently the only OLTR approach that can gain unbiased learning signals from unclicked  documents, thus speeding up convergence. Empirical results further show that ROLTR sig- nificantly outperforms traditional OLTR methods and is at par with current state-of-the-art  methods (offline performance), although requiring fewer user interactions. As a result, our  method delivers considerably better user experience (online performance).\n2  \u0007Related work\n2.1  \u0007Counterfactual learning to rank\nUnlike traditional LTR where rankers are learned from explicitly labelled datasets (Liu,  2011), counterfactual LTR (Agarwal et al., 2018; Ai et al., 2018; Joachims et al., 2017)  uses historical interaction data, typically click logs, to learn a ranker. However, clicks are  a biased signal. The most prominent bias in the click signal is the position bias: assuming  that users examine search engine result pages (SERPs) from top to bottom, then the results  that are ranked higher are more likely to be observed by the users (Joachims et al., 2017).  Joachims et al. refer to the probability of a search result at a rank i to be observed as its  propensity (Joachims et al., 2017). They then define the inverse propensity scoring (IPS)  method to re-weight user clicks: when IPS is used, the estimated ranking score is unbiased  with respect to position bias. One crucial requirement of IPS-based CLTR methods is the  prior knowledge of user propensity. This is usually estimated by conducting online result  randomization which can negatively affect the user experience. To address this issue, Ai  et al. (2018) proposed the Dual Learning Algorithm (DLA) to jointly learn an unbiased  ranker and an unbiased propensity model, thus avoiding the preprocessing of propensity  estimations. Unlike these CLTR works, our method also uses IPS but in the context of  reinforcement learning for OLTR and we further propose a new IPS method for unclicked  documents so as to gain an unbiased training signal from unclicked documents. This accel- erates the learning process because both click and unclick information is used for train- ing, thus increasing the number of implicit signals obtained from each search and used for  training.\nIn addition to position bias, recent work in counterfactual LTR has considered cor- recting the selection bias (Ovaisi et al., 2020; Oosterhuis & de Rijke, 2020a), in which  some documents have zero probability of being observed by the users (thus never having  a chance to be clicked and contribute a training signal). We note that the selection bias is  fundamentally different from the position bias in terms of that this bias is introduced by the  system itself: some documents will never be included by the system in the top SERPs. In  contrast, the position bias instead comes from the users. This often occurs in web search\n\n--- Page Break ---\n\n389 Information Retrieval Journal (2022) 25:386–413\n1 3\nwhere SERPs only show a small subset of documents in the first page (e.g., 10) and users  do not proceed beyond the first SERP. In this circumstance, documents ranked beyond the  first SERP have no chance of being observed, hence never get identified as positive train- ing examples. To debias the selection bias in the click signals, Oosterhuis and de Rijke  (2020a) proposed a policy-aware counterfactual estimator for CLTR to directly account  for the selection bias introduced by a stochastic logging policy. On the other hand, Ovaisi  et al. (2020) adapted Heckman’s two-stage method to account for selection and position  bias in LTR systems. In our work, we follow the standard OLTR and CLTR experimen- tal setup and simulate typical, real-world circumstances; we also include selection bias in  our experiments by only placing 10 documents in the SERPs. Although in this paper we  directly focus on correcting position bias, selection bias is also partially corrected by the  proposed method via online intervention. Nevertheless, recently proposed methods (Ovaisi  et al., 2020; Oosterhuis & de Rijke, 2020a) could be used to further modify our reward  shaping functions: this would have the effect of further reducing the selection bias of the  gradient estimations.\n2.2  \u0007Online learning to rank\nSimilarly to CLTR, online LTR (OLTR) also considers implicit user feedback to learn  a ranker. Unlike CLTR, however, this is done online, by directly interacting with users.  This online training process allows to control data acquisition and handle biases and noise  through online interventions with regards to which documents to display. Figure 1 provides  a schematic representation of the OLTR process.\nThe Dueling Bandit Gradient Descent (DBGD) (Yue & Joachims, 2009) models OLTR  as a dueling bandit problem and uses online evaluation with users’ clicks on interleaved or  multileaved SERPs to indicate user preference among a pool of candidate rankers (Schuth  et al., 2015; Oosterhuis et al., 2016; Hofmann et al., 2011a, 2013; Schuth et al., 2016;  Hofmann et al., 2011b). More recent work has studied methods to reduce the variance of  the gradients estimated by online evaluation (Wang et al., 2019, 2018a). However, because  gradients are updated towards the winning rankers in the candidate pool, the quality of the  gradient estimation is influenced by the number of candidate rankers. When the number of  candidate rankers is large, the performance of DBGD is limited in terms of both effective- ness and efficiency (Schuth et al., 2015; Li et al., 2020). The recently proposed Counterfac- tual Online Learning to Rank (COLTR) (Zhuang & Zuccon, 2020) attempts to overcome\nFig. 1   A schematic view of the online learning to rank process. Users pose queries to the ranking system.  This uses a online LTR algorithm to identify the candidate documents to display to the user. Depending on  the OLTR algorithm used, candidate documents will be used to form a displayed list. The user examines  the displayed search results (SERP) and clicks on items of interest. The click feedback is used by the OLTR  algorithm to perform ranker updates\n\n--- Page Break ---\n\n390 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nthe issues associated with online evaluation. This is done by replacing online evaluation  with counterfactual evaluation for DBGD. Instead of interleaving, COLTR uses clicks col- lected by the current ranker to evaluate candidate rankers thus providing high efficiency.  However, empirical results have shown COLTR requires more exploration, thus possibly  hurting user experience (online evaluation metrics).\nUnlike DBGD and COLTR, the Pairwise Differentiable Gradient Descent (PDGD)  (Oosterhuis & de Rijke, 2018) does not require to sample candidate rankers for online eval- uation. Instead, PDGD directly estimates gradients based on pairwise preferences between  documents in the SERP, inferred by users’ clicks; then, stochastic gradient descent is used  to update the ranker. The gradient estimation of PDGD is unbiased with respect to user  document pair preferences (Oosterhuis & de  Rijke, 2018). PDGD is empirically found  to be significantly better than DBGD in terms of final convergence, learning speed and  user experience during optimization, making PDGD the current state-of-the-art method  for OLTR (Jagerman et al., 2019; Zhuang & Zuccon, 2020; Oosterhuis & de Rijke, 2019;  Wang et al., 2021c). PDGD has also been adapted to the federated OLTR context (Wang  et  al., 2021b), exhibiting again state-of-the-art performance. However, both PDGD and  DBGD based methods do not directly use IPS to handle position bias, which has been  proven to be very important in previous CLTR results (Joachims et al., 2017).\nAs mentioned above, CLTR and OLTR differ from the setting considered for learning  the ranker: use an historical log of implicit interactions for counterfactual, versus use direct  observation and interaction with rankings in the case of online LTR. We note that Jager- man et al. (2019) have specifically studied the similarity and differences between counter- factual and online LTR. They suggested that, from a theoretical standpoint, counterfactual  LTR exploits position bias better, however they also indicated that empirical results have  shown that OLTR (and in particular PDGD) is more reliable. On the other hand, recent  works have been focusing on adapting the offline counterfactual learning to the online set- ting (Ai et al., 2021; Zhuang & Zuccon, 2020; Oosterhuis & de Rijke, 2020b, 2021). These  works have suggested that OLTR algorithms can benefit from the counterfactual learning  framework. Based on this context, our proposed method can also be thought of as embrac- ing this direction.\n2.3  \u0007Reinforcement learning to rank\nReinforcement learning (RL) has previously been applied to offline LTR problems, but  not to online LTR. Wei et al. (2017) have formalized ranking as a Markov Decision Pro- cess (MDP) problem and introduced the MDPRank algorithm to optimize a linear ranker.  Specifically, the document ranking is modelled as a sequential decision making process  where each time step corresponds to a position in the ranking and the action taken at each  time step corresponds to the selection of a document for the corresponding position. The  rewards given by the environment are generated according to the relevance label of the  documents, and the classic policy gradient algorithm of REINFORCE (Sutton et al., 2000)  is used to maximize the expectation of cumulative rewards received by the ranker. An  attractive property of MDPRank is that it can use gradient descent to directly optimize  non-differentiable ranking metrics such as DCG. However, Jun et al. (2020) have recently  shown that the gradient estimation of the original MDPRank exhibits high variance, and  thus this method requires more training episodes to learn an effective ranker. A similar  reinforcement learning framework has also been used for search result diversification (Feng\n\n--- Page Break ---\n\n391 Information Retrieval Journal (2022) 25:386–413\n1 3\net al., 2018; Xia et al., 2017), multi-page search (Zeng et al., 2018) and recommendation  system (Zhao et al., 2018a, b, 2021).\nIn this paper, we also apply a MDPRank-like algorithm, although in the context of  OLTR and with two important adaptions. First, the original MDPRank is designed for tra- ditional offline LTR, i.e., the relevance labels of query-document pairs are provided. In  the OLTR setting, however, only biased user interaction data such as clicks is available:  thus the rewards given by the online environment are biased. In order to obtain unbiased  rewards, we introduce unbiased reward shaping functions for MDPRank to discount posi- tion bias. Secondly, the high variance of the gradient estimation of MDPRank makes it  converge slowly. However, for OLTR to be viable, we need the algorithm to converge fast  so that it does not hurt the user experience too much. To reduce variance, we simplify  the objective function of the policy gradient used in the original MDPRank to achieve an  objective function with much lower variance of gradient estimation, without changing its  optimization target.\n3  \u0007Method\n3.1  \u0007Ranking as a markov decision process for online learning to rank\nRanking can be formalized as an MDP problem, where the search engine (agent) has to  decide which document to place (action) at rank i, given the current candidate document  set (state) (Wei et al., 2017). In the offline LTR setting, i.e., when relevance labels are pro- vided, any IR evaluation measure can be used as a reward function for the ranking created  by the search engine. In the online LTR setting, however, rewards are typically inferred via  users’ implicit feedback, such as clicks. Following Wei et al. (2017), who have limited their  attention to offline LTR only, we define each component of the MDP ranking for the OLTR  as follows:\nStatesS indicates the set of states that the agent (search engine) will observe from the  environment. In the MDP ranking, at a time step t, a state st ∈S is the candidate document  set Dt which contains the documents that need to be ranked.\nActions A is the set of possible actions that the agent can take when at a state st . An  action at a time step t, denoted as at ∈A(st) , consists of selecting a document dm(at) ∈Dt  to place at rank i, where rank k = t + 1,1 m(at) is the function that maps the action to the  document index, and dm(at) is represented by a feature vector. We note the feature elements  in dm(at) are not only obtained based on the document but also on the query.\nTransition T(s,a) is the function T(st, at) = st+1 , which maps a state st to its next state  st+1 based on the action at , where st+1 is the candidate document set Dt without the selected  document dm(at):\nPolicy 휋(a|s, 휃) is a probability distribution over all possible actions that the agent can take  when in the state s, given the current model parameters 휃 (where 휃 is a vector contain- ing the model’s parameters). We compute this distribution using the softmax function over  document scores:\n(1) st+1 = st ⧵dm(at) = Dt ⧵dm(at) = Dt+1\n1  Note that the time step t starts from 0 and the rank position k starts from 1.\n\n--- Page Break ---\n\n392 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nf휃(dm(at)) is the document relevance score estimated by the ranking model. In our experi- ments, we use a linear ranking model, this means the dimensionality of 휃 , i.e., the number  of parameters in the ranking model, is equal to the dimensionality of the feature vector.  However, we note that the ranking model can be extended to any dimensionality, e.g., a  neural ranking model. For simplicity, we use at ∼휋(st) to denote the action at selected  according to the policy 휋 at state st.\nReward R(s,a) is the reward function that models the immediate reward given by the  environment and its value represents the reward assigned to the action a that has been  selected by the agent in state s.\nWhen full information is provided (i.e., the true relevance labels are given), it is straight- forward to define the reward function on the basis of IR evaluation measures such as DCG.  However, in the OLTR setting, relevance labels are not provided – in place of these, the  ranker observes implicit, noisy and biased user feedback such as clicks. Thus, in such a  partial information setting, the reward function is defined based on the implicit feedback,  e.g., on click labels. We define the value of the reward function next.\n3.2  \u0007Unbiased reward shaping\nIn RL, reward shaping is used to reshape the original reward function to better guide the  direction of the gradient update (Ng et al., 1999). Prior knowledge about the environment  is needed to formalize a reliable reward shaping function to avoid otherwise to bias learn- ing (Popov et al., 2017).\n3.2.1  \u0007Naïve reward function\nIn the (offline) LTR approach by Wei et al. (2017), DCG scores have been used as the  original reward function to instruct the search engine to learn a ranker, when true relevance  labels are supplied. This reward function RDCG(st, at) is defined as:\nwhere 휆(t) = 1 log2(t+2) is the DCG weight term, and ym(at) ∈{0, 1} is the binary relevance  label of the document at rank t + 1 . This is a reasonable reward function, provided that rel- evance labels are known. This reward function directly corresponds to the DCG evaluation  metric (because of the DCG weight term), and thus the agent will attempt to learn a policy  휋 that directly maximizes the cumulative rewards 훥 (DCG scores) of the ranking episode,  for any given initial state s0:\nHowever, in the online LTR setting, relevance labels are unknown (i.e., this is a partial  information setting); instead, users’ clicks are used as learning signal. A naïve reward func- tion in this context is then to treat clicks as binary relevance labels and thus use the DCG  reward function of equation 3:\n(2) 휋(at\u001fst, 휃) =\nexp\n\nf휃(dm(at)\n\n∑\na∈A(st) exp\n\nf휃(dm(at)\n\n(3) RDCG(st, at) = 휆(t) ⋅ym(at)\n(4) 훥RDCG(s0, 휋, y) =\n∑\nt=0\nRDCG(st, 휋(st)) =\n∑\nym(at)=1\n휆(t)\n\n--- Page Break ---\n\n393 Information Retrieval Journal (2022) 25:386–413\n1 3\nwhere cm(at) = 1 represents that a user has clicked on the document at rank t + 1 , while  cm(at) = 0 represents no click on the document. If we assume that the probability of a docu- ment dm(at) to be observed by a user (known as propensity) only depends on the rank posi- tion t + 1 (note that t starts from 0) and no click noise is present, i.e., P(ot+1 = 1|t + 1) , then  the expectation of the final ranking rewards is biased to the users’ propensity (Joachims  et al., 2017; Jagerman et al., 2019):\nThis is the so-called position bias effect: top-ranked documents usually have a larger  chance of being observed, and thus the rewards assigned to them are biasedly higher.\n3.2.2  \u0007IPS reshaping\nRecent work in CLTR has attempted to account for this position bias effect (Ai et al., 2018;  Joachims et al., 2017). One of the most commonly used approaches to mitigate position  bias is Inverse Propensity Scoring (IPS). We follow this direction to unbias the click signal  in our RL framework, and define the IPS reward shaping function as FIPS+ and the reshaped  reward function as RIPS+:\nIt can be proven that the cumulative naïve rewards reshaped by FIPS+ are an unbi- ased estimate of the ranking rewards with true relevance labels (Joachims et al., 2017):  피o[훥RIPS+ (s0, 휋, c)] = 훥RDCG(s0, 휋, y) . Thus, FIPS can be used to obtain unbiased cumulative\nrewards with respect to position bias, likely providing more reliable gradient estimations  than the naïve reward function.\n3.2.3  \u0007Negative rewards\nThe reward functions above only provide positive rewards to the clicked/relevant docu- ments, while they assign a zero reward to the unclicked/irrelevant documents. However, in  other RL problems, it is often found that negative rewards help the agent to avoid selecting  poor actions (Sutton & Barto, 2018): for a ranker, negative rewards can help avoid select- ing irrelevant documents from the document set, thus leading to better user experience.  Based on this, we introduce a negative DCG reward function for online LTR (a similar one  could be defined for offline LTR):\nHence, the negative cumulative ranking score is calculated by:\n(5) RNAIVE+(st, at) = 휆(t) ⋅cm(at)\n(6)\n피o[훥RNAIVE+ (s0, 휋, c)] =\n∑\nt=0\nRNAIVE+(st, 휋(st))\n=\n∑\nym(at)=1\nP(ot+1 = 1|t + 1) ⋅휆(t)\n(7)\nRIPS+(st, at) = FIPS(RNAIVE+(st, at))\n= RNAIVE+(st, at) P(ot+1 = 1|t + 1) = 휆(t) P(ot+1 = 1|t + 1) ⋅cm(at)\n(8) RNAIVE−(st, at) = 휆(t) ⋅(cm(at) −1)\n\n--- Page Break ---\n\n394 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nThis means highly ranked unclicked documents will be penalised more and thus drag down  the final ranking reward. It can be proven that this naïve negative reward function is a  biased estimate of the negative DCG score of the ranking ( 훥RDCG−(s0, 휋, y)):\nThat is, the naïve negative reward overestimates the true negative DCG reward by counting  the relevant but not observed documents as irrelevant.\n3.2.4  \u0007Negative IPS reward shaping function\nIn order to get unbiased negative DCG rewards, we propose the negative IPS reward shaping  function FIPS− and denote the reshaped negative DCG reward as RIPS−:\nWe mathematically prove that 피o[훥RIPS−(s0, 휋, c)] is an unbiased estimate of 훥RDCG−(s0, 휋, y):\n(9) 훥RNAIVE−(s0, 휋, c) =\n∑\nt=0\nRNAIVE−(st, 휋(st)) =\n∑\ncm(at)=0\n−휆(t)\n(10)\n피o[훥RNAIVE−(s0, 휋, c)]\n= 피o\n\n\nt=0\nRNAIVE−(st, 휋(st))\n\n= 피o\n⎡ ⎢ ⎢⎣\n\ncm(at)=0\n−휆(t)\n⎤ ⎥ ⎥⎦\n= 피o\n⎡ ⎢ ⎢⎣\n\nym(at)=0\n−휆(t)\n⎤ ⎥ ⎥⎦\n+ 피o\n⎡ ⎢ ⎢⎣\n\not+1=0∧ym(at)=1\n−휆(t)\n⎤ ⎥ ⎥⎦\n=\n\nym(at)=0\n−휆(t) −\n\nym(at)=1\n(1 −P(ot+1 = 1\u0016t + 1)) ⋅휆(t)\n= 훥RDCG−(s0, 휋, y) −\n\nym(at)=1\n(1 −P(ot+1 = 1\u0016t + 1)) ⋅휆(t)\n(11)\nRIPS−(st, at) = FIPS−(RNAIVE−(st, at))\n= 휆(t) ⋅(cm(at) −1) +\n(1 −P(ot+1 = 1|t + 1)\nP(ot+1 = 1|t + 1)\n)\n휆(t) ⋅cm(at)\n\n--- Page Break ---\n\n395 Information Retrieval Journal (2022) 25:386–413\n1 3\nThis reward shaping function allows to assign unbiased negative rewards to unclicked doc- uments so as to obtain an unbiased cumulative negative DCG ranking score.\n3.2.5  \u0007Prior knowledge of propensity\nAll the unbiased reward shaping functions above require to know a priori the users’ pro- pensities P(ot+1 = 1|t + 1) . Many recent works have considered estimating such propensi- ties from historical click-logs (Agarwal et al., 2017; Fang et al., 2019; Agarwal et al., 2019)  and during training (Ai et al., 2018; Wang et al., 2018b). We regard propensity estimation  as being beyond the scope of this article and in our experiments we assume the propensi- ties to be known. Nevertheless, for completeness, we also test how sensitive our method is  to propensity mismatch (Sect. 5.5).\n3.3  \u0007Learning with policy gradient\nFollowing previous work (Wei et al., 2017; Yao et al., 2020), we learn the policy model  parameters 휃 with REINFORCE (Williams, 1992; Sutton & Barto, 2018; Sutton et  al.,  2000), a widely used policy gradient algorithm. In REINFORCE, the objective is to find an  optimal policy that can maximize the expectation of cumulative reward from the beginning  of each episode, J(휃) = 피휋\n[Gt\n] , where t = 0 . Here Gt is the discounted future cumulative  reward starting from time step t, Gt = ∑M\nm=t 훾m−t ⋅R(sm, am) , and M is the maximum depth  of the ranking episode, and 훾∈[0, 1] is the discount factor. In previous offline LTR work  (Wei et al., 2017; Jun et al., 2020), 훾 has been set to 1 (maximum value), which results in  G0 = 훥RDCG . This value results in the learning algorithm directly maximizing DCG. How- ever, it is well known in RL that larger 훾 values will lead the agent to care more about\n(12)\n피o[훥RIPS−(s0, 휋, c)] = 피o\n\n\nt=0\nFIPS−(RNAIVE−(st, 휋(st)))\n\n= 피o\n\n\nt=0\n휆(t) ⋅(cm(at) −1) +\n1 −P(ot+1 = 1\u001bt + 1)\nP(ot+1 = 1\u001bt + 1)\n\u001a\n휆(t) ⋅cm(at)\n\n= 피o\n\n\nt=0\n휆(t) ⋅(cm(at) −1)\n\n+\n+ 피o\n\n\nt=0\n1 −P(ot+1 = 1\u001bt + 1)\nP(ot+1 = 1\u001bt + 1)\n\u001a\n휆(t) ⋅cm(at)\n\n= 피o[훥RNAIVE−(s0, 휋, c)]+\n+ 피o\n⎡ ⎢ ⎢⎣\n\not+1=1∧ym(at)=1\n1 −P(ot+1 = 1\u001bt + 1)\nP(ot+1 = 1\u001bt + 1)\n\u001a\n휆(t)\n⎤ ⎥ ⎥⎦\n= 훥RDCG−(s0, 휋, y) −\n\nym(at)=1\n(1 −P(ot+1 = 1\u001bt + 1)) ⋅휆(t)\n+\n\nym(at)=1\n(1 −P(ot+1 = 1\u001bt + 1)) ⋅휆(t)\n= 훥RDCG−(s0, 휋, y)\n\n--- Page Break ---\n\n396 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nfuture rewards but at the same time to produce gradient estimations with significantly high  variance, thus slowing down the learning speed (Jun et al., 2020; Sutton & Barto, 2018).  In OLTR settings, however, learning speed is very important as it is highly entangled with  user experience, as measured by the online performance of the ranker.\nHence, in order to reduce variance and speed up learning, we simplify MDP to Con- textual Bandits (Jagerman et al., 2020; Adomavicius et al., 2005; Hofmann et al., 2011c)  by setting 훾= 0 . This setting makes REINFORCE to choose at so as to maximize only the  expectation of immediate reward R(st, at):\nThis setting actually does not change the fact that the objective is to optimize DCG. This is  because maximizing the expected immediate reward at a time step t is equivalent to select- ing the most likely relevant document from the candidate set Dt for the state st : this is  guaranteed to have maximum expected cumulative reward for that ranking episode. Thus,  it is safe to ignore future rewards in this case. In Sect. 5.1, we empirically show that 훾= 0  enjoys a much faster learning speed than other settings, without any loss in final conver- gence. It is important to note that the above is not true for tasks such as search result diver- sification, since greedily choosing the most relevant document at each rank position may  cause lower final ranking scores (Feng et al., 2018). Thus, we use the full MDP algorithm  for this special situation.\nFollowing the standard policy gradient practice (Wei et  al., 2017; Sutton & Barto,  2018), we estimate gradients with Monte Carlo sampling and the gradient ∇휃J(휃) can be  calculated as:\nIntuitively, the gradients will update the ranker parameters towards the actions that yield  the highest immediate reward R(st, at).\nThe complete procedure of ROLTR is described in Algorithm 1. At each ranking epi- sode i, i.e., at each round of user interaction (line 2 for-loop), the search engine receives  a query qi and the initial candidate document set D0 is generated (line 3). Then the algo- rithm first draws an action (document) from the distribution created by the current policy  (line 6). Then, the selected action, the state information, and the corresponding document  are recorded (line 7) and the environment moves to the next state (line 8). The same proce- dure is repeated for the next rank positions, until the algorithm reaches the maximum depth  for the ranking (line 5 for-loop). After finishing ranking, the final result list is shown to the  user, who provides feedback to the search engine in the form of click labels (line 10). Next,  for each recorded state-action pair (line 11 for-loop), the gradient is calculated (line 13)  and the current policy is updated at the end of each ranking episode (line 15).\n(13) J(휃) = 피휋\n[R(st, at)]\n(14) ∇휃J(휃) = R(st, at)∇휃log(휋(at|st, 휃))\n\n--- Page Break ---\n\n397 Information Retrieval Journal (2022) 25:386–413\n1 3\n3.4  \u0007Guarantee of Unbiasedness for ROLTR\nROLTR has two main parts: the learning part (Sect. 3.3), which uses the REINFORCE  algorithm, and the unbiased reward shaping part (Sect. 3.2). The theoretical guarantees  of REINFORCE are well studied in reinforcement learning, including the guarantee that  the gradient estimate is unbiased with respect to maximizing the expected rewards (Sut- ton & Barto, 2018). However, if the rewards are biased (which are when the naive reward  function is used), then the learning algorithm is biased. This is where the second part of  ROLTR comes into play: the unbiased rewards shaping functions guarantee the reward sig- nals assigned to REINFORCE are unbiased with respect to position bias (mathematical  proof in Eq. 12). Thus, the update gradients estimated by ROLTR are guaranteed to maxi- mize unbiased expected rewards, and thus the gradient estimation is unbiased with respect  to position bias.\n4  \u0007Empirical evaluation\nTo study the effectiveness of ROLTR, we designed a number of empirical experiments  aimed to answer the following research questions:\nRQ1\t \u0007How does the reward discount factor in ROLTR affect gradient variance and final  convergence (i.e., the offline nDCG score on the test dataset)? RQ2\t \u0007How do the unbiased reward shaping functions of ROLTR impact performance? RQ3\t \u0007How does ROLTR compare in terms of convergence and learning speed against  current representative OLTR methods? RQ4\t \u0007Does ROLTR deliver better user experience than current OLTR methods, i.e.,  higher online nDCG? RQ5\t \u0007How sensitive is ROLTR to propensity mismatch?\n\n--- Page Break ---\n\n398 \t Information Retrieval Journal (2022) 25:386–413\n1 3\n4.1  \u0007Datasets and synthetic data generation\nWe consider three benchmark datasets that are commonly used to evaluate OLTR (Zhuang &  Zuccon, 2020; Schuth et al., 2015; Oosterhuis et al., 2016; Oosterhuis & de Rijke, 2018; Wang  et al., 2019) and CLTR (Jagerman et al., 2019; Ai et al., 2018; Joachims et al., 2017): MSLR- WEB10K (Qin & Liu, 2013), Yahoo! Webscope (Chapelle & Chang, 2011), and Istella (Dato  et al., 2016). MSLR-WEB10K contains 10,000 queries and 125 retrieved documents on aver- age; documents are represented by 136 features. Yahoo! is a bigger dataset, with 29,921 que- ries and an average of 23.7 documents per query, represented using 700 features. Istella is  the largest dataset we consider, with 33,118 queries and an average of 315 documents per  query, represented by 220 features. Query-document pair relevance labels for all datasets are  recorded on a five-point scale from not relevant (0) to perfectly relevant (4) and have been split  into training, validation and test sets (according to the standard splits in the datasets). Queries  in the three sets are disjoint. We use the training set to train the rankers, the validation set to  tune the hyper-parameters, and the test set to evaluate the rankers’ performance.\nTo avoid hurting user experience, it is common for research in OLTR and CLTR to simu- late users’ clicks by relying on the relevance labels recorded in the datasets (Zhuang & Zuc- con, 2020; Schuth et al., 2015; Oosterhuis et al., 2016; Oosterhuis & de Rijke, 2018; Jagerman  et al., 2019; Joachims et al., 2017; Vardasbi et al., 2020). This also allows to fully control  users’ biases and noise so that algorithms can be tested under different, controllable condi- tions. Queries are uniformly sampled from the dataset (sampling query IDs). The candidate  document set associated with the query ID is provided by each dataset. Then OLTR algo- rithms generate a result list of documents to display. Clicks are simulated based on two fixed  variables: the click probability and the position bias.\nThe click probability is the probability of a user clicking on a document after observing it.  This probability is conditioned on the document’s relevance label. Following previous OLTR  work (Oosterhuis & de Rijke, 2018; Zhuang & Zuccon, 2020; Hofmann et al., 2011a, 2013;  Oosterhuis et al., 2016), we set two types of click behaviour: perfect and noisy. The click prob- ability of the perfect click behaviour is proportional to the relevance level of the documents,  and has 0 probability for non-relevant documents. This simulates an ideal user that is able to  always determine the relevance of a document in the SERP. The noisy click behaviour mim- ics instead a realist behaviour on SERPs by assigning a small click probability to non-rele- vant documents and a small skip probability to relevant documents. Table 1 provides the click  probabilities for the two user models.\nPosition bias is modelled by the document observation probabilities; we assume the obser- vation probabilities only depend on the rank position of the document and set these probabili- ties to:\n(15) P(ok = 1|k) =\n(1\nk\n)휂\nTable 1   Click probabilities for  different user behaviours P(c = 1|o = 1, rel(d))\nrel(d) 0 1 2 3 4\nperfect 0.0 0.2 0.4 0.8 1.0\nnoisy 0.4 0.6 0.7 0.8 0.9\n\n--- Page Break ---\n\n399 Information Retrieval Journal (2022) 25:386–413\n1 3\nwhere k is the rank position and 휂 is a parameter that determines the level of position bias.  Following Joachims et al. (2017) and Jagerman et al. (2019), we set 휂= 1 . Thus, the prob- ability of a click occurring on a document at rank k in the result list is:\n4.2  \u0007Evaluation measures\nWe measure effectiveness using standard OLTR evaluation practice, which considers two  aspects: offline and online performance.\nOffline performance is the final convergence of the learned ranker. We evaluate this  using the average nDCG@10 of the ranker over the queries in the held-out test-set across  100, 000 impressions, as all rankers would have reached convergence at this point. Online performance measures user experience during training. This is quantified by the  nDCG@10 obtained by the rank list Li that the user observes in the training episode i,  times a discount rate τ< 1:\nThe discount rate assigns less weight to the later impressions to reward OLTR algorithms  that learn an effective ranker fast, so to limit the amount of low-quality user experience.  As in previous work (Oosterhuis & de Rijke, 2018; Wang et al., 2019; Zhuang & Zuccon,  2020; Hofmann et al., 2013), we set 휏= 0.9995 : this means that impressions that occur  after 10, 000 iterations have less than a 1% impact. We further note that, while this online  performance measure aims to quantify the user experience during training, it only does  so partially: the relevance of the results in SERP is in fact only one of the many aspects  influencing user experience (Al-Maskari & Sanderson, 2010; Maxwell et al., 2017). These  other aspects however are not measurable in the context of the typical simulated experi- ments performed in OLTR research.\n4.3  \u0007Experimental runs\nWe compare ROLTR to four OLTR baselines. First, the Dual Bandit Gradient Descent  (DBGD) (Yue & Joachims, 2009) method is used as it is one of the standard and most  influential algorithms for OLTR. This method uses interleaving for online evaluation,  where only one candidate rank is compared to the production ranker at each update step.\nThe second baseline we consider is the Probabilistic Multileaving Gradient Descent  (PMGD) (Oosterhuis et al., 2016), which has been reported to be the best traditional OLTR  method that uses online evaluation with multileaving comparison (Oosterhuis & de Rijke,  2018; Zhuang & Zuccon, 2020). For this baseline, we use the same hyper-parameters set- tings reported in previous work (Zhuang & Zuccon, 2020), where the number of candidate  rankers is n = 49 , the step size is 훿= 1 and learning rate is 훼= 0.01.\nThe third baseline we consider is Counterfactual Online Learning to Rank (COLTR)  (Zhuang & Zuccon, 2020), which uses DBGD to update candidate rankers but is com- bined with counterfactual evaluation. This method has been reported to be more effective  than online evaluation based methods in terms of final convergence, but it does present an\n(16) P(ck = 1) = P(ck = 1|ok = 1, rel(dk))P(ok = 1|k)\n(17) online_performance =\n∑\ni\n휏i ⋅NDCG(Li)\n\n--- Page Break ---\n\n400 \t Information Retrieval Journal (2022) 25:386–413\n1 3\noverall deterioration of user experience during the learning cycle. For this baseline, we use  the best hyper-parameters from the original paper (Zhuang & Zuccon, 2020).\nThe last baseline we consider is the Pairwise Differentiable Gradient Descent (PDGD)  (Oosterhuis & de Rijke, 2018), which represents the current state-of-the-art in OLTR. This  method does not require online evaluation; instead, it directly optimizes a ranker using  gradient descent, and its gradient estimations are unbiased with respect to document pair  preferences inferred from user clicks. The comparison between ROLTR and PDGD is  interesting because both methods use gradient descent but they differ in the way the unbi- ased gradient estimation is computed. Following the original PDGD paper (Oosterhuis &  de Rijke, 2018), we set its learning rate to 훼= 0.1.\nROLTR has two hyper-parameters: the reward function and the learning rate 훼 . We  study six reward functions in total: RIPS+ , RIPS− , RIPS+ + RIPS− (i.e. using both clicked and  unclicked signal) and their corresponding unshaped naive reward functions. We set the  learning rate 훼= 0.01 for MSLR-WEB10K and Istella, and 훼= 0.005 for Yahoo! (values  tuned based on validation set).\nTo simulate selection bias, we set M = 10 to only display 10 documents in the result  lists for all experimental runs. For fair comparison, all methods are used to optimize a lin- ear ranker. In order to measure statistically significant differences between methods, all  runs are repeated 15 times spread evenly over the available dataset folds with different ran- dom seeds. The results are reported and compared using averaged performance and the  two-tailed t-test.\nIn addition to comparing ROLTR with the other OLTR baselines mentioned above, we  also compare our method against the MDPRank trained using full information, i.e., the  offline LTR settings with actual relevance labels. This is to be thought of as the skyline for  ROLTR as this method is built on MDPRank but training in ROLTR occurs with partial,  noisy information (user clicks). For MDPRank, we use the experiment settings from the  original paper (Wei et al., 2017).\n5  \u0007Results\n5.1  \u0007RQ1: Impact of the reward discount factor\nTo answer RQ1, we study the reward discount factor 훾 (set to 1 in previous work (Wei  et al., 2017). As discussed in Sect. 3.3, we expect that setting 훾= 0 will lead to smaller var- iance in gradient estimation and a consequent speed up of training, without loss in terms of  final convergence.\nTo confirm this assumption, in this section we empirically investigate the convergence  of the learned rankers with different values of 훾 . In this study, we use the reward func- tion RNAIVE+ and RIPS+ , and simulate the user propensity with 휂= 1 . We report results on  MSLR10k. Figure 2 illustrates the offline nDCG@10 learning curves obtained throughout  the training process. The plots clearly show that the learning curves obtained when 훾= 0  (blue curves) is always above that associated with other 훾 values, for both reward functions  and both click settings. For naive reward and noisy click setting, rankers trained with lower  value of 훾 achieved higher offline nDCG@10 score at the point of 100,000 impressions.  This indicates that ROLTR learns fastest when 훾= 0 . On the other hand, ROLTR con- verges slower when 훾 increases, and when 훾= 1 (red curves) the convergence speed is the  slowest. Interestingly, unbiased reward function RIPS+ seems more sensitive to 훾 than the\n\n--- Page Break ---\n\n401 Information Retrieval Journal (2022) 25:386–413\n1 3\nnaive reward function RNAIVE+ . Although RIPS+ has faster learning speed than RNAIVE+ when  훾 is small (e.g., 훾= 0, 0.3, 0.5 ), the learning speed decreases dramatically when 훾 is large,  and RIPS+ even fails to converge at 100,000 impressions under perfect clicks. We also stud- ied the convergences of ROLTR with the RIPS+ reward function and 훾= 0, 0.5, 1 for long- term impressions (1,000,000 impressions). These results are presented in Fig. 3. Similar to  the trends in Fig. 2, larger 훾 values exhibit slower convergence and fail to converge to the  same nDCG value as when 훾= 0 , even after performing one million impressions. This is  due to the IPS significantly enlarging the click signal at lower ranks and this effect being  cumulated to the rewards assigned to the clicks at higher ranks with large 훾 , thus resulting  in considerably larger variance.\nFollowing Jun et al. (2020), we also directly compare the variance of the estimated gra- dients when 훾= 0 , 훾= 0.5 and 훾= 1 for both naive and unbiased reward functions. For  this, we calculate the variance of the gradient vectors at each training episode using the  trace of the covariance matrix. We report the results for all runs on the MSLR10K in Fig. 4  (along to those for 훾= 0.5 to show the overall trend for varying values between the two  extremes). The variance from the noisy click runs is higher than that from the perfect click  runs for all values of 훾 and both reward functions. This indicates that strong click noise  causes high variance in gradient estimations. Moreover, the variance recorded for 훾= 0 is  almost half that recorded for 훾= 1 , for both noisy and perfect clicks and both reward func- tions. This finding agrees with the reinforcement learning practice: smaller discount factors  always result in lower gradient variance. When comparing RNAIVE+ and RIPS+ , we notice that  RIPS+ yields almost 10 times larger variance than that of the same setting for RNAIVE+ . This  explains why RIPS+ is more sensitive to 훾 and larger 훾 significantly slows down the learning  speed, as shown in Fig. 2.\nIn reinforcement learning, it is well known that 훾 controls the trade-off between vari- ance and final convergence. Larger values of 훾 result in higher final convergence at the  expense of higher variance (thus slower learning speed), and vice versa: smaller values  result in lower variance (faster learning speed) but suboptimal convergence. However, in  OLTR, our experiments show that optimizing the expected immediate reward (i.e. 훾= 0 )\nFig. 2   Offline nDCG@10 score of ROLTR with different reward discount factor 훾 . (MSLR10K dataset)\n\n--- Page Break ---\n\n402 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nwill not hurt the final convergence at least after 100,000 impressions: the optimal policy  learned with 훾= 0 is equal to the optimal policy learned with 훾= 1 , which is maximizing  the DCG score of the ranking. We further note that previous work that formalizing LTR as  an MDP shows high variance in gradient estimation (Wei et al., 2017) and that recent work\nFig. 3   Long-term offline nDCG@10 score of ROLTR with different reward discount factor 훾 . (MSLR10K  dataset, reward function: RIPS+)\nFig. 4   Average variance of the gradient vector for each sampled episode. Error bars correspond to the 95%  confidence intervals. (MSLR10K dataset)\n\n--- Page Break ---\n\n403 Information Retrieval Journal (2022) 25:386–413\n1 3\nhas attempted to fix this issue for offline LTR (Jun et al., 2020): setting 훾= 0 can be con- sidered a simpler way to fix this problem. We believe this insight may have positive uptake  for offline LTR.\nWith respect to RQ1, then, setting 훾= 0 would not hurt the offline performance (con- vergence) of the learnt ranker, while delivering lower gradient variance than when 훾= 1 .  Hence, we set 훾= 0 in the remaining experiments.\n5.2  \u0007RQ2: Impact of reward shaping functions\nTo answer RQ2, we consider the impact of different reward shaping in ROLTR. Figure 5  reports the offline performance of ROLTR with different reward functions over 100, 000  impressions on the MLSR-WEB10K dataset. For both noisy and perfect click settings,  all IPS reward functions outperform their naive versions in terms of learning speed. This  means that it is important to de-bias the otherwise biased reward shaping function. In addi- tion, we observe that ROLTR with RIPS+ + RIPS− and RNAIVE+ + RNAIVE− converges faster  than when only using positive or negative reward functions. This is under both click set- tings, and it suggests that leveraging both clicked and unclicked signals is beneficial. This  phenomenon is however less obvious with noisy clicks due to noisy clicks decreasing all  the rankers’ performance, thus resulting in worse and closer nDCG@10 scores. On the  other hand, when noisy clicks are considered, RIPS+ and RIPS− have a very similar learn- ing curve; while, in the perfect click settings, RIPS+ converges much faster than RIPS− . We  explain this difference of behaviour between perfect and noisy click settings as follows.\nFig. 5   Offline nDCG for ROLTR when different reward shaping functions are used (MSLR10K dataset)\n\n--- Page Break ---\n\n404 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nIn the perfect click setting, RIPS+ only uses signal from the clicked documents, which are  relevant documents only in this click setting. RIPS− instead also exploits signal from not- clicked documents (it down-weights this signal), which are non-relevant documents only in  this click settings – this however is a worse signal than that from relevant documents only  ( RIPS+ ). Thus, it is logical to see RIPS+ performing better (faster learning curve) than RIPS− .  In the noisy click setting, however, the signals exploited by RIPS+ and RIPS− are similar:  while still RIPS+ only uses clicked documents (while RIPS− also uses not-clicked), in the  noisy click setting both relevant and non-relevant documents are clicked. This therefore  reduces the differences in performance observed between RIPS+ and RIPS−.\nWhen studying the final convergence at 100, 000 impressions, we do not record sig- nificant differences (i.e., p > 0.05 ) except for RNAIVE− . This exception can be explained as  RNAIVE− only assigns biased negative rewards to unclicked documents and as result, in this  case ROLTR just aims to avoid selecting documents that give low rewards, but it ignores  valuable documents.\nWith respect to RQ2, then, we found that using unbiased reward shaping functions to  reshape naive rewards make ROLTR converge faster (i.e. it requires less impressions). Spe- cifically, the use of both unbiased positive and negative reward functions make ROLTR  converge the fastest. Hence, in the remaining experiments, we set RIPS+ + RIPS− as reward  function.\nThe fact that biased rewards do not change the final performance but slow down con- vergence may seem counter-intuitive at first. In fact, in CLTR studies, the biased learning  objective results in a local optimal for the final convergence (Joachims et al., 2017). How- ever, this may not be the case for OLTR. This is because CLTR experiments use a logging  ranker to collect clicks and then train a new ranker with the click log: thus the rank of a  document is decided by the logging ranker and has been fixed in the log. In OLTR settings  like those used here, instead, the deployed ranker is interactively updated after each ses- sion: this means every document has a chance to be ranked at top of the displayed rankings  hence be observed: these online interventions can eliminate position bias. However, this  does not come for free, as it requires a large number of interactions to eventually obtain a  good convergence. This is exactly what ROLTR attempts to solve: reduce the number of  interactions to reach convergence. ROLTR in fact is the first OLTR algorithm that directly  de-biases user position bias, with the results above showing that it can significantly speed  up learning (this in turn will translate in better user experience, see Sect. 5.4).\n5.3  \u0007RQ3: Final convergence (offline nDCG)\nTo answer RQ3, we compare the offline performance of the learned rankers over 100, 000  impressions. Figure 6 reports the learning curves for different methods. COLTR is clearly  better than PMGD and DBGD in terms of learning speed and final convergence across  almost all datasets: this is similar to previous findings (Oosterhuis et al., 2016; Zhuang  & Zuccon, 2020). The gradient descent based methods (ROLTR and PDGD) significantly  outperform candidate ranker sampling based methods (DBDG, PMGD and COLTR), ren- dering DBGD based methods outdated.\nOn the other hand, ROLTR and PDGD have similar learning curves across all three  datasets. This is especially the case when perfect clicks are used. The final convergence of  the two methods across all datasets and click settings is not statistically significantly dif- ferent ( p > 0.05 ). However, when noisy clicks are considered, we find that ROLTR has a  faster learning speed at the beginning of training. Figure 7 considers the learning curves for\n\n--- Page Break ---\n\n405 Information Retrieval Journal (2022) 25:386–413\n1 3\nFig. 6   Offline nDCG@10 for OLTR methods and MDPRank under noisy and perfect clicks\n\n--- Page Break ---\n\n406 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nthe early impressions (first 10, 000) when noisy clicks are used. This figure clearly shows  that the learning curves of ROLTR are almost always above other OLTR baselines at early  impressions (except for the first 3, 000 impressions on MSLR10k, for which PMGD is  best).\nWith respect to RQ3, then, we conclude that, when clicks are noisy, the learning speed  of ROLTR is faster than PDGD in the early stage of training.\nFinally, comparing the final convergence of ROLTR with the effectiveness of the offline  MDPRank (trained with relevance labels and thus indicating skyline effectiveness), we can\nFig. 7   Offline nDCG@10 for the first 10,000 impressions (noisy clicks)\n\n--- Page Break ---\n\n407 Information Retrieval Journal (2022) 25:386–413\n1 3\nclearly observe that ROLTR’s effectiveness is at par to that of MDPRank, when the perfect  click setting is used (Fig. 6). Recall that the perfect click setting still exhibits position bias.  This findings empirically demonstrates the unbiasedness of ROLTR. However, when noisy  clicks are used for ROLTR, then it’s performance is sensibly lower to that of the offline  MDPRank, showing how much noise in the click signal hurts performance, compared to  perfect relevance labels.\n5.4  \u0007RQ4: User experience during training (online nDCG)\nTo answer RQ4, we consider the quality of the experience users withstand while rankers  are trained (online nDCG). Table 2 reports the online performance of each method. As  expected, online NDCG@10 scores obtained when learning from perfect clicks are higher  than for noisy clicks, suggesting the latter hurt user experience. Although COLTR has  better offline performance than online evaluation based methods, it does lead to a worse  user experience during the learning phase. This indicates that using counterfactual evalu- ation for candidate ranker comparison requires a lot more exploration. These findings are  in agreement with our early findings (Zhuang & Zuccon, 2020). We also find that online  evaluation based methods are significantly worse than ROLTR and PDGD ( p < 0.01 ) for  both perfect and noisy clicks, agreeing with the offline nDCG learning curves (Fig. 6). This  is because ROLTR and PDGD assemble result lists by sampling documents from a softmax  probability distribution, while online evaluation based methods use interleaving or multi- leaving to create these lists. This suggests that online evaluation based methods perform  more exploration, thus hurting user experience more.\nWhen comparing ROLTR and PDGD, we find that ROLTR obtains the best average  online performance across all datasets under noisy clicks (agreeing with the learning  curves in Fig. 7 for offline nDCG). Even for perfect clicks, for which the offline learning  curves of ROLTR and PDGD are similar, ROLTR does statistically significantly outper- form PDGD on MSLR10K and Istella ( p < 0.05, p < 0.01 respectively). There are no sta- tistically significant differences between ROLTR and PDGD on Yahoo! ( p > 0.05 ). This  may be because the average proportion of irrelevant documents for each query is small\nTable 2   Online nDCG@10.  Bold values indicate the highest  average performance.\nBold values represent the best value for each dataset/click setting\nSignificant gains and losses of ROLTR over PDGD are marked by ▵  ( p < 0.05 ) and ▴ ( p < 0.01)\nClicks Algorithm MSLR10K Yahoo! Istella\nPerfect DBGD 519.99 1165.11 510.34\nPMGD 545.22 1191.26 564.58 COLTR 448.65 1121.92 348.15 PDGD 579.22 1310.99 741.45 ROLTR 587.46 ▵ 1302.11 808.66▴ Noisy DBGD 477.29 1116.89 408.09 PMGD 535.42 1137.39 426.77 COLTR 431.27 1105.05 238.30 PDGD 516.77 1227.28 481.85 ROLTR 543.28 ▴ 1238.10 654.04▴\n\n--- Page Break ---\n\n408 \t Information Retrieval Journal (2022) 25:386–413\n1 3\n(21.92%), and thus it may be less likely the methods perform a ranking error, making them  hard to distinguish. To conclude, with respect to RQ4, we found that ROLTR delivers the  best user experience among the investigated methods.\n5.5  \u0007RQ5: Sensitivity to propensity mismatch\nTo answer RQ5, we investigate the sensitivity of ROLTR to mismatched user propensity.  Our previous experiments, in fact, assumed that the user propensity is known a priori and  used the true propensity to obtain the unbiased rewards. However, this assumption does not  always hold true in practice, as the user propensity could be overestimated or underesti- mated for various reasons (Joachims et al., 2017).\nFigure 8 shows the offline nDCG@10 of ROLTR under different propensity values 휂  and for different click settings. When 휂= 0 , ROLTR assumes no user position bias and  the unbiased reward function RIPS reduces to RNAIVE . On the other hand, 휂= 1 is the same  propensity used to simulate clicks, and thus the propensity assumed by the ranker and that  seen in the clicks are the same. Note that when simulating the user, we always assume the  user has propensity 휂= 1 (while instead we change ROLTR’s propensity value).\nFrom Fig. 8 we can observe that, in the noisy click setting, an underestimation of pro- pensity ( η< 1 ) leads to a similar final convergence as that obtained when the true propen- sity is considered. In fact, when 휂= 0.5 we record a higher final convergence. However,\nFig. 8   Offline nDCG@10 for ROLTR when different prior propensities are used (MSLR10K dataset)\n\n--- Page Break ---\n\n409 Information Retrieval Journal (2022) 25:386–413\n1 3\nwhen the propensity is overestimated ( η> 1 ), both learning speed and final convergence  become much worse. A similar behaviour has been found in CLTR and relates to the large  variance introduced by the extreme IPS weights (Jagerman & de Rijke, 2020): Because of  the overestimated propensities, the IPS weights will be much bigger than those of the true  propensity, resulting in a large amount of variance in the gradient estimation, thus hurting  the final performance. There are many ways to prevent this from happening, e.g., ‘propen- sity clipping’ which trades-off bias against variance.\nOn the other hand, under perfect clicks, the final convergence of all propensity priors is  similar, except for the extremely overestimated propensity ( 휂= 2.0 ). In fact, in the perfect  setting the main difference is with respect to the learning speed: overestimated propensities  converge faster than underestimated propensities.\nWith respect to RQ5, then, we conclude that, when clicks are perfect, ROLTR is not  sensitive to propensity mismatch in terms of final convergence; but when clicks are noisy,  only underestimated propensities are not sensitive while overestimated propensities will  hurt both the final convergence and learning speed.\n6  \u0007Conclusion\nWe proposed a novel OLTR algorithm, ROLTR, which formalises OLTR as an MDP rank- ing problem and uses reinforcement learning with unbiased reward shaping functions to  directly optimize an IR metric. In contrast to traditional online evaluation based meth- ods and the current state-of-the-art PDGD method, ROLTR does not fully rely on online  interventions to overcome user position bias. Instead, ROLTR directly uses the IPS reward  shaping functions to de-bias rewards given by the environment which can be further used  to guide gradient estimation. As a result, the gradient calculated by ROLTR is unbiased  with respect to position bias. In order to accelerate the learning speed and obtain better  user experience, we first simplified the MDP ranking by setting the reward discount factor  훾 to 0, which we empirically confirmed it provides a lower gradient variance without hurt- ing final convergence. Furthermore, to fully leverage user click feedback in each training  episode, we introduced a negative IPS reward shaping function for ROLTR which provides  additional unbiased reward learning signal from unclicked documents. We have proven that  the rewards reshaped by the negative IPS reward shaping function are also unbiased with  respect to position bias. Our experimental results show that ROLTR achieves state-of-the- art offline performance requiring less user interactions, which results in considerably better  user experience (online performance) over other OLTR methods.\nFuture work will be directed towards considering estimating user observation propen- sity during training since our method requires propensity to be known a priori. Further- more, other biases such as selection bias and other type of user behaviour signals, such as  dwell time, mouse move, etc, could be modelled within ROLTR, potentially improving its  performance. This could be achieved by simply changing the reward function while main- taining other parts of the method unchanged. This makes ROLTR flexible and with plenty  of room for further extension.\nFunding  Open Access funding enabled and organized by CAUL and its Member Institutions.\nOpen Access  This article is licensed under a Creative Commons Attribution 4.0 International License,  which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long\n\n--- Page Break ---\n\n410 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nas you give appropriate credit to the original author(s) and the source, provide a link to the Creative Com- mons licence, and indicate if changes were made. The images or other third party material in this article  are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the  material. If material is not included in the article’s Creative Commons licence and your intended use is not  permitted by statutory regulation or exceeds the permitted use, you will need to obtain permission directly  from the copyright holder. To view a copy of this licence, visit http://​creat​iveco​mmons.​org/​licen​ses/​by/4.​0/.\nReferences\nAdomavicius, G., Sankaranarayanan, R., Sen, S., & Tuzhilin, A. (2005). Incorporating contextual informa-\ntion in recommender systems using a multidimensional approach. ACM Transactions on Information  Systems (TOIS), 23(1), 103–145. Agarwal, A., Basu, S., Schnabel, T., & Joachims, T. (2017). Effective evaluation using logged bandit feed-\nback from multiple loggers. In Proceedings of the 23rd ACM SIGKDD international conference on  knowledge discovery and data mining, (pp. 687–696). Agarwal, A., Zaitsev, I., & Joachims, T. (2018). Counterfactual learning-to-rank for additive metrics and\ndeep models. Preprint at arXiv:​1805.​00065. Agarwal, A., Zaitsev, I., Wang, X., Li, C., Najork, M., & Joachims, T. (2019). Estimating position bias with-\nout intrusive interventions. In Proceedings of the twelfth ACM international conference on web search  and data mining, (pp. 474–482). Ai, Q., Bi, K., Luo, C., Guo, J., & Croft, W.B. (2018). Unbiased learning to rank with unbiased propensity\nestimation. In The 41st international ACM SIGIR conference on research & development in informa- tion retrieval, (pp. 385–394). Ai, Q., Yang, T., Wang, H., & Mao, J. (2021). Unbiased learning to rank: online or offline? ACM Transac-\ntions on Information Systems (TOIS), 39(2), 1–29. Al-Maskari, A., & Sanderson, M. (2010). A review of factors influencing user satisfaction in information\nretrieval. Journal of the American Society for Information Science and Technology, 61(5), 859–868. Chapelle, O., & Chang, Y. (2011). Yahoo! learning to rank challenge overview. In Proceedings of the learn-\ning to rank challenge, (pp. 1–24). Dato, D., Lucchese, C., Nardini, F. M., Orlando, S., Perego, R., Tonellotto, N., & Venturini, R. (2016). Fast\nranking with additive ensembles of oblivious and non-oblivious regression trees. ACM Transactions on  Information Systems (TOIS), 35(2), 1–31. Fang, Z., Agarwal, A., & Joachims, T. (2019). Intervention harvesting for context-dependent examination-\nbias estimation. In Proceedings of the 42nd international ACM SIGIR conference on research and  development in information retrieval, (pp. 825–834). Feng, Y., Xu, J., Lan, Y., Guo, J., Zeng, W., & Cheng, X. (2018). From greedy selection to exploratory\ndecision-making: Diverse ranking with policy-value networks. In The 41st international ACM SIGIR  conference on research & development in information retrieval, (pp. 125–134). Guan, Z., & Cutrell, E. (2007). An eye tracking study of the effect of target rank on web search. In Proceed-\nings of the SIGCHI conference on human factors in computing systems, (pp. 417–420). Hofmann, K., Li, L., & Radlinski, F. (2016). Online evaluation for information retrieval. Foundations and\ntrends in information retrieval, 10(1), 1–117. Hofmann, K., Schuth, A., Whiteson, S., & de Rijke, M. (2013). Reusing historical interaction data for faster\nonline learning to rank for ir. In Proceedings of the sixth ACM international conference on Web search  and data mining, (pp. 183–192), ACM , Hofmann, K., Whiteson, S., & De Rijke, M. (2011). Balancing exploration and exploitation in learning to\nrank online. In:European conference on information retrieval, (pp. 251–263), Springer. Hofmann, K., Whiteson, S., & De Rijke, M. (2011). A probabilistic method for inferring preferences from\nclicks. In Proceedings of the 20th ACM international conference on information and knowledge man- agement, (pp. 249–258). Hofmann, K., Whiteson, S., de Rijke, M., et al. (2011). Contextual bandits for information retrieval. In NIPS\n2011 Workshop on Bayesian optimization, experimental design, and bandits, granada, (vol.  12, p.  2011). Hu, Z., Wang, Y., Peng, Q., & Li, H. (2019). Unbiased lambdamart: an unbiased pairwise learning-to-rank\nalgorithm. In The World Wide Web conference, (pp. 2830–2836). Jagerman, R., Markov, I., & Rijke, M. D. (2020). Safe exploration for optimizing contextual bandits. ACM\nTransactions on Information Systems (TOIS), 38(3), 1–23.\n\n--- Page Break ---\n\n411 Information Retrieval Journal (2022) 25:386–413\n1 3\nJagerman, R., Oosterhuis, H., & de Rijke, M. (2019). To model or to intervene: a comparison of counterfac-\ntual and online learning to rank from user interactions. In Proceedings of the 42nd international ACM  SIGIR conference on research and development in information retrieval, SIGIR’19, (pp. 15–24). Asso- ciation for Computing Machinery. Jagerman, R., & de Rijke, M. (2020). Accelerated convergence for counterfactual learning to rank. In Pro-\nceedings of the 43rd international ACM SIGIR conference on research and development in informa- tion retrieval, (pp. 469–478). Joachims, T. (2002). Optimizing search engines using clickthrough data. In Proceedings of the eighth ACM\nSIGKDD international conference on Knowledge discovery and data mining, (pp. 133–142). Joachims, T., Swaminathan, A., & Schnabel, T. (2017). Unbiased learning-to-rank with biased feedback. In\nProceedings of the tenth ACM international conference on web search and data mining, (pp. 781–789). Jun, X., Zeng, W., Long, X., Yanyan, L., Dawei, Y., Xueqi, C., & Ji-Rong, W. (2020). Reinforcement learn-\ning to rank with pairwise policy gradient. In Proceedings of the 42nd international ACM SIGIR con- ference on research and development in information retrieval. Lefortier, D., Serdyukov, P., & De  Rijke, M. (2014). Online exploration for detecting shifts in fresh\nintent. In: Proceedings of the 23rd ACM international conference on conference on information and  knowledge management, (pp. 589–598). Li, C., Markov, I., Rijke, M. D., & Zoghi, M. (2020). Mergedts: a method for effective large-scale online\nranker evaluation. ACM Transactions on Information Systems (TOIS), 38(4), 1–28. Li, H. (2011). Learning to rank for information retrieval and natural language processing. Foundations\nand Trends® in Information Retrieval, 3(3), 225–331. Liu, T. Y. (2011). Learning to rank for information retrieval. Germany: Springer Science & Business\nMedia. Maxwell, D., Azzopardi, L., & Moshfeghi, Y. (2017). A study of snippet length and informativeness:\nbehaviour, performance and user experience. In Proceedings of the 40th international ACM SIGIR  conference on research and development in information retrieval, (pp. 135–144). Ng, A.Y., Harada, D., & Russell, S. (1999). Policy invariance under reward transformations: theory and\napplication to reward shaping. In Proceedings of the sixteenth international conference on machine  learning, (vol. 99, pp. 278–287). Oosterhuis, H., & de Rijke, M. (2018). Differentiable unbiased online learning to rank. In Proceedings\nof the 27th ACM international conference on information and knowledge management, (pp. 1293– 1302), ACM. Oosterhuis, H., & de Rijke, M. (2019). Optimizing ranking models in an online setting. In European con-\nference on information retrieval, (pp. 382–396), Springer. Oosterhuis, H., & de Rijke, M. (2020). Policy-aware unbiased learning to rank for top-k rankings. In\nProceedings of the 42nd international ACM SIGIR conference on research and development in  information retrieval. Oosterhuis, H., & de Rijke, M. (2020). Taking the counterfactual online: Efficient and unbiased online\nevaluation for ranking. In Proceedings of the 2020 ACM SIGIR on international conference on  theory of information retrieval, (pp. 137–144). Oosterhuis, H., & de  Rijke, M. (2021). Unifying online and counterfactual learning to rank: a novel\ncounterfactual estimator that effectively utilizes online interventions. In Proceedings of the 14th  ACM international conference on web search and data mining, (pp. 463–471). Oosterhuis, H., Schuth, A., & de Rijke, M. (2016). Probabilistic multileave gradient descent. In Euro-\npean conference on information retrieval, (pp. 661–668), Springer. Ovaisi, Z., Ahsan, R., Zhang, Y., Vasilaky, K., & Zheleva, E. (2020). Correcting for selection bias in\nlearning-to-rank systems. In Proceedings of the web conference 2020, (pp. 1863–1873). Pan, B., Hembrooke, H., Joachims, T., Lorigo, L., Gay, G., & Granka, L. (2007). In google we trust:\nUsers’ decisions on rank, position, and relevance. Journal of Computer-Mediated Communication,  12(3), 801–823. Popov, I., Heess, N., Lillicrap, T., Hafner, R., Barth-Maron, G., Vecerik, M., Lampe, T., Tassa, Y., Erez,\nT., & Riedmiller, M. (2017). Data-efficient deep reinforcement learning for dexterous manipulation.  Preprint at arXiv:​1704.​03073. Qin, T., & Liu, T.Y. (2013). Introducing letor 4.0 datasets. Preprint at  arXiv:​1306.​2597. Qin, T., Liu, T. Y., Xu, J., & Li, H. (2010). Letor: A benchmark collection for research on learning to\nrank for information retrieval. Information Retrieval, 13(4), 346–374. Sanderson, M. (2010). Test collection based evaluation of information retrieval systems. Foundations\nand Trends® in Information Retrieval, 4(4), 247–375. Schuth, A., Bruintjes, R.J., Buüttner, F., van Doorn, J., Groenland, C., Oosterhuis, H., Tran, C.N., Veel-\ning, B., van der Velde, J., Wechsler, R., et al. (2015). Probabilistic multileave for online retrieval\n\n--- Page Break ---\n\n412 \t Information Retrieval Journal (2022) 25:386–413\n1 3\nevaluation. In Proceedings of the 38th international ACM SIGIR conference on research and devel- opment in information retrieval, (pp. 955–958), ACM. Schuth, A., Oosterhuis, H., Whiteson, S., & de Rijke, M. (2016). Multileave gradient descent for fast\nonline learning to rank. In proceedings of the ninth ACM international conference on web search  and data mining, (pp. 457–466). Sutton, R. S., & Barto, A. G. (2018). Reinforcement learning: an introduction. Cambridge, MA: MIT Press. Sutton, R.S., McAllester, D.A., Singh, S.P., & Mansour, Y. (2000). Policy gradient methods for rein-\nforcement learning with function approximation. In Advances in neural information processing sys- tems, (pp. 1057–1063). Vardasbi, A., de Rijke, M., & Markov, I. (2020). Cascade model-based propensity estimation for coun-\nterfactual learning to rank. Preprint at arXiv:​2005.​11938. Wang, H., Kim, S., McCord-Snook, E., Wu, Q., & Wang, H. (2019). Variance reduction in gradient\nexploration for online learning to rank. In Proceedings of the 42Nd international ACM SIGIR con- ference on research and development in information retrieval, SIGIR’19. Wang, H., Langley, R., Kim, S., McCord-Snook, E., & Wang, H. (2018). Efficient exploration of gradient\nspace for online learning to rank. In The 41st international ACM SIGIR conference on research &  development in information retrieval, (pp. 145–154). Wang, N., Qin, Z., Wang, X., & Wang, H. (2021). Non-clicks mean irrelevant? propensity ratio scoring as a\ncorrection. In Proceedings of the 14th ACM international conference on web search and data mining,  (pp. 481–489). Wang, S., Liu, B., Zhuang, S., & Zuccon, G. (2021). Effective and privacy-preserving federated online\nlearning to rank. In Proceedings of the 2021 ACM SIGIR international conference on theory of infor- mation retrieval, (pp. 3–12). Wang, S., Zhuang, S., & Zuccon, G. (2021). Federated online learning to rank with evolution strategies: a\nreproducibility study. In The 43rd european conference on information retrieval (ECIR). Wang, X., Bendersky, M., Metzler, D., & Najork, M. (2016). Learning to rank with selection bias in per-\nsonal search. In Proceedings of the 39th international ACM SIGIR conference on research and devel- opment in information retrieval, (pp. 115–124). Wang, X., Golbandi, N., Bendersky, M., Metzler, D., & Najork, M. (2018). Position bias estimation for\nunbiased learning to rank in personal search. In Proceedings of the eleventh ACM international confer- ence on web search and data mining, (pp. 610–618). Wei, Z., Xu, J., Lan, Y., Guo, J., & Cheng, X. (2017). Reinforcement learning to rank with markov decision\nprocess. In Proceedings of the 40th international ACM SIGIR conference on research and development  in information retrieval, (pp. 945–948). Williams, R. J. (1992). Simple statistical gradient-following algorithms for connectionist reinforcement\nlearning. Machine Learning, 8(3–4), 229–256. Xia, L., Xu, J., Lan, Y., Guo, J., Zeng, W., & Cheng, X. (2017). Adapting markov decision process for search\nresult diversification. In Proceedings of the 40th international ACM SIGIR conference on research and  development in information retrieval, (pp. 535–544). Yao, J., Dou, Z., Xu, J., & Wen, J.R. (2020). Rlper: A reinforcement learning model for personalized search.\nIn Proceedings of the web conference 2020, (pp. 2298–2308). Yue, Y., & Joachims, T. (2009). Interactively optimizing information retrieval systems as a dueling ban-\ndits problem. In Proceedings of the 26th annual international conference on machine learning, (pp.  1201–1208). Zeng, W., Xu, J., Lan, Y., Guo, J., & Cheng, X. (2018). Multi page search with reinforcement learning\nto rank. In Proceedings of the 2018 ACM SIGIR international conference on theory of information  retrieval, (pp. 175–178). Zhao, X., Gu, C., Zhang, H., Yang, X., Liu, X., Liu, H., & Tang, J. (2021). Dear: Deep reinforcement learn-\ning for online advertising impression in recommender systems. In Proceedings of the AAAI confer- ence on artificial intelligence, (vol. 35, pp. 750–758). Zhao, X., Xia, L., Zhang, L., Ding, Z., Yin, D., & Tang, J. (2018). Deep reinforcement learning for page-\nwise recommendations. In Proceedings of the 12th ACM conference on recommender systems, (pp.  95–103). Zhao, X., Zhang, L., Ding, Z., Xia, L., Tang, J., & Yin, D. (2018). Recommendations with negative feed-\nback via pairwise deep reinforcement learning. In Proceedings of the 24th ACM SIGKDD interna- tional conference on knowledge discovery & data mining, (pp. 1040–1048). Zhuang, S., & Zuccon, G. (2020). Counterfactual online learning to rank. In European conference on infor-\nmation retrieval, (pp. 415–430), Springer.\n\n--- Page Break ---\n\n413 Information Retrieval Journal (2022) 25:386–413\n1 3\nZhuang, S., & Zuccon, G. (2021). How do online learning to rank methods adapt to changes of intent? In\nProceedings of the 44th international ACM SIGIR conference on research and development in infor- mation retrieval.\nPublisher’s Note  Springer Nature remains neutral with regard to jurisdictional claims in published maps and  institutional affiliations.",
+  "equations": [
+    {
+      "page": 1,
+      "raw_extracted": "Abstract Online learning to rank (OLTR) aims to learn a ranker directly from implicit feedback  derived from users’ interactions, such as clicks. Clicks however are a biased signal: spe- cifically, top-ranked documents are likely to attract more clicks than documents down the  ranking (position bias). In this paper, we propose a novel learning algorithm for OLTR  that uses reinforcement learning to optimize rankers: Reinforcement Online Learning to  Rank (ROLTR). In ROLTR, the gradients of the ranker are estimated based on the rewards  assigned to clicked and unclicked documents. In order to de-bias the users’ position bias  contained in the reward signals, we introduce unbiased reward shaping functions that  exploit inverse propensity scoring for clicked and unclicked documents. The fact that our  method can also model unclicked documents provides a further advantage in that less users  interactions are required to effectively train a ranker, thus providing gains in efficiency.  Empirical evaluation on standard OLTR datasets shows that ROLTR achieves state-of- the-art performance, and provides significantly better user experience than other OLTR  approaches. To facilitate the reproducibility of our experiments, we make all experiment  code available at https://​github.​com/​ielab/​OLTR.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Keywords  Online learning to rank · Unbiased reward shaping · Reinforcement learning",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Learning to rank (LTR) is a supervised machine learning technique that has been widely  used in modern search engines to learn rankers. Explicit feedback, consisting of asses- sors manually judging the relevance of query-document pairs, is required for LTR (Liu,  2011; Li, 2011). This labelled dataset requirement poses obvious limitations: these  datasets take substantial effort and cost to compile (Qin et al., 2010; Qin & Liu, 2013;",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "*\t Guido Zuccon  \t g.zuccon@uq.edu.au",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Shengyao Zhuang  \t s.zhuang@uq.edu.au",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "Zhihao Qiao  \t zhihao.qiao@uq.edu.au",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 1,
+      "raw_extracted": "1\t The University of Queensland, St Lucia, Australia",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "Chapelle & Chang, 2011), labelling personal documents is unethical and often impos- sible (Wang et  al., 2016), static datasets cannot model user intent change over time  (Lefortier et al., 2014; Zhuang & Zuccon, 2021), and user preferences may not agree  with that of annotators (Sanderson, 2010).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "In order to overcome these limitations, implicit feedback, such as clicks, has been  leveraged. This type of training signal is not affected by the above limitations and has  been an attractive alternative to annotated datasets (Joachims, 2002). However, train- ing rankers with implicit feedback has its own drawbacks and challenges. For exam- ple, clicks are a weak relevance signal because they often are affected by a number of  biases and noise. One of the most prominent bias in web search is the position bias,  where higher ranked documents have a higher chance to be observed and thus gain more  clicks, even if they may be not relevant (Guan & Cutrell, 2007; Pan et al., 2007; Hof- mann et al., 2016; Joachims et al., 2017). Therefore, it is important to consider the influ- ence of such biases.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "Two main families of approaches have emerged that attempt to learn effective rankers  from users’ implicit feedback (Jagerman et al., 2019): counterfactual learning to rank  (CLTR) (Joachims et al., 2017) and online learning to rank (OLTR) (Yue & Joachims,  2009). In CLTR, given a historical click through log, clicks are treated as pure binary  relevance labels and inverse propensity scoring (IPS) is used to re-weight clicks in order  to discount the effect of biases. Rankers are trained in an offline manner and deployed  online after training. This offline batch updates pipeline can avoid the risk of exposing  users to low-quality results since it only displays the best search engine results that are  possible for a given CLTR algorithm and training data.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "On the other hand, OLTR algorithms interactively update rankers after each user  interaction has taken place, thus being more responsive to a non-stationary user envi- ronment (Zhuang & Zuccon, 2021). In contrast to CLTR, current OLTR methods do not  directly model position or selection bias, and only assume relevant documents are more  likely to be clicked than non-relevant documents (Joachims, 2002). The biases and noise  of users clicks are handled by online interventions (Jagerman et al., 2019), i.e., slightly  perturbated result lists are displayed and preferences towards rankers are informed by  users clicks. This is one of the key aspects of OLTR, but also one of its biggest disad- vantages that limits OLTR’s uptake in practice: such online interventions carry the risk  of displaying a “sub-optimal” ranking list directly to the user, thus hurting user experi- ence (as measured by online evaluation metrics). Hence, it is a requirement for OLTR  methods to efficiently leverage the click feedback so that a good ranker is learnt as fast  as possible to avoid displaying low quality search results to a large number of users.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "To move beyond the limitations of existing OLTR methods, in this article, we pro- pose a novel OLTR algorithm called Reinforcement Online Learning to Rank (ROLTR),  which exploits the reinforcement learning (RL) approach adapting it to OLTR. Our  motivation for using RL in OLTR is based on the following observations:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 2,
+      "raw_extracted": "1.\t RL suits OLTR setting very well: RL is powerful for modeling interactive environments  and maximizing the long-term rewards yield from the environment. In the OLTR set- ting, the interactive environment is composed by the users and the search system, and  the rewards are the users’ satisfaction. 2.\t RL with carefully designed reward functions allows OLTR algorithms to directly remove  the biases present in the user clicks: this is currently hard for other OLTR algorithms to  achieve.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "As we show in this article, our proposed ROLTR can directly remove position bias and  thus effectively and, importantly, efficiently (i.e. within less impressions) update the ranker.  To achieve this, we formalize OLTR as a Markov Decision Process (MDP) problem and  use policy gradient with rewards assigned on clicked and unclicked documents to estimate  the update gradients. In order to de-bias users’ clicks, we further introduce unbiased reward  shaping functions that re-weight the rewards for both clicked and unclicked documents. We  mathematically prove that the gradient estimation of ROLTR is unbiased with respect to  position bias, and it can directly optimize IR metrics such as discounted cumulative gain  (DCG). The idea of leveraging unclicked data has been recently explored in offline coun- terfactual learning studies (Hu et al., 2019; Wang et al., 2021a), however, our method is  currently the only OLTR approach that can gain unbiased learning signals from unclicked  documents, thus speeding up convergence. Empirical results further show that ROLTR sig- nificantly outperforms traditional OLTR methods and is at par with current state-of-the-art  methods (offline performance), although requiring fewer user interactions. As a result, our  method delivers considerably better user experience (online performance).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "Unlike traditional LTR where rankers are learned from explicitly labelled datasets (Liu,  2011), counterfactual LTR (Agarwal et al., 2018; Ai et al., 2018; Joachims et al., 2017)  uses historical interaction data, typically click logs, to learn a ranker. However, clicks are  a biased signal. The most prominent bias in the click signal is the position bias: assuming  that users examine search engine result pages (SERPs) from top to bottom, then the results  that are ranked higher are more likely to be observed by the users (Joachims et al., 2017).  Joachims et al. refer to the probability of a search result at a rank i to be observed as its  propensity (Joachims et al., 2017). They then define the inverse propensity scoring (IPS)  method to re-weight user clicks: when IPS is used, the estimated ranking score is unbiased  with respect to position bias. One crucial requirement of IPS-based CLTR methods is the  prior knowledge of user propensity. This is usually estimated by conducting online result  randomization which can negatively affect the user experience. To address this issue, Ai  et al. (2018) proposed the Dual Learning Algorithm (DLA) to jointly learn an unbiased  ranker and an unbiased propensity model, thus avoiding the preprocessing of propensity  estimations. Unlike these CLTR works, our method also uses IPS but in the context of  reinforcement learning for OLTR and we further propose a new IPS method for unclicked  documents so as to gain an unbiased training signal from unclicked documents. This accel- erates the learning process because both click and unclick information is used for train- ing, thus increasing the number of implicit signals obtained from each search and used for  training.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 3,
+      "raw_extracted": "In addition to position bias, recent work in counterfactual LTR has considered cor- recting the selection bias (Ovaisi et al., 2020; Oosterhuis & de Rijke, 2020a), in which  some documents have zero probability of being observed by the users (thus never having  a chance to be clicked and contribute a training signal). We note that the selection bias is  fundamentally different from the position bias in terms of that this bias is introduced by the  system itself: some documents will never be included by the system in the top SERPs. In  contrast, the position bias instead comes from the users. This often occurs in web search",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "where SERPs only show a small subset of documents in the first page (e.g., 10) and users  do not proceed beyond the first SERP. In this circumstance, documents ranked beyond the  first SERP have no chance of being observed, hence never get identified as positive train- ing examples. To debias the selection bias in the click signals, Oosterhuis and de Rijke  (2020a) proposed a policy-aware counterfactual estimator for CLTR to directly account  for the selection bias introduced by a stochastic logging policy. On the other hand, Ovaisi  et al. (2020) adapted Heckman’s two-stage method to account for selection and position  bias in LTR systems. In our work, we follow the standard OLTR and CLTR experimen- tal setup and simulate typical, real-world circumstances; we also include selection bias in  our experiments by only placing 10 documents in the SERPs. Although in this paper we  directly focus on correcting position bias, selection bias is also partially corrected by the  proposed method via online intervention. Nevertheless, recently proposed methods (Ovaisi  et al., 2020; Oosterhuis & de Rijke, 2020a) could be used to further modify our reward  shaping functions: this would have the effect of further reducing the selection bias of the  gradient estimations.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Similarly to CLTR, online LTR (OLTR) also considers implicit user feedback to learn  a ranker. Unlike CLTR, however, this is done online, by directly interacting with users.  This online training process allows to control data acquisition and handle biases and noise  through online interventions with regards to which documents to display. Figure 1 provides  a schematic representation of the OLTR process.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "The Dueling Bandit Gradient Descent (DBGD) (Yue & Joachims, 2009) models OLTR  as a dueling bandit problem and uses online evaluation with users’ clicks on interleaved or  multileaved SERPs to indicate user preference among a pool of candidate rankers (Schuth  et al., 2015; Oosterhuis et al., 2016; Hofmann et al., 2011a, 2013; Schuth et al., 2016;  Hofmann et al., 2011b). More recent work has studied methods to reduce the variance of  the gradients estimated by online evaluation (Wang et al., 2019, 2018a). However, because  gradients are updated towards the winning rankers in the candidate pool, the quality of the  gradient estimation is influenced by the number of candidate rankers. When the number of  candidate rankers is large, the performance of DBGD is limited in terms of both effective- ness and efficiency (Schuth et al., 2015; Li et al., 2020). The recently proposed Counterfac- tual Online Learning to Rank (COLTR) (Zhuang & Zuccon, 2020) attempts to overcome",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 4,
+      "raw_extracted": "Fig. 1   A schematic view of the online learning to rank process. Users pose queries to the ranking system.  This uses a online LTR algorithm to identify the candidate documents to display to the user. Depending on  the OLTR algorithm used, candidate documents will be used to form a displayed list. The user examines  the displayed search results (SERP) and clicks on items of interest. The click feedback is used by the OLTR  algorithm to perform ranker updates",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "the issues associated with online evaluation. This is done by replacing online evaluation  with counterfactual evaluation for DBGD. Instead of interleaving, COLTR uses clicks col- lected by the current ranker to evaluate candidate rankers thus providing high efficiency.  However, empirical results have shown COLTR requires more exploration, thus possibly  hurting user experience (online evaluation metrics).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Unlike DBGD and COLTR, the Pairwise Differentiable Gradient Descent (PDGD)  (Oosterhuis & de Rijke, 2018) does not require to sample candidate rankers for online eval- uation. Instead, PDGD directly estimates gradients based on pairwise preferences between  documents in the SERP, inferred by users’ clicks; then, stochastic gradient descent is used  to update the ranker. The gradient estimation of PDGD is unbiased with respect to user  document pair preferences (Oosterhuis & de  Rijke, 2018). PDGD is empirically found  to be significantly better than DBGD in terms of final convergence, learning speed and  user experience during optimization, making PDGD the current state-of-the-art method  for OLTR (Jagerman et al., 2019; Zhuang & Zuccon, 2020; Oosterhuis & de Rijke, 2019;  Wang et al., 2021c). PDGD has also been adapted to the federated OLTR context (Wang  et  al., 2021b), exhibiting again state-of-the-art performance. However, both PDGD and  DBGD based methods do not directly use IPS to handle position bias, which has been  proven to be very important in previous CLTR results (Joachims et al., 2017).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "As mentioned above, CLTR and OLTR differ from the setting considered for learning  the ranker: use an historical log of implicit interactions for counterfactual, versus use direct  observation and interaction with rankings in the case of online LTR. We note that Jager- man et al. (2019) have specifically studied the similarity and differences between counter- factual and online LTR. They suggested that, from a theoretical standpoint, counterfactual  LTR exploits position bias better, however they also indicated that empirical results have  shown that OLTR (and in particular PDGD) is more reliable. On the other hand, recent  works have been focusing on adapting the offline counterfactual learning to the online set- ting (Ai et al., 2021; Zhuang & Zuccon, 2020; Oosterhuis & de Rijke, 2020b, 2021). These  works have suggested that OLTR algorithms can benefit from the counterfactual learning  framework. Based on this context, our proposed method can also be thought of as embrac- ing this direction.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Reinforcement learning (RL) has previously been applied to offline LTR problems, but  not to online LTR. Wei et al. (2017) have formalized ranking as a Markov Decision Pro- cess (MDP) problem and introduced the MDPRank algorithm to optimize a linear ranker.  Specifically, the document ranking is modelled as a sequential decision making process  where each time step corresponds to a position in the ranking and the action taken at each  time step corresponds to the selection of a document for the corresponding position. The  rewards given by the environment are generated according to the relevance label of the  documents, and the classic policy gradient algorithm of REINFORCE (Sutton et al., 2000)  is used to maximize the expectation of cumulative rewards received by the ranker. An  attractive property of MDPRank is that it can use gradient descent to directly optimize  non-differentiable ranking metrics such as DCG. However, Jun et al. (2020) have recently  shown that the gradient estimation of the original MDPRank exhibits high variance, and  thus this method requires more training episodes to learn an effective ranker. A similar  reinforcement learning framework has also been used for search result diversification (Feng",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "et al., 2018; Xia et al., 2017), multi-page search (Zeng et al., 2018) and recommendation  system (Zhao et al., 2018a, b, 2021).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "In this paper, we also apply a MDPRank-like algorithm, although in the context of  OLTR and with two important adaptions. First, the original MDPRank is designed for tra- ditional offline LTR, i.e., the relevance labels of query-document pairs are provided. In  the OLTR setting, however, only biased user interaction data such as clicks is available:  thus the rewards given by the online environment are biased. In order to obtain unbiased  rewards, we introduce unbiased reward shaping functions for MDPRank to discount posi- tion bias. Secondly, the high variance of the gradient estimation of MDPRank makes it  converge slowly. However, for OLTR to be viable, we need the algorithm to converge fast  so that it does not hurt the user experience too much. To reduce variance, we simplify  the objective function of the policy gradient used in the original MDPRank to achieve an  objective function with much lower variance of gradient estimation, without changing its  optimization target.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Ranking can be formalized as an MDP problem, where the search engine (agent) has to  decide which document to place (action) at rank i, given the current candidate document  set (state) (Wei et al., 2017). In the offline LTR setting, i.e., when relevance labels are pro- vided, any IR evaluation measure can be used as a reward function for the ranking created  by the search engine. In the online LTR setting, however, rewards are typically inferred via  users’ implicit feedback, such as clicks. Following Wei et al. (2017), who have limited their  attention to offline LTR only, we define each component of the MDP ranking for the OLTR  as follows:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "StatesS indicates the set of states that the agent (search engine) will observe from the  environment. In the MDP ranking, at a time step t, a state st ∈S is the candidate document  set Dt which contains the documents that need to be ranked.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Actions A is the set of possible actions that the agent can take when at a state st . An  action at a time step t, denoted as at ∈A(st) , consists of selecting a document dm(at) ∈Dt  to place at rank i, where rank k = t + 1,1 m(at) is the function that maps the action to the  document index, and dm(at) is represented by a feature vector. We note the feature elements  in dm(at) are not only obtained based on the document but also on the query.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Transition T(s,a) is the function T(st, at) = st+1 , which maps a state st to its next state  st+1 based on the action at , where st+1 is the candidate document set Dt without the selected  document dm(at):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Policy 휋(a|s, 휃) is a probability distribution over all possible actions that the agent can take  when in the state s, given the current model parameters 휃 (where 휃 is a vector contain- ing the model’s parameters). We compute this distribution using the softmax function over  document scores:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "(1) st+1 = st ⧵dm(at) = Dt ⧵dm(at) = Dt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "1  Note that the time step t starts from 0 and the rank position k starts from 1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "f휃(dm(at)) is the document relevance score estimated by the ranking model. In our experi- ments, we use a linear ranking model, this means the dimensionality of 휃 , i.e., the number  of parameters in the ranking model, is equal to the dimensionality of the feature vector.  However, we note that the ranking model can be extended to any dimensionality, e.g., a  neural ranking model. For simplicity, we use at ∼휋(st) to denote the action at selected  according to the policy 휋 at state st.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Reward R(s,a) is the reward function that models the immediate reward given by the  environment and its value represents the reward assigned to the action a that has been  selected by the agent in state s.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "When full information is provided (i.e., the true relevance labels are given), it is straight- forward to define the reward function on the basis of IR evaluation measures such as DCG.  However, in the OLTR setting, relevance labels are not provided – in place of these, the  ranker observes implicit, noisy and biased user feedback such as clicks. Thus, in such a  partial information setting, the reward function is defined based on the implicit feedback,  e.g., on click labels. We define the value of the reward function next.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "In RL, reward shaping is used to reshape the original reward function to better guide the  direction of the gradient update (Ng et al., 1999). Prior knowledge about the environment  is needed to formalize a reliable reward shaping function to avoid otherwise to bias learn- ing (Popov et al., 2017).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "In the (offline) LTR approach by Wei et al. (2017), DCG scores have been used as the  original reward function to instruct the search engine to learn a ranker, when true relevance  labels are supplied. This reward function RDCG(st, at) is defined as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "where 휆(t) = 1 log2(t+2) is the DCG weight term, and ym(at) ∈{0, 1} is the binary relevance  label of the document at rank t + 1 . This is a reasonable reward function, provided that rel- evance labels are known. This reward function directly corresponds to the DCG evaluation  metric (because of the DCG weight term), and thus the agent will attempt to learn a policy  휋 that directly maximizes the cumulative rewards 훥 (DCG scores) of the ranking episode,  for any given initial state s0:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "However, in the online LTR setting, relevance labels are unknown (i.e., this is a partial  information setting); instead, users’ clicks are used as learning signal. A naïve reward func- tion in this context is then to treat clicks as binary relevance labels and thus use the DCG  reward function of equation 3:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "(2) 휋(at\u001fst, 휃) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "exp",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "f휃(dm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "a∈A(st) exp",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "f휃(dm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "(3) RDCG(st, at) = 휆(t) ⋅ym(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "(4) 훥RDCG(s0, 휋, y) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "RDCG(st, 휋(st)) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where cm(at) = 1 represents that a user has clicked on the document at rank t + 1 , while  cm(at) = 0 represents no click on the document. If we assume that the probability of a docu- ment dm(at) to be observed by a user (known as propensity) only depends on the rank posi- tion t + 1 (note that t starts from 0) and no click noise is present, i.e., P(ot+1 = 1|t + 1) , then  the expectation of the final ranking rewards is biased to the users’ propensity (Joachims  et al., 2017; Jagerman et al., 2019):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "This is the so-called position bias effect: top-ranked documents usually have a larger  chance of being observed, and thus the rewards assigned to them are biasedly higher.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Recent work in CLTR has attempted to account for this position bias effect (Ai et al., 2018;  Joachims et al., 2017). One of the most commonly used approaches to mitigate position  bias is Inverse Propensity Scoring (IPS). We follow this direction to unbias the click signal  in our RL framework, and define the IPS reward shaping function as FIPS+ and the reshaped  reward function as RIPS+:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "It can be proven that the cumulative naïve rewards reshaped by FIPS+ are an unbi- ased estimate of the ranking rewards with true relevance labels (Joachims et al., 2017):  피o[훥RIPS+ (s0, 휋, c)] = 훥RDCG(s0, 휋, y) . Thus, FIPS can be used to obtain unbiased cumulative",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "rewards with respect to position bias, likely providing more reliable gradient estimations  than the naïve reward function.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "The reward functions above only provide positive rewards to the clicked/relevant docu- ments, while they assign a zero reward to the unclicked/irrelevant documents. However, in  other RL problems, it is often found that negative rewards help the agent to avoid selecting  poor actions (Sutton & Barto, 2018): for a ranker, negative rewards can help avoid select- ing irrelevant documents from the document set, thus leading to better user experience.  Based on this, we introduce a negative DCG reward function for online LTR (a similar one  could be defined for offline LTR):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Hence, the negative cumulative ranking score is calculated by:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(5) RNAIVE+(st, at) = 휆(t) ⋅cm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(6)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "피o[훥RNAIVE+ (s0, 휋, c)] =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "RNAIVE+(st, 휋(st))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "=",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "P(ot+1 = 1|t + 1) ⋅휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(7)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "RIPS+(st, at) = FIPS(RNAIVE+(st, at))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "= RNAIVE+(st, at) P(ot+1 = 1|t + 1) = 휆(t) P(ot+1 = 1|t + 1) ⋅cm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(8) RNAIVE−(st, at) = 휆(t) ⋅(cm(at) −1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "This means highly ranked unclicked documents will be penalised more and thus drag down  the final ranking reward. It can be proven that this naïve negative reward function is a  biased estimate of the negative DCG score of the ranking ( 훥RDCG−(s0, 휋, y)):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "That is, the naïve negative reward overestimates the true negative DCG reward by counting  the relevant but not observed documents as irrelevant.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "In order to get unbiased negative DCG rewards, we propose the negative IPS reward shaping  function FIPS− and denote the reshaped negative DCG reward as RIPS−:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "We mathematically prove that 피o[훥RIPS−(s0, 휋, c)] is an unbiased estimate of 훥RDCG−(s0, 휋, y):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(9) 훥RNAIVE−(s0, 휋, c) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "RNAIVE−(st, 휋(st)) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "cm(at)=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "−휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(10)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "피o[훥RNAIVE−(s0, 휋, c)]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "= 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "RNAIVE−(st, 휋(st))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "= 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "⎡ ⎢ ⎢⎣",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "cm(at)=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "−휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "⎤ ⎥ ⎥⎦",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "= 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "⎡ ⎢ ⎢⎣",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ym(at)=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "−휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "⎤ ⎥ ⎥⎦",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "+ 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "⎡ ⎢ ⎢⎣",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ot+1=0∧ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "−휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "⎤ ⎥ ⎥⎦",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "=",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ym(at)=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "−휆(t) −",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(1 −P(ot+1 = 1\u0016t + 1)) ⋅휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "= 훥RDCG−(s0, 휋, y) −",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(1 −P(ot+1 = 1\u0016t + 1)) ⋅휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(11)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "RIPS−(st, at) = FIPS−(RNAIVE−(st, at))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "= 휆(t) ⋅(cm(at) −1) +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(1 −P(ot+1 = 1|t + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "P(ot+1 = 1|t + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "휆(t) ⋅cm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "This reward shaping function allows to assign unbiased negative rewards to unclicked doc- uments so as to obtain an unbiased cumulative negative DCG ranking score.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "All the unbiased reward shaping functions above require to know a priori the users’ pro- pensities P(ot+1 = 1|t + 1) . Many recent works have considered estimating such propensi- ties from historical click-logs (Agarwal et al., 2017; Fang et al., 2019; Agarwal et al., 2019)  and during training (Ai et al., 2018; Wang et al., 2018b). We regard propensity estimation  as being beyond the scope of this article and in our experiments we assume the propensi- ties to be known. Nevertheless, for completeness, we also test how sensitive our method is  to propensity mismatch (Sect. 5.5).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Following previous work (Wei et al., 2017; Yao et al., 2020), we learn the policy model  parameters 휃 with REINFORCE (Williams, 1992; Sutton & Barto, 2018; Sutton et  al.,  2000), a widely used policy gradient algorithm. In REINFORCE, the objective is to find an  optimal policy that can maximize the expectation of cumulative reward from the beginning  of each episode, J(휃) = 피휋",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "[Gt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "] , where t = 0 . Here Gt is the discounted future cumulative  reward starting from time step t, Gt = ∑M",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "m=t 훾m−t ⋅R(sm, am) , and M is the maximum depth  of the ranking episode, and 훾∈[0, 1] is the discount factor. In previous offline LTR work  (Wei et al., 2017; Jun et al., 2020), 훾 has been set to 1 (maximum value), which results in  G0 = 훥RDCG . This value results in the learning algorithm directly maximizing DCG. How- ever, it is well known in RL that larger 훾 values will lead the agent to care more about",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "(12)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "피o[훥RIPS−(s0, 휋, c)] = 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "FIPS−(RNAIVE−(st, 휋(st)))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "= 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "휆(t) ⋅(cm(at) −1) +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "1 −P(ot+1 = 1\u001bt + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "P(ot+1 = 1\u001bt + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u001a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "휆(t) ⋅cm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "= 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "휆(t) ⋅(cm(at) −1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "t=0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "1 −P(ot+1 = 1\u001bt + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "P(ot+1 = 1\u001bt + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u001a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "휆(t) ⋅cm(at)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "= 피o[훥RNAIVE−(s0, 휋, c)]+",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ 피o",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "⎡ ⎢ ⎢⎣",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ot+1=1∧ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "1 −P(ot+1 = 1\u001bt + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "P(ot+1 = 1\u001bt + 1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\u001a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "⎤ ⎥ ⎥⎦",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "= 훥RDCG−(s0, 휋, y) −",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "(1 −P(ot+1 = 1\u001bt + 1)) ⋅휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ym(at)=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "(1 −P(ot+1 = 1\u001bt + 1)) ⋅휆(t)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "= 훥RDCG−(s0, 휋, y)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "future rewards but at the same time to produce gradient estimations with significantly high  variance, thus slowing down the learning speed (Jun et al., 2020; Sutton & Barto, 2018).  In OLTR settings, however, learning speed is very important as it is highly entangled with  user experience, as measured by the online performance of the ranker.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Hence, in order to reduce variance and speed up learning, we simplify MDP to Con- textual Bandits (Jagerman et al., 2020; Adomavicius et al., 2005; Hofmann et al., 2011c)  by setting 훾= 0 . This setting makes REINFORCE to choose at so as to maximize only the  expectation of immediate reward R(st, at):",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "This setting actually does not change the fact that the objective is to optimize DCG. This is  because maximizing the expected immediate reward at a time step t is equivalent to select- ing the most likely relevant document from the candidate set Dt for the state st : this is  guaranteed to have maximum expected cumulative reward for that ranking episode. Thus,  it is safe to ignore future rewards in this case. In Sect. 5.1, we empirically show that 훾= 0  enjoys a much faster learning speed than other settings, without any loss in final conver- gence. It is important to note that the above is not true for tasks such as search result diver- sification, since greedily choosing the most relevant document at each rank position may  cause lower final ranking scores (Feng et al., 2018). Thus, we use the full MDP algorithm  for this special situation.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Following the standard policy gradient practice (Wei et  al., 2017; Sutton & Barto,  2018), we estimate gradients with Monte Carlo sampling and the gradient ∇휃J(휃) can be  calculated as:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Intuitively, the gradients will update the ranker parameters towards the actions that yield  the highest immediate reward R(st, at).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "The complete procedure of ROLTR is described in Algorithm 1. At each ranking epi- sode i, i.e., at each round of user interaction (line 2 for-loop), the search engine receives  a query qi and the initial candidate document set D0 is generated (line 3). Then the algo- rithm first draws an action (document) from the distribution created by the current policy  (line 6). Then, the selected action, the state information, and the corresponding document  are recorded (line 7) and the environment moves to the next state (line 8). The same proce- dure is repeated for the next rank positions, until the algorithm reaches the maximum depth  for the ranking (line 5 for-loop). After finishing ranking, the final result list is shown to the  user, who provides feedback to the search engine in the form of click labels (line 10). Next,  for each recorded state-action pair (line 11 for-loop), the gradient is calculated (line 13)  and the current policy is updated at the end of each ranking episode (line 15).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "(13) J(휃) = 피휋",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "[R(st, at)]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "(14) ∇휃J(휃) = R(st, at)∇휃log(휋(at|st, 휃))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "ROLTR has two main parts: the learning part (Sect. 3.3), which uses the REINFORCE  algorithm, and the unbiased reward shaping part (Sect. 3.2). The theoretical guarantees  of REINFORCE are well studied in reinforcement learning, including the guarantee that  the gradient estimate is unbiased with respect to maximizing the expected rewards (Sut- ton & Barto, 2018). However, if the rewards are biased (which are when the naive reward  function is used), then the learning algorithm is biased. This is where the second part of  ROLTR comes into play: the unbiased rewards shaping functions guarantee the reward sig- nals assigned to REINFORCE are unbiased with respect to position bias (mathematical  proof in Eq. 12). Thus, the update gradients estimated by ROLTR are guaranteed to maxi- mize unbiased expected rewards, and thus the gradient estimation is unbiased with respect  to position bias.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "To study the effectiveness of ROLTR, we designed a number of empirical experiments  aimed to answer the following research questions:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "RQ1\t \u0007How does the reward discount factor in ROLTR affect gradient variance and final  convergence (i.e., the offline nDCG score on the test dataset)? RQ2\t \u0007How do the unbiased reward shaping functions of ROLTR impact performance? RQ3\t \u0007How does ROLTR compare in terms of convergence and learning speed against  current representative OLTR methods? RQ4\t \u0007Does ROLTR deliver better user experience than current OLTR methods, i.e.,  higher online nDCG? RQ5\t \u0007How sensitive is ROLTR to propensity mismatch?",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "We consider three benchmark datasets that are commonly used to evaluate OLTR (Zhuang &  Zuccon, 2020; Schuth et al., 2015; Oosterhuis et al., 2016; Oosterhuis & de Rijke, 2018; Wang  et al., 2019) and CLTR (Jagerman et al., 2019; Ai et al., 2018; Joachims et al., 2017): MSLR- WEB10K (Qin & Liu, 2013), Yahoo! Webscope (Chapelle & Chang, 2011), and Istella (Dato  et al., 2016). MSLR-WEB10K contains 10,000 queries and 125 retrieved documents on aver- age; documents are represented by 136 features. Yahoo! is a bigger dataset, with 29,921 que- ries and an average of 23.7 documents per query, represented using 700 features. Istella is  the largest dataset we consider, with 33,118 queries and an average of 315 documents per  query, represented by 220 features. Query-document pair relevance labels for all datasets are  recorded on a five-point scale from not relevant (0) to perfectly relevant (4) and have been split  into training, validation and test sets (according to the standard splits in the datasets). Queries  in the three sets are disjoint. We use the training set to train the rankers, the validation set to  tune the hyper-parameters, and the test set to evaluate the rankers’ performance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "To avoid hurting user experience, it is common for research in OLTR and CLTR to simu- late users’ clicks by relying on the relevance labels recorded in the datasets (Zhuang & Zuc- con, 2020; Schuth et al., 2015; Oosterhuis et al., 2016; Oosterhuis & de Rijke, 2018; Jagerman  et al., 2019; Joachims et al., 2017; Vardasbi et al., 2020). This also allows to fully control  users’ biases and noise so that algorithms can be tested under different, controllable condi- tions. Queries are uniformly sampled from the dataset (sampling query IDs). The candidate  document set associated with the query ID is provided by each dataset. Then OLTR algo- rithms generate a result list of documents to display. Clicks are simulated based on two fixed  variables: the click probability and the position bias.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "The click probability is the probability of a user clicking on a document after observing it.  This probability is conditioned on the document’s relevance label. Following previous OLTR  work (Oosterhuis & de Rijke, 2018; Zhuang & Zuccon, 2020; Hofmann et al., 2011a, 2013;  Oosterhuis et al., 2016), we set two types of click behaviour: perfect and noisy. The click prob- ability of the perfect click behaviour is proportional to the relevance level of the documents,  and has 0 probability for non-relevant documents. This simulates an ideal user that is able to  always determine the relevance of a document in the SERP. The noisy click behaviour mim- ics instead a realist behaviour on SERPs by assigning a small click probability to non-rele- vant documents and a small skip probability to relevant documents. Table 1 provides the click  probabilities for the two user models.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Position bias is modelled by the document observation probabilities; we assume the obser- vation probabilities only depend on the rank position of the document and set these probabili- ties to:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "(15) P(ok = 1|k) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "(1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "k",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": ")휂",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Table 1   Click probabilities for  different user behaviours P(c = 1|o = 1, rel(d))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "rel(d) 0 1 2 3 4",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "perfect 0.0 0.2 0.4 0.8 1.0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "noisy 0.4 0.6 0.7 0.8 0.9",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where k is the rank position and 휂 is a parameter that determines the level of position bias.  Following Joachims et al. (2017) and Jagerman et al. (2019), we set 휂= 1 . Thus, the prob- ability of a click occurring on a document at rank k in the result list is:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "We measure effectiveness using standard OLTR evaluation practice, which considers two  aspects: offline and online performance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Offline performance is the final convergence of the learned ranker. We evaluate this  using the average nDCG@10 of the ranker over the queries in the held-out test-set across  100, 000 impressions, as all rankers would have reached convergence at this point. Online performance measures user experience during training. This is quantified by the  nDCG@10 obtained by the rank list Li that the user observes in the training episode i,  times a discount rate τ< 1:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "The discount rate assigns less weight to the later impressions to reward OLTR algorithms  that learn an effective ranker fast, so to limit the amount of low-quality user experience.  As in previous work (Oosterhuis & de Rijke, 2018; Wang et al., 2019; Zhuang & Zuccon,  2020; Hofmann et al., 2013), we set 휏= 0.9995 : this means that impressions that occur  after 10, 000 iterations have less than a 1% impact. We further note that, while this online  performance measure aims to quantify the user experience during training, it only does  so partially: the relevance of the results in SERP is in fact only one of the many aspects  influencing user experience (Al-Maskari & Sanderson, 2010; Maxwell et al., 2017). These  other aspects however are not measurable in the context of the typical simulated experi- ments performed in OLTR research.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "We compare ROLTR to four OLTR baselines. First, the Dual Bandit Gradient Descent  (DBGD) (Yue & Joachims, 2009) method is used as it is one of the standard and most  influential algorithms for OLTR. This method uses interleaving for online evaluation,  where only one candidate rank is compared to the production ranker at each update step.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "The second baseline we consider is the Probabilistic Multileaving Gradient Descent  (PMGD) (Oosterhuis et al., 2016), which has been reported to be the best traditional OLTR  method that uses online evaluation with multileaving comparison (Oosterhuis & de Rijke,  2018; Zhuang & Zuccon, 2020). For this baseline, we use the same hyper-parameters set- tings reported in previous work (Zhuang & Zuccon, 2020), where the number of candidate  rankers is n = 49 , the step size is 훿= 1 and learning rate is 훼= 0.01.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "The third baseline we consider is Counterfactual Online Learning to Rank (COLTR)  (Zhuang & Zuccon, 2020), which uses DBGD to update candidate rankers but is com- bined with counterfactual evaluation. This method has been reported to be more effective  than online evaluation based methods in terms of final convergence, but it does present an",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "(16) P(ck = 1) = P(ck = 1|ok = 1, rel(dk))P(ok = 1|k)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "(17) online_performance =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "i",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "휏i ⋅NDCG(Li)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "overall deterioration of user experience during the learning cycle. For this baseline, we use  the best hyper-parameters from the original paper (Zhuang & Zuccon, 2020).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "The last baseline we consider is the Pairwise Differentiable Gradient Descent (PDGD)  (Oosterhuis & de Rijke, 2018), which represents the current state-of-the-art in OLTR. This  method does not require online evaluation; instead, it directly optimizes a ranker using  gradient descent, and its gradient estimations are unbiased with respect to document pair  preferences inferred from user clicks. The comparison between ROLTR and PDGD is  interesting because both methods use gradient descent but they differ in the way the unbi- ased gradient estimation is computed. Following the original PDGD paper (Oosterhuis &  de Rijke, 2018), we set its learning rate to 훼= 0.1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "ROLTR has two hyper-parameters: the reward function and the learning rate 훼 . We  study six reward functions in total: RIPS+ , RIPS− , RIPS+ + RIPS− (i.e. using both clicked and  unclicked signal) and their corresponding unshaped naive reward functions. We set the  learning rate 훼= 0.01 for MSLR-WEB10K and Istella, and 훼= 0.005 for Yahoo! (values  tuned based on validation set).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "To simulate selection bias, we set M = 10 to only display 10 documents in the result  lists for all experimental runs. For fair comparison, all methods are used to optimize a lin- ear ranker. In order to measure statistically significant differences between methods, all  runs are repeated 15 times spread evenly over the available dataset folds with different ran- dom seeds. The results are reported and compared using averaged performance and the  two-tailed t-test.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "In addition to comparing ROLTR with the other OLTR baselines mentioned above, we  also compare our method against the MDPRank trained using full information, i.e., the  offline LTR settings with actual relevance labels. This is to be thought of as the skyline for  ROLTR as this method is built on MDPRank but training in ROLTR occurs with partial,  noisy information (user clicks). For MDPRank, we use the experiment settings from the  original paper (Wei et al., 2017).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "To answer RQ1, we study the reward discount factor 훾 (set to 1 in previous work (Wei  et al., 2017). As discussed in Sect. 3.3, we expect that setting 훾= 0 will lead to smaller var- iance in gradient estimation and a consequent speed up of training, without loss in terms of  final convergence.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "To confirm this assumption, in this section we empirically investigate the convergence  of the learned rankers with different values of 훾 . In this study, we use the reward func- tion RNAIVE+ and RIPS+ , and simulate the user propensity with 휂= 1 . We report results on  MSLR10k. Figure 2 illustrates the offline nDCG@10 learning curves obtained throughout  the training process. The plots clearly show that the learning curves obtained when 훾= 0  (blue curves) is always above that associated with other 훾 values, for both reward functions  and both click settings. For naive reward and noisy click setting, rankers trained with lower  value of 훾 achieved higher offline nDCG@10 score at the point of 100,000 impressions.  This indicates that ROLTR learns fastest when 훾= 0 . On the other hand, ROLTR con- verges slower when 훾 increases, and when 훾= 1 (red curves) the convergence speed is the  slowest. Interestingly, unbiased reward function RIPS+ seems more sensitive to 훾 than the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "naive reward function RNAIVE+ . Although RIPS+ has faster learning speed than RNAIVE+ when  훾 is small (e.g., 훾= 0, 0.3, 0.5 ), the learning speed decreases dramatically when 훾 is large,  and RIPS+ even fails to converge at 100,000 impressions under perfect clicks. We also stud- ied the convergences of ROLTR with the RIPS+ reward function and 훾= 0, 0.5, 1 for long- term impressions (1,000,000 impressions). These results are presented in Fig. 3. Similar to  the trends in Fig. 2, larger 훾 values exhibit slower convergence and fail to converge to the  same nDCG value as when 훾= 0 , even after performing one million impressions. This is  due to the IPS significantly enlarging the click signal at lower ranks and this effect being  cumulated to the rewards assigned to the clicks at higher ranks with large 훾 , thus resulting  in considerably larger variance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Following Jun et al. (2020), we also directly compare the variance of the estimated gra- dients when 훾= 0 , 훾= 0.5 and 훾= 1 for both naive and unbiased reward functions. For  this, we calculate the variance of the gradient vectors at each training episode using the  trace of the covariance matrix. We report the results for all runs on the MSLR10K in Fig. 4  (along to those for 훾= 0.5 to show the overall trend for varying values between the two  extremes). The variance from the noisy click runs is higher than that from the perfect click  runs for all values of 훾 and both reward functions. This indicates that strong click noise  causes high variance in gradient estimations. Moreover, the variance recorded for 훾= 0 is  almost half that recorded for 훾= 1 , for both noisy and perfect clicks and both reward func- tions. This finding agrees with the reinforcement learning practice: smaller discount factors  always result in lower gradient variance. When comparing RNAIVE+ and RIPS+ , we notice that  RIPS+ yields almost 10 times larger variance than that of the same setting for RNAIVE+ . This  explains why RIPS+ is more sensitive to 훾 and larger 훾 significantly slows down the learning  speed, as shown in Fig. 2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "In reinforcement learning, it is well known that 훾 controls the trade-off between vari- ance and final convergence. Larger values of 훾 result in higher final convergence at the  expense of higher variance (thus slower learning speed), and vice versa: smaller values  result in lower variance (faster learning speed) but suboptimal convergence. However, in  OLTR, our experiments show that optimizing the expected immediate reward (i.e. 훾= 0 )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Fig. 2   Offline nDCG@10 score of ROLTR with different reward discount factor 훾 . (MSLR10K dataset)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "will not hurt the final convergence at least after 100,000 impressions: the optimal policy  learned with 훾= 0 is equal to the optimal policy learned with 훾= 1 , which is maximizing  the DCG score of the ranking. We further note that previous work that formalizing LTR as  an MDP shows high variance in gradient estimation (Wei et al., 2017) and that recent work",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "Fig. 3   Long-term offline nDCG@10 score of ROLTR with different reward discount factor 훾 . (MSLR10K  dataset, reward function: RIPS+)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "Fig. 4   Average variance of the gradient vector for each sampled episode. Error bars correspond to the 95%  confidence intervals. (MSLR10K dataset)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "has attempted to fix this issue for offline LTR (Jun et al., 2020): setting 훾= 0 can be con- sidered a simpler way to fix this problem. We believe this insight may have positive uptake  for offline LTR.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "With respect to RQ1, then, setting 훾= 0 would not hurt the offline performance (con- vergence) of the learnt ranker, while delivering lower gradient variance than when 훾= 1 .  Hence, we set 훾= 0 in the remaining experiments.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "To answer RQ2, we consider the impact of different reward shaping in ROLTR. Figure 5  reports the offline performance of ROLTR with different reward functions over 100, 000  impressions on the MLSR-WEB10K dataset. For both noisy and perfect click settings,  all IPS reward functions outperform their naive versions in terms of learning speed. This  means that it is important to de-bias the otherwise biased reward shaping function. In addi- tion, we observe that ROLTR with RIPS+ + RIPS− and RNAIVE+ + RNAIVE− converges faster  than when only using positive or negative reward functions. This is under both click set- tings, and it suggests that leveraging both clicked and unclicked signals is beneficial. This  phenomenon is however less obvious with noisy clicks due to noisy clicks decreasing all  the rankers’ performance, thus resulting in worse and closer nDCG@10 scores. On the  other hand, when noisy clicks are considered, RIPS+ and RIPS− have a very similar learn- ing curve; while, in the perfect click settings, RIPS+ converges much faster than RIPS− . We  explain this difference of behaviour between perfect and noisy click settings as follows.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 18,
+      "raw_extracted": "Fig. 5   Offline nDCG for ROLTR when different reward shaping functions are used (MSLR10K dataset)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "In the perfect click setting, RIPS+ only uses signal from the clicked documents, which are  relevant documents only in this click setting. RIPS− instead also exploits signal from not- clicked documents (it down-weights this signal), which are non-relevant documents only in  this click settings – this however is a worse signal than that from relevant documents only  ( RIPS+ ). Thus, it is logical to see RIPS+ performing better (faster learning curve) than RIPS− .  In the noisy click setting, however, the signals exploited by RIPS+ and RIPS− are similar:  while still RIPS+ only uses clicked documents (while RIPS− also uses not-clicked), in the  noisy click setting both relevant and non-relevant documents are clicked. This therefore  reduces the differences in performance observed between RIPS+ and RIPS−.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "When studying the final convergence at 100, 000 impressions, we do not record sig- nificant differences (i.e., p > 0.05 ) except for RNAIVE− . This exception can be explained as  RNAIVE− only assigns biased negative rewards to unclicked documents and as result, in this  case ROLTR just aims to avoid selecting documents that give low rewards, but it ignores  valuable documents.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "With respect to RQ2, then, we found that using unbiased reward shaping functions to  reshape naive rewards make ROLTR converge faster (i.e. it requires less impressions). Spe- cifically, the use of both unbiased positive and negative reward functions make ROLTR  converge the fastest. Hence, in the remaining experiments, we set RIPS+ + RIPS− as reward  function.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "The fact that biased rewards do not change the final performance but slow down con- vergence may seem counter-intuitive at first. In fact, in CLTR studies, the biased learning  objective results in a local optimal for the final convergence (Joachims et al., 2017). How- ever, this may not be the case for OLTR. This is because CLTR experiments use a logging  ranker to collect clicks and then train a new ranker with the click log: thus the rank of a  document is decided by the logging ranker and has been fixed in the log. In OLTR settings  like those used here, instead, the deployed ranker is interactively updated after each ses- sion: this means every document has a chance to be ranked at top of the displayed rankings  hence be observed: these online interventions can eliminate position bias. However, this  does not come for free, as it requires a large number of interactions to eventually obtain a  good convergence. This is exactly what ROLTR attempts to solve: reduce the number of  interactions to reach convergence. ROLTR in fact is the first OLTR algorithm that directly  de-biases user position bias, with the results above showing that it can significantly speed  up learning (this in turn will translate in better user experience, see Sect. 5.4).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "To answer RQ3, we compare the offline performance of the learned rankers over 100, 000  impressions. Figure 6 reports the learning curves for different methods. COLTR is clearly  better than PMGD and DBGD in terms of learning speed and final convergence across  almost all datasets: this is similar to previous findings (Oosterhuis et al., 2016; Zhuang  & Zuccon, 2020). The gradient descent based methods (ROLTR and PDGD) significantly  outperform candidate ranker sampling based methods (DBDG, PMGD and COLTR), ren- dering DBGD based methods outdated.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 19,
+      "raw_extracted": "On the other hand, ROLTR and PDGD have similar learning curves across all three  datasets. This is especially the case when perfect clicks are used. The final convergence of  the two methods across all datasets and click settings is not statistically significantly dif- ferent ( p > 0.05 ). However, when noisy clicks are considered, we find that ROLTR has a  faster learning speed at the beginning of training. Figure 7 considers the learning curves for",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 20,
+      "raw_extracted": "Fig. 6   Offline nDCG@10 for OLTR methods and MDPRank under noisy and perfect clicks",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "the early impressions (first 10, 000) when noisy clicks are used. This figure clearly shows  that the learning curves of ROLTR are almost always above other OLTR baselines at early  impressions (except for the first 3, 000 impressions on MSLR10k, for which PMGD is  best).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "With respect to RQ3, then, we conclude that, when clicks are noisy, the learning speed  of ROLTR is faster than PDGD in the early stage of training.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "Finally, comparing the final convergence of ROLTR with the effectiveness of the offline  MDPRank (trained with relevance labels and thus indicating skyline effectiveness), we can",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 21,
+      "raw_extracted": "Fig. 7   Offline nDCG@10 for the first 10,000 impressions (noisy clicks)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "clearly observe that ROLTR’s effectiveness is at par to that of MDPRank, when the perfect  click setting is used (Fig. 6). Recall that the perfect click setting still exhibits position bias.  This findings empirically demonstrates the unbiasedness of ROLTR. However, when noisy  clicks are used for ROLTR, then it’s performance is sensibly lower to that of the offline  MDPRank, showing how much noise in the click signal hurts performance, compared to  perfect relevance labels.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "To answer RQ4, we consider the quality of the experience users withstand while rankers  are trained (online nDCG). Table 2 reports the online performance of each method. As  expected, online NDCG@10 scores obtained when learning from perfect clicks are higher  than for noisy clicks, suggesting the latter hurt user experience. Although COLTR has  better offline performance than online evaluation based methods, it does lead to a worse  user experience during the learning phase. This indicates that using counterfactual evalu- ation for candidate ranker comparison requires a lot more exploration. These findings are  in agreement with our early findings (Zhuang & Zuccon, 2020). We also find that online  evaluation based methods are significantly worse than ROLTR and PDGD ( p < 0.01 ) for  both perfect and noisy clicks, agreeing with the offline nDCG learning curves (Fig. 6). This  is because ROLTR and PDGD assemble result lists by sampling documents from a softmax  probability distribution, while online evaluation based methods use interleaving or multi- leaving to create these lists. This suggests that online evaluation based methods perform  more exploration, thus hurting user experience more.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "When comparing ROLTR and PDGD, we find that ROLTR obtains the best average  online performance across all datasets under noisy clicks (agreeing with the learning  curves in Fig. 7 for offline nDCG). Even for perfect clicks, for which the offline learning  curves of ROLTR and PDGD are similar, ROLTR does statistically significantly outper- form PDGD on MSLR10K and Istella ( p < 0.05, p < 0.01 respectively). There are no sta- tistically significant differences between ROLTR and PDGD on Yahoo! ( p > 0.05 ). This  may be because the average proportion of irrelevant documents for each query is small",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "Table 2   Online nDCG@10.  Bold values indicate the highest  average performance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "Bold values represent the best value for each dataset/click setting",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "Significant gains and losses of ROLTR over PDGD are marked by ▵  ( p < 0.05 ) and ▴ ( p < 0.01)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "Clicks Algorithm MSLR10K Yahoo! Istella",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "Perfect DBGD 519.99 1165.11 510.34",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "PMGD 545.22 1191.26 564.58 COLTR 448.65 1121.92 348.15 PDGD 579.22 1310.99 741.45 ROLTR 587.46 ▵ 1302.11 808.66▴ Noisy DBGD 477.29 1116.89 408.09 PMGD 535.42 1137.39 426.77 COLTR 431.27 1105.05 238.30 PDGD 516.77 1227.28 481.85 ROLTR 543.28 ▴ 1238.10 654.04▴",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 23,
+      "raw_extracted": "(21.92%), and thus it may be less likely the methods perform a ranking error, making them  hard to distinguish. To conclude, with respect to RQ4, we found that ROLTR delivers the  best user experience among the investigated methods.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 23,
+      "raw_extracted": "To answer RQ5, we investigate the sensitivity of ROLTR to mismatched user propensity.  Our previous experiments, in fact, assumed that the user propensity is known a priori and  used the true propensity to obtain the unbiased rewards. However, this assumption does not  always hold true in practice, as the user propensity could be overestimated or underesti- mated for various reasons (Joachims et al., 2017).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 23,
+      "raw_extracted": "Figure 8 shows the offline nDCG@10 of ROLTR under different propensity values 휂  and for different click settings. When 휂= 0 , ROLTR assumes no user position bias and  the unbiased reward function RIPS reduces to RNAIVE . On the other hand, 휂= 1 is the same  propensity used to simulate clicks, and thus the propensity assumed by the ranker and that  seen in the clicks are the same. Note that when simulating the user, we always assume the  user has propensity 휂= 1 (while instead we change ROLTR’s propensity value).",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 23,
+      "raw_extracted": "From Fig. 8 we can observe that, in the noisy click setting, an underestimation of pro- pensity ( η< 1 ) leads to a similar final convergence as that obtained when the true propen- sity is considered. In fact, when 휂= 0.5 we record a higher final convergence. However,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 23,
+      "raw_extracted": "Fig. 8   Offline nDCG@10 for ROLTR when different prior propensities are used (MSLR10K dataset)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "when the propensity is overestimated ( η> 1 ), both learning speed and final convergence  become much worse. A similar behaviour has been found in CLTR and relates to the large  variance introduced by the extreme IPS weights (Jagerman & de Rijke, 2020): Because of  the overestimated propensities, the IPS weights will be much bigger than those of the true  propensity, resulting in a large amount of variance in the gradient estimation, thus hurting  the final performance. There are many ways to prevent this from happening, e.g., ‘propen- sity clipping’ which trades-off bias against variance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "On the other hand, under perfect clicks, the final convergence of all propensity priors is  similar, except for the extremely overestimated propensity ( 휂= 2.0 ). In fact, in the perfect  setting the main difference is with respect to the learning speed: overestimated propensities  converge faster than underestimated propensities.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "With respect to RQ5, then, we conclude that, when clicks are perfect, ROLTR is not  sensitive to propensity mismatch in terms of final convergence; but when clicks are noisy,  only underestimated propensities are not sensitive while overestimated propensities will  hurt both the final convergence and learning speed.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "We proposed a novel OLTR algorithm, ROLTR, which formalises OLTR as an MDP rank- ing problem and uses reinforcement learning with unbiased reward shaping functions to  directly optimize an IR metric. In contrast to traditional online evaluation based meth- ods and the current state-of-the-art PDGD method, ROLTR does not fully rely on online  interventions to overcome user position bias. Instead, ROLTR directly uses the IPS reward  shaping functions to de-bias rewards given by the environment which can be further used  to guide gradient estimation. As a result, the gradient calculated by ROLTR is unbiased  with respect to position bias. In order to accelerate the learning speed and obtain better  user experience, we first simplified the MDP ranking by setting the reward discount factor  훾 to 0, which we empirically confirmed it provides a lower gradient variance without hurt- ing final convergence. Furthermore, to fully leverage user click feedback in each training  episode, we introduced a negative IPS reward shaping function for ROLTR which provides  additional unbiased reward learning signal from unclicked documents. We have proven that  the rewards reshaped by the negative IPS reward shaping function are also unbiased with  respect to position bias. Our experimental results show that ROLTR achieves state-of-the- art offline performance requiring less user interactions, which results in considerably better  user experience (online performance) over other OLTR methods.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "Future work will be directed towards considering estimating user observation propen- sity during training since our method requires propensity to be known a priori. Further- more, other biases such as selection bias and other type of user behaviour signals, such as  dwell time, mouse move, etc, could be modelled within ROLTR, potentially improving its  performance. This could be achieved by simply changing the reward function while main- taining other parts of the method unchanged. This makes ROLTR flexible and with plenty  of room for further extension.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "Funding  Open Access funding enabled and organized by CAUL and its Member Institutions.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "Open Access  This article is licensed under a Creative Commons Attribution 4.0 International License,  which permits use, sharing, adaptation, distribution and reproduction in any medium or format, as long",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "as you give appropriate credit to the original author(s) and the source, provide a link to the Creative Com- mons licence, and indicate if changes were made. The images or other third party material in this article  are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the  material. If material is not included in the article’s Creative Commons licence and your intended use is not  permitted by statutory regulation or exceeds the permitted use, you will need to obtain permission directly  from the copyright holder. To view a copy of this licence, visit http://​creat​iveco​mmons.​org/​licen​ses/​by/4.​0/.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "Adomavicius, G., Sankaranarayanan, R., Sen, S., & Tuzhilin, A. (2005). Incorporating contextual informa-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "tion in recommender systems using a multidimensional approach. ACM Transactions on Information  Systems (TOIS), 23(1), 103–145. Agarwal, A., Basu, S., Schnabel, T., & Joachims, T. (2017). Effective evaluation using logged bandit feed-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "back from multiple loggers. In Proceedings of the 23rd ACM SIGKDD international conference on  knowledge discovery and data mining, (pp. 687–696). Agarwal, A., Zaitsev, I., & Joachims, T. (2018). Counterfactual learning-to-rank for additive metrics and",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "deep models. Preprint at arXiv:​1805.​00065. Agarwal, A., Zaitsev, I., Wang, X., Li, C., Najork, M., & Joachims, T. (2019). Estimating position bias with-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "out intrusive interventions. In Proceedings of the twelfth ACM international conference on web search  and data mining, (pp. 474–482). Ai, Q., Bi, K., Luo, C., Guo, J., & Croft, W.B. (2018). Unbiased learning to rank with unbiased propensity",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "estimation. In The 41st international ACM SIGIR conference on research & development in informa- tion retrieval, (pp. 385–394). Ai, Q., Yang, T., Wang, H., & Mao, J. (2021). Unbiased learning to rank: online or offline? ACM Transac-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "tions on Information Systems (TOIS), 39(2), 1–29. Al-Maskari, A., & Sanderson, M. (2010). A review of factors influencing user satisfaction in information",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "retrieval. Journal of the American Society for Information Science and Technology, 61(5), 859–868. Chapelle, O., & Chang, Y. (2011). Yahoo! learning to rank challenge overview. In Proceedings of the learn-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "ing to rank challenge, (pp. 1–24). Dato, D., Lucchese, C., Nardini, F. M., Orlando, S., Perego, R., Tonellotto, N., & Venturini, R. (2016). Fast",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "ranking with additive ensembles of oblivious and non-oblivious regression trees. ACM Transactions on  Information Systems (TOIS), 35(2), 1–31. Fang, Z., Agarwal, A., & Joachims, T. (2019). Intervention harvesting for context-dependent examination-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "bias estimation. In Proceedings of the 42nd international ACM SIGIR conference on research and  development in information retrieval, (pp. 825–834). Feng, Y., Xu, J., Lan, Y., Guo, J., Zeng, W., & Cheng, X. (2018). From greedy selection to exploratory",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "decision-making: Diverse ranking with policy-value networks. In The 41st international ACM SIGIR  conference on research & development in information retrieval, (pp. 125–134). Guan, Z., & Cutrell, E. (2007). An eye tracking study of the effect of target rank on web search. In Proceed-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "ings of the SIGCHI conference on human factors in computing systems, (pp. 417–420). Hofmann, K., Li, L., & Radlinski, F. (2016). Online evaluation for information retrieval. Foundations and",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "trends in information retrieval, 10(1), 1–117. Hofmann, K., Schuth, A., Whiteson, S., & de Rijke, M. (2013). Reusing historical interaction data for faster",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "online learning to rank for ir. In Proceedings of the sixth ACM international conference on Web search  and data mining, (pp. 183–192), ACM , Hofmann, K., Whiteson, S., & De Rijke, M. (2011). Balancing exploration and exploitation in learning to",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "rank online. In:European conference on information retrieval, (pp. 251–263), Springer. Hofmann, K., Whiteson, S., & De Rijke, M. (2011). A probabilistic method for inferring preferences from",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "clicks. In Proceedings of the 20th ACM international conference on information and knowledge man- agement, (pp. 249–258). Hofmann, K., Whiteson, S., de Rijke, M., et al. (2011). Contextual bandits for information retrieval. In NIPS",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "2011 Workshop on Bayesian optimization, experimental design, and bandits, granada, (vol.  12, p.  2011). Hu, Z., Wang, Y., Peng, Q., & Li, H. (2019). Unbiased lambdamart: an unbiased pairwise learning-to-rank",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "algorithm. In The World Wide Web conference, (pp. 2830–2836). Jagerman, R., Markov, I., & Rijke, M. D. (2020). Safe exploration for optimizing contextual bandits. ACM",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 25,
+      "raw_extracted": "Transactions on Information Systems (TOIS), 38(3), 1–23.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Jagerman, R., Oosterhuis, H., & de Rijke, M. (2019). To model or to intervene: a comparison of counterfac-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "tual and online learning to rank from user interactions. In Proceedings of the 42nd international ACM  SIGIR conference on research and development in information retrieval, SIGIR’19, (pp. 15–24). Asso- ciation for Computing Machinery. Jagerman, R., & de Rijke, M. (2020). Accelerated convergence for counterfactual learning to rank. In Pro-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "ceedings of the 43rd international ACM SIGIR conference on research and development in informa- tion retrieval, (pp. 469–478). Joachims, T. (2002). Optimizing search engines using clickthrough data. In Proceedings of the eighth ACM",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "SIGKDD international conference on Knowledge discovery and data mining, (pp. 133–142). Joachims, T., Swaminathan, A., & Schnabel, T. (2017). Unbiased learning-to-rank with biased feedback. In",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Proceedings of the tenth ACM international conference on web search and data mining, (pp. 781–789). Jun, X., Zeng, W., Long, X., Yanyan, L., Dawei, Y., Xueqi, C., & Ji-Rong, W. (2020). Reinforcement learn-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "ing to rank with pairwise policy gradient. In Proceedings of the 42nd international ACM SIGIR con- ference on research and development in information retrieval. Lefortier, D., Serdyukov, P., & De  Rijke, M. (2014). Online exploration for detecting shifts in fresh",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "intent. In: Proceedings of the 23rd ACM international conference on conference on information and  knowledge management, (pp. 589–598). Li, C., Markov, I., Rijke, M. D., & Zoghi, M. (2020). Mergedts: a method for effective large-scale online",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "ranker evaluation. ACM Transactions on Information Systems (TOIS), 38(4), 1–28. Li, H. (2011). Learning to rank for information retrieval and natural language processing. Foundations",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "and Trends® in Information Retrieval, 3(3), 225–331. Liu, T. Y. (2011). Learning to rank for information retrieval. Germany: Springer Science & Business",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Media. Maxwell, D., Azzopardi, L., & Moshfeghi, Y. (2017). A study of snippet length and informativeness:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "behaviour, performance and user experience. In Proceedings of the 40th international ACM SIGIR  conference on research and development in information retrieval, (pp. 135–144). Ng, A.Y., Harada, D., & Russell, S. (1999). Policy invariance under reward transformations: theory and",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "application to reward shaping. In Proceedings of the sixteenth international conference on machine  learning, (vol. 99, pp. 278–287). Oosterhuis, H., & de Rijke, M. (2018). Differentiable unbiased online learning to rank. In Proceedings",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "of the 27th ACM international conference on information and knowledge management, (pp. 1293– 1302), ACM. Oosterhuis, H., & de Rijke, M. (2019). Optimizing ranking models in an online setting. In European con-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "ference on information retrieval, (pp. 382–396), Springer. Oosterhuis, H., & de Rijke, M. (2020). Policy-aware unbiased learning to rank for top-k rankings. In",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Proceedings of the 42nd international ACM SIGIR conference on research and development in  information retrieval. Oosterhuis, H., & de Rijke, M. (2020). Taking the counterfactual online: Efficient and unbiased online",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "evaluation for ranking. In Proceedings of the 2020 ACM SIGIR on international conference on  theory of information retrieval, (pp. 137–144). Oosterhuis, H., & de  Rijke, M. (2021). Unifying online and counterfactual learning to rank: a novel",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "counterfactual estimator that effectively utilizes online interventions. In Proceedings of the 14th  ACM international conference on web search and data mining, (pp. 463–471). Oosterhuis, H., Schuth, A., & de Rijke, M. (2016). Probabilistic multileave gradient descent. In Euro-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "pean conference on information retrieval, (pp. 661–668), Springer. Ovaisi, Z., Ahsan, R., Zhang, Y., Vasilaky, K., & Zheleva, E. (2020). Correcting for selection bias in",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "learning-to-rank systems. In Proceedings of the web conference 2020, (pp. 1863–1873). Pan, B., Hembrooke, H., Joachims, T., Lorigo, L., Gay, G., & Granka, L. (2007). In google we trust:",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "Users’ decisions on rank, position, and relevance. Journal of Computer-Mediated Communication,  12(3), 801–823. Popov, I., Heess, N., Lillicrap, T., Hafner, R., Barth-Maron, G., Vecerik, M., Lampe, T., Tassa, Y., Erez,",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "T., & Riedmiller, M. (2017). Data-efficient deep reinforcement learning for dexterous manipulation.  Preprint at arXiv:​1704.​03073. Qin, T., & Liu, T.Y. (2013). Introducing letor 4.0 datasets. Preprint at  arXiv:​1306.​2597. Qin, T., Liu, T. Y., Xu, J., & Li, H. (2010). Letor: A benchmark collection for research on learning to",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "rank for information retrieval. Information Retrieval, 13(4), 346–374. Sanderson, M. (2010). Test collection based evaluation of information retrieval systems. Foundations",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "and Trends® in Information Retrieval, 4(4), 247–375. Schuth, A., Bruintjes, R.J., Buüttner, F., van Doorn, J., Groenland, C., Oosterhuis, H., Tran, C.N., Veel-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 26,
+      "raw_extracted": "ing, B., van der Velde, J., Wechsler, R., et al. (2015). Probabilistic multileave for online retrieval",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "evaluation. In Proceedings of the 38th international ACM SIGIR conference on research and devel- opment in information retrieval, (pp. 955–958), ACM. Schuth, A., Oosterhuis, H., Whiteson, S., & de Rijke, M. (2016). Multileave gradient descent for fast",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "online learning to rank. In proceedings of the ninth ACM international conference on web search  and data mining, (pp. 457–466). Sutton, R. S., & Barto, A. G. (2018). Reinforcement learning: an introduction. Cambridge, MA: MIT Press. Sutton, R.S., McAllester, D.A., Singh, S.P., & Mansour, Y. (2000). Policy gradient methods for rein-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "forcement learning with function approximation. In Advances in neural information processing sys- tems, (pp. 1057–1063). Vardasbi, A., de Rijke, M., & Markov, I. (2020). Cascade model-based propensity estimation for coun-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "terfactual learning to rank. Preprint at arXiv:​2005.​11938. Wang, H., Kim, S., McCord-Snook, E., Wu, Q., & Wang, H. (2019). Variance reduction in gradient",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "exploration for online learning to rank. In Proceedings of the 42Nd international ACM SIGIR con- ference on research and development in information retrieval, SIGIR’19. Wang, H., Langley, R., Kim, S., McCord-Snook, E., & Wang, H. (2018). Efficient exploration of gradient",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "space for online learning to rank. In The 41st international ACM SIGIR conference on research &  development in information retrieval, (pp. 145–154). Wang, N., Qin, Z., Wang, X., & Wang, H. (2021). Non-clicks mean irrelevant? propensity ratio scoring as a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "correction. In Proceedings of the 14th ACM international conference on web search and data mining,  (pp. 481–489). Wang, S., Liu, B., Zhuang, S., & Zuccon, G. (2021). Effective and privacy-preserving federated online",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "learning to rank. In Proceedings of the 2021 ACM SIGIR international conference on theory of infor- mation retrieval, (pp. 3–12). Wang, S., Zhuang, S., & Zuccon, G. (2021). Federated online learning to rank with evolution strategies: a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "reproducibility study. In The 43rd european conference on information retrieval (ECIR). Wang, X., Bendersky, M., Metzler, D., & Najork, M. (2016). Learning to rank with selection bias in per-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "sonal search. In Proceedings of the 39th international ACM SIGIR conference on research and devel- opment in information retrieval, (pp. 115–124). Wang, X., Golbandi, N., Bendersky, M., Metzler, D., & Najork, M. (2018). Position bias estimation for",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "unbiased learning to rank in personal search. In Proceedings of the eleventh ACM international confer- ence on web search and data mining, (pp. 610–618). Wei, Z., Xu, J., Lan, Y., Guo, J., & Cheng, X. (2017). Reinforcement learning to rank with markov decision",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "process. In Proceedings of the 40th international ACM SIGIR conference on research and development  in information retrieval, (pp. 945–948). Williams, R. J. (1992). Simple statistical gradient-following algorithms for connectionist reinforcement",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "learning. Machine Learning, 8(3–4), 229–256. Xia, L., Xu, J., Lan, Y., Guo, J., Zeng, W., & Cheng, X. (2017). Adapting markov decision process for search",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "result diversification. In Proceedings of the 40th international ACM SIGIR conference on research and  development in information retrieval, (pp. 535–544). Yao, J., Dou, Z., Xu, J., & Wen, J.R. (2020). Rlper: A reinforcement learning model for personalized search.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "In Proceedings of the web conference 2020, (pp. 2298–2308). Yue, Y., & Joachims, T. (2009). Interactively optimizing information retrieval systems as a dueling ban-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "dits problem. In Proceedings of the 26th annual international conference on machine learning, (pp.  1201–1208). Zeng, W., Xu, J., Lan, Y., Guo, J., & Cheng, X. (2018). Multi page search with reinforcement learning",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "to rank. In Proceedings of the 2018 ACM SIGIR international conference on theory of information  retrieval, (pp. 175–178). Zhao, X., Gu, C., Zhang, H., Yang, X., Liu, X., Liu, H., & Tang, J. (2021). Dear: Deep reinforcement learn-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "ing for online advertising impression in recommender systems. In Proceedings of the AAAI confer- ence on artificial intelligence, (vol. 35, pp. 750–758). Zhao, X., Xia, L., Zhang, L., Ding, Z., Yin, D., & Tang, J. (2018). Deep reinforcement learning for page-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "wise recommendations. In Proceedings of the 12th ACM conference on recommender systems, (pp.  95–103). Zhao, X., Zhang, L., Ding, Z., Xia, L., Tang, J., & Yin, D. (2018). Recommendations with negative feed-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "back via pairwise deep reinforcement learning. In Proceedings of the 24th ACM SIGKDD interna- tional conference on knowledge discovery & data mining, (pp. 1040–1048). Zhuang, S., & Zuccon, G. (2020). Counterfactual online learning to rank. In European conference on infor-",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 27,
+      "raw_extracted": "mation retrieval, (pp. 415–430), Springer.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 28,
+      "raw_extracted": "Zhuang, S., & Zuccon, G. (2021). How do online learning to rank methods adapt to changes of intent? In",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 28,
+      "raw_extracted": "Proceedings of the 44th international ACM SIGIR conference on research and development in infor- mation retrieval.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 28,
+      "raw_extracted": "Publisher’s Note  Springer Nature remains neutral with regard to jurisdictional claims in published maps and  institutional affiliations.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

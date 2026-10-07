@@ -1,0 +1,94 @@
+% Figure 4.2: Architecture Work Flow (Different Layers)
+% Clean Academic Style matching reference
+\begin{tikzpicture}[
+    auto,
+    font=\small,
+    layer_box/.style={
+        rectangle, draw=black, line width=0.9pt, fill=white,
+        rounded corners=2pt, inner sep=6pt, text width=12.2cm
+    },
+    sub_box/.style={
+        rectangle, draw=black, line width=0.7pt, fill=white,
+        rounded corners=1.5pt, minimum height=0.6cm, align=center,
+        font=\footnotesize, inner sep=3pt
+    },
+    cylinder_node/.style={
+        cylinder, draw=black, line width=0.7pt, fill=white,
+        shape border rotate=90, aspect=0.25, minimum height=0.65cm, minimum width=1.4cm,
+        align=center, font=\scriptsize
+    },
+    arrow/.style={
+        -{Stealth[scale=0.9]}, line width=0.8pt, draw=black
+    }
+]
+
+    % --- TIER 1 ---
+    \node [layer_box] (t1) at (0, 10.0) {
+        \textbf{\footnotesize Tier 1: Presentation Layer (Next.js 15 / React 19)}\\[4pt]
+        \begin{tikzpicture}
+            \node [sub_box, text width=5.2cm] (t1_a) at (0, 0) {Desktop App Shell \& Dev Space (23+ Tools)};
+            \node [sub_box, text width=5.2cm] (t1_b) at (6.0, 0) {Agent Swarm Console \& HUD Monitor};
+        \end{tikzpicture}
+    };
+
+    % --- TIER 2 ---
+    \node [layer_box, below=0.55cm of t1] (t2) at (0, 8.0) {
+        \textbf{\footnotesize Tier 2: API Bridge \& Gateway Layer (FastAPI)}\\[4pt]
+        \begin{tikzpicture}
+            \node [sub_box, text width=3.4cm] (t2_a) at (0, 0) {REST API Endpoints};
+            \node [sub_box, text width=3.4cm] (t2_b) at (4.0, 0) {SSE Streaming Protocol};
+            \node [sub_box, text width=3.4cm] (t2_c) at (8.0, 0) {MCP Tool Client Hub};
+        \end{tikzpicture}
+    };
+
+    % --- TIER 3 ---
+    \node [layer_box, below=0.55cm of t2] (t3) at (0, 6.0) {
+        \textbf{\footnotesize Tier 3: Feature \& Routing Layer (ML Policy Subsystem)}\\[4pt]
+        \begin{tikzpicture}
+            \node [sub_box, text width=3.4cm] (t3_a) at (0, 0) {TF-IDF \& Lexical Features};
+            \node [sub_box, text width=3.4cm] (t3_b) at (4.0, 0) {12-Class Intent Classifier};
+            \node [sub_box, text width=3.4cm] (t3_c) at (8.0, 0) {Multi-Provider Router};
+        \end{tikzpicture}
+    };
+
+    % --- TIER 4 ---
+    \node [layer_box, below=0.55cm of t3] (t4) at (0, 4.0) {
+        \textbf{\footnotesize Tier 4: Multi-Agent Orchestration Layer}\\[4pt]
+        \begin{tikzpicture}
+            \node [sub_box, text width=3.4cm] (t4_a) at (0, 0) {DAG Workflow Planner};
+            \node [sub_box, text width=3.4cm] (t4_b) at (4.0, 0) {Parallel Swarm Workers};
+            \node [sub_box, text width=3.4cm] (t4_c) at (8.0, 0) {ReAct Execution Loop};
+        \end{tikzpicture}
+    };
+
+    % --- TIER 5 ---
+    \node [layer_box, below=0.55cm of t4] (t5) at (0, 2.0) {
+        \textbf{\footnotesize Tier 5: Evaluation \& Safety Layer}\\[4pt]
+        \begin{tikzpicture}
+            \node [sub_box, text width=5.2cm] (t5_a) at (0, 0) {Human-in-the-Loop Safety Gate};
+            \node [sub_box, text width=5.2cm] (t5_b) at (6.0, 0) {ORPO Preference Alignment};
+        \end{tikzpicture}
+    };
+
+    % --- TIER 6 ---
+    \node [layer_box, below=0.55cm of t5] (t6) at (0, 0) {
+        \textbf{\footnotesize Tier 6: Deployment \& Persistence Layer}\\[4pt]
+        \begin{tikzpicture}
+            \node [sub_box, text width=4.8cm] (t6_a) at (0, 0) {Foundation LLMs (Groq, NIM, OpenAI, Claude)};
+            \node [cylinder_node, minimum width=2.5cm] (t6_b) at (6.0, 0) {PrismDB\\(IndexedDB)};
+            % Perfectly horizontal connecting arrow
+            \draw [arrow] (t6_a.east) -- node[above=1pt, font=\scriptsize\bfseries]{Persist Traces} (t6_a.east -| t6_b.west);
+        \end{tikzpicture}
+    };
+
+    % Inter-tier arrows
+    \draw [arrow] (t1.south) -- (t2.north);
+    \draw [arrow] (t2.south) -- (t3.north);
+    \draw [arrow] (t3.south) -- (t4.north);
+    \draw [arrow] (t4.south) -- (t5.north);
+    
+    % Dual arrows entering Tier 6 directly above the two subsystems
+    \draw [arrow] ([xshift=-3.0cm]t5.south) -- ([xshift=-3.0cm]t6.north);
+    \draw [arrow] ([xshift=3.0cm]t5.south) -- ([xshift=3.0cm]t6.north);
+
+\end{tikzpicture}

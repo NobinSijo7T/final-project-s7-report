@@ -1,0 +1,23 @@
+\contentsline {chapter}{Abstract}{i}{}%
+\contentsline {chapter}{Acknowledgement}{ii}{}%
+\contentsline {chapter}{List of Figures}{iv}{}%
+\contentsline {chapter}{List of Tables}{v}{}%
+\contentsline {chapter}{\numberline {1}Introduction}{1}{}%
+\contentsline {section}{\numberline {1.1}Background and Motivation}{1}{}%
+\contentsline {section}{\numberline {1.2}Problem Statement}{2}{}%
+\contentsline {section}{\numberline {1.3}Objectives of the Seminar}{2}{}%
+\contentsline {section}{\numberline {1.4}Organization of the Report}{2}{}%
+\contentsline {chapter}{\numberline {2}Literature Review}{4}{}%
+\contentsline {chapter}{\numberline {3}Proposed Methodology}{6}{}%
+\contentsline {section}{\numberline {3.1}DataSet Description}{6}{}%
+\contentsline {section}{\numberline {3.2}Proposed Approach}{7}{}%
+\contentsline {section}{\numberline {3.3}XGBoost Classifier}{8}{}%
+\contentsline {section}{\numberline {3.4}TabNet Classifier}{8}{}%
+\contentsline {section}{\numberline {3.5}Random Forest Classifier}{9}{}%
+\contentsline {section}{\numberline {3.6}Convolutional Neural Network (CNN) }{9}{}%
+\contentsline {chapter}{\numberline {4}Performance Evaluation And Results}{11}{}%
+\contentsline {section}{\numberline {4.1}Confusion Matrix}{12}{}%
+\contentsline {section}{\numberline {4.2}ROC-AUC Curve}{13}{}%
+\contentsline {section}{\numberline {4.3}CSI, MCC And Cohen's Kappa}{14}{}%
+\contentsline {chapter}{\numberline {5}Conclusion}{16}{}%
+\contentsline {chapter}{\numberline {6}References}{18}{}%

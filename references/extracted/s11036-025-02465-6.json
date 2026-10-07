@@ -1,0 +1,1340 @@
+{
+  "source_file": "s11036-025-02465-6.pdf",
+  "num_pages": 19,
+  "full_text": "RESEARCH\nMobile Networks and Applications (2025) 30:395–413 https://doi.org/10.1007/s11036-025-02465-6\nis used to reduce latency and congestion which occur on  mobile networks [1]. Workflow scheduling is a process that  produces sufficient maps to execute work within a process.  Workflow scheduling in MEC is a crucial task to perform\n1  Introduction\nMobile edge computing (MEC) is a network architecture  that allows cloud capabilities for edge computing. MEC\nMohammad Kamrul Hasan\nhasankamrul@ieee.org\nShayla Islam\nshayla@ucsiuniversity.edu.my\nAdeel Iqbal\nadeeliqbal@yu.ac.kr\n1\t Faculty of Computing and IT, Sohar University, Sohar, Oman\n2\t Networks and Cybersecurity Department, Hourani Center for  Applied Scientific Research, Al-Ahliyya Amman University,  Amman, Jordan\n3\t Center for Cyber Security, Faculty of Information Science  and Technology, Universiti Kebangsaan Malaysia (UKM),  43600, SelangorBangi, Malaysia\n4\t Faculty of Information Science and Technology, Universiti  Kebangsaan Malaysia (UKM), Bangi 43600, Malaysia\n5\t College of Engineering Mechanical engineering department,  Bisha University, Bisha, Saudi Arabia\n6\t Institute Computer Science and Digital Innovation, UCSI  University, Kuala Lumpur 56000, Malaysia\n7\t Deparment of Computer Engineering, College of Computers  and Information Technology, Taif University, P.O. Box  11099, Taif 21944, Saudi Arabia\n8\t Department of Computer Engineering, College of Computer  Science, King Khalid University, Abha Main Campus Al  farah, Abha 61421, Saudi Arabia\n9\t School of Computer Science and Engineering, Yeungnam  University, Gyeongsan-si 38541, Republic of Korea\n10\t College of Engineering, Sudan University of Science and  Technology, Khartoum, Sudan\nAbstract Mobile Edge Computing (MEC) is capable of inheriting cloud and Internet of Things (IoT) resources to the brim of the  computational and communication networks. Conservatively, the MEC is outsourced from the IoT/ cloud platforms to  Maximize the workflow and task completion abilities. However, due to outsourcing features, the security requirements  for workflow scheduling and task completion rely on trusted device selection and high normalization. To satisfy these  security demands, this article introduces a secure workflow scheduling algorithm using the knowledge learning concept.  The proposed algorithm verifies the operative and failing device features under diverse allocation parameters. Based on  the workflow completion lag, new scheduling or offloading decisions are Made. The decision support is provided by the  knowledge learning is retains the previous operational status of the edge devices through stage-based updates. The stages  for scheduling, classification, and offloading are updated periodically to Maximize the device selection and to reduce over­ head in the process. Thus the consolidated process is adaptable to scheduling, offloading, and workflow completion regard­ less of the devices, allocation time, and device selection processes. This proposed algorithm is reliable in improving the  normalized security by 14.17% by reducing the device selection overhead by 12.82% for the maximum allocation rates.\nKeywords  Device selection · Knowledge learning · MEC · Task offloading · Workflow scheduling\nAccepted: 25 August 2025 / Published online: 19 December 2025 © The Author(s) 2025\nKnowledge Learning for Securing Workflow Scheduling Algorithm in  Mobile Edge Computing\nTaher M. Ghazal1,2,3  · Ala Eldin Awouda5,10 · Mohammad Kamrul Hasan3  · Abdul Hadi Abd Rahman4 ·  Shayla Islam6 · Rashid A. Saeed7 · Hashim Elshafie8 · Adeel Iqbal9 · Abdelrahman H. Hussein2\n1 3\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nwhich requires the actual priority level of tasks in the net­ works [2]. An energy-efficient workflow scheduling frame­ work is used in MEC-enabled applications. The scheduling  framework analyzes the energy efficiency that is required to  perform scheduling tasks for the network [3]. The framework  identifies the issues which cause optimization problems and  provides significant solutions to the issues [4]. The sched­ uling framework minimizes the overall computational cost  and complexity rate of the MEC environments. A predictive  energy-aware scheduling strategy is also used in computing  systems [5]. The strategy uses an improved ant lion optimizer  (ALO) algorithm to optimize the problems. The scheduling  strategy reduces the execution time latency and elevates the  energy-efficiency rate of the computing systems [6].\nSecuring workflow scheduling in MEC is a complicated  task that ensures the privacy and safety level of data from  attacks. A security, cost, and energy-aware real-time work­ flow scheduling approach is used in MEC systems [7]. The  approach is used to elevate the overall security range of the  network from attacks. The scheduling approach evaluates  the cloud data and gathers sufficient information for fur­ ther scheduling services [8]. The approach provides vari­ ous security measures that eliminate unwanted threats and  attacks from the networks. The approach evaluates the  security measures and provides security-aware policies to  the networks [9]. The scheduling approach maximizes the  quality of service (QoS) and performance level of MEC sys­ tems. A deadline-constrained cost-aware workflow schedul­ ing (DCWS) algorithm is also employed in MEC systems  [10]. The DCWS algorithm is used to detect the issues in  task scheduling which are eliminated via deadline con­ straints. The algorithm uses a virtual machine to reduce the  execution time delay and computational cost rate of the sys­ tems. The DCWS algorithm enlarges the performance and  feasibility range of MEC from attacks [11, 12].\nMachine learning (ML) algorithms are used to ensure the  safety range of workflow scheduling processes in MEC sys­ tems. ML algorithms are used to elevate the precision in pro­ viding scheduling services to the networks [13]. A cost-aware  quantum-inspired genetic algorithm (CQGA) is implemented in  MEC environments. The CQGA is used to minimize the overall  cost and execution period in the networks [14]. Quantum opera­ tors and GA are employed here to avoid unwanted deadline vio­ lations in the systems. The CQGA uses quantum computing to  provide relevant fitness values to the workflow scheduling ser­ vices. The algorithm also distributes effective measures to the  systems. The CQGA elevates the convergence performance and  efficiency level of the systems [15, 16]. A reinforcement-learn­ ing (RL) algorithm-based security-aware workflow scheduling  framework is also used in MEC systems. The RL algorithm  addresses the issues that cause risks to the scheduling services  [17]. The issues are eliminated by providing sufficient solutions\nvia the RL algorithm. The scheduling framework improves the  precision and specificity range in workflow scheduling which  improves the reliability of the systems [18, 19]. MEC seeks  to reduce delays and network congestion by moving task pro­ cessing closer to end devices. However, MEC’s performance  enhancement might be tempered by computation outsourcing  to untrusted or compromised nodes. Such nodes may be mali­ cious or faulty and can alter results, leak sensitive information,  or interfere with operations to maintain the service’s uninter­ rupted status. To ensure data, integrity, and system reliability,  security-aware MEC task outsourcing frameworks designed  performance enhancements do not undermine data integrity,  require fundamental system trustworthiness augmentations.  This security MEC framework proposal addresses this gap  using trust evaluation augmented by secure allocation mecha­ nisms with fundamental latency and congestion optimization.  The major contributions of the article are:\n(i)\t The proposal and discussion of the novel secure work­\nflow scheduling using edge devices with the application  of knowledge is given. (ii)\t A detailed explanation of the knowledge learning in\naddressing the allocation failures due to risk-causing  edge devices with mathematical models and decision  snippets is provided. (iii)\tThe scheduled evaluation focuses on the internal param­\neters, ongoing monitoring of task allocation, sched­ uling, and secure device detection. It ensures that the  tasks are assigned securely and efficiently, minimizing  allocation failures and improving completion rates. (iv)\tThe comparative assessment includes a broader com­\nparison of the proposed algorithm with existing meth­ ods, using graphical illustrations to demonstrate its  superior performance in terms of security and reduced  overhead.\n2  Related Works\n2.1  Machine Learning Based Scheduling Process\nPan and Wei [20] developed a deep reinforcement learning  (DRL) based workflow scheduling framework for cloud  environments. The framework is used as a traditional frame­ work which fixes the issues during the workflow schedul­ ing process. The developed framework is used to assign the  tasks which are provided via working scheduling services.  The developed framework improves the scalability, robust­ ness, and performance level of the environments. Zhang et  al. [21] designed a real-time workflow scheduling method  using genetic algorithm (GA) and DRL for cloud comput­ ing environments. The designed method is used to decrease\n1 3\n396\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nthe execution time and response period of the networks. The  DRL algorithm is employed here to analyze the features  that are necessary to generate paths for scheduling services.  The designed method maximizes the overall performance  and effectiveness range of cloud environments. Although it  is comparable in that it makes use of intelligent decision- making for scheduling, it is distinct in that it has more of an  emphasis on device-level verification for security in MEC  contexts as opposed to merely performance.\n2.2  Meta-Heuristic Optimization Based Scheduling\nMa et al. [22] introduced a gene-inspired meta-heuristic  algorithm (GIMA) for workflow scheduling in mobile  edge computing (MEC) systems. A conditional insertion  scheme is employed in the algorithm which provides high- quality scheduling services to the systems. The algorithm  evaluates the conditions and reduces the overhead ratio.  The introduced GIMA reduces the computational cost and  energy consumption rate of the systems. An improved ver­ sion of [20] is proposed by Bansal and Aggarwal [23] using  a hybrid particle swarm optimization (PSO) algorithm for  cloud-fog computing networks. The proposed framework  also uses the whale optimization algorithm (WOA) to  minimize the optimization problems which enhances the  precision of execution time. The framework provides high- quality coverage services to the networks. The proposed  framework enlarges the performance and efficiency level  of scheduling services. Zade et al. [24] introduced a multi- objective scheduling algorithm based on the Caledonian  Crow learning algorithm for cloud computing. The intro­ duced algorithm is used to schedule actual workflow paths  for the computing systems. The algorithm analyses the vir­ tual machines to gather sufficient data for optimization and  computation. When compared with others, the introduced  algorithm improves the accuracy rate in providing sched­ uling services to the systems. Mohammadzadeh et al. [25]  developed a chaotic hybrid multi-objective optimization  algorithm (HSOS-SOA) for scientific workflow schedul­ ing in cloud environments. The developed algorithm is  used to generate random maps and routes to perform tasks  in multiple cloud networks. The algorithm elevates the  convergence rate of the network which improves the pre­ cision of scheduling services. The developed HSOS-SOA  reduces the computational cost and time consumption rate  during scheduling. An improved version of [24] is proposed  by Wang et al. [26] named, a heuristic privacy-preserving  workflow scheduling algorithm (PWHSA). The algorithm  is used to address the optimization problems and provides  significant solutions to solve the problems. The proposed  algorithm schedules the maps based on analyzed param­ eters. It also produces comprehensive scheduling policies\nthat reduce computational costs. Experimental results show  that the proposed PWHSA minimizes the latency in execu­ tion time. The technique incorporates security normaliza­ tion metrics and risk-aware allocation, both of which are not  expressly included in current methodologies, but is similar  in that it focuses on optimization.\n2.3  Resource Allocation in Cloud and Fog  Computing\nLyu et al. [27] designed a cloud-edge collaborative computing  (CECC) for workflow scheduling for the Internet of Things  (IoT). The designed algorithm is also used as a resource allo­ cation algorithm which allocates resources for the tasks. The  algorithm analyses the critical challenges and produces appro­ priate solutions to solve the issues. The designed algorithm  elevates the accuracy and efficiency range of the workflow  scheduling process. Abdi et al. [28] developed a cost-aware  workflow offloading using GA for edge-cloud computing  applications. The algorithm is used to minimize the monetary  cost and execution time consumption rate of the systems. The  developed algorithm also provides sufficient solutions to solve  optimization problems that occur during offloading. The GA  is used here to eliminate unwanted problems and issues from  the network. The developed algorithm enhances the Quality of  Service (QoS) by providing offloading services to the applica­ tions. Li et al. [29] introduced a cost-effective security-aware  scheduling algorithm for edge computing. GA is implemented  here to analyze the problem which produces sufficient data  for scheduling services. The algorithm allocates the resources  and tasks based on priorities which enhance the computational  quality of the computing systems. The introduced algorithm  achieves high precision in task scheduling and reduces the  execution cost rate of the networks.\nLi et al. [30] designed a make-span and security-aware  workflow scheduling for cloud services. It is used as a two- stage algorithm that solves optimization problems that occur  during scheduling services. The designed algorithm uses an  improved firefly algorithm (IFA) to schedule the tasks to vir­ tual machines. The algorithm also provides a relevant sched­ uling scheme that provides quick paths to the networks. The  designed algorithm decreases the overall computational cost  and latency level of the systems. An updated version of [22]  is proposed by Sajnani et al. [31] using a hybrid optimization  algorithm for MEC. The proposed framework is used to sched­ ule the workflow with high-security measures. The framework  also identifies the cause of the problem and provides feasible  solutions to eliminate the problems from the systems. When  compared with others, the proposed framework reduces the  energy consumption and execution time of the computing  environments. The approach is similar to these in that it oper­ ates across edge–cloud boundaries; however, it places a higher\n1 3\n397\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\ncompromised devices may be incorporated. In addition, with  the heterogeneous nature of MEC systems, the inconsistent  resource supply, communication latency, the dynamic nature  of devices adds more difficulty to scheduling. The core prob­ lem, therefore, is to develop a scheduling mechanism which  optimally allocates tasks in a high-level computational effi­ ciency while also including real time trust evaluation, secu­ rity normalization, and adaptive allocation ensuring tasks  execution by trustworthy devices.\n3  System Model\nThe experimental system model is first described to disclose  the number of devices, tasks, and time-based measurements.  The system for the proposed technique is simulated in a  standalone computer with 16GB RAM 256 GB SSD and a  2.20 GHz i3processor. Besides the platform architecture sup­ port is 64-bit built on Windows 11 supported by 2GB NVIDIA  graphics. As far as the experiment configurations, the number  of edge devices assigned is 30 accommodating 5 tasks/1 min  interval. The average task completion time is 30 min to 90 min.  Therefore a workflow (batch) is modelled with 150 to 950  tasks in an interval and a device accommodates 5 to 15 work­ flows for a Maximum of 6 h operation time. The authentication  security for device access and task allocation is administered  using a central server device connected to the cloud. The value  described in the experimental setting part is used as variants for  studying the proposed technique’s performance.\n3.1  Proposed Secure Workflow Scheduling  Algorithm\nSecure workflow processing in edge devices is designed by  using scheduling and offloading, to improve task completion  rates. The workflow on edge devices is attained with high secu­ rity by detecting the risk of device failure. Here, the schedul­ ing is followed up for the secure device sharing between the  edge devices. Security among the edge devices is attained by  scheduling the task according to the user’s needs. Before step­ ping into scheduling, the device verification is done whether it  is ideal or busy state. Based on this identification the task dis­ tribution is done to reduce the scheduling lag. Figure 1 pres­ ents the overall illustration of the proposed technique. The scheduling is classified through secure device selec­ tion and allocation failure based on these two functions; the  analysis is done whether the device reaches the completion  state or not. Based on this offloading is performed if there is  any scheduling lag that occurs due to incompletion of task.  The main drawback is to reduce the risk device which is due  to insecure edge devices that degrades the reliability. Here,  the reliability is higher by reducing the insecure edge device\npriority on device credibility checks before allocation, which  makes it more resistant to hacked edge nodes.\n2.4  Security-Prioritized Scheduling\nMorabito et al. [32] introduced a sever-by-design serverless  workflow scheduling for edge-cloud computing environ­ ments. The introduced framework uses osmotic computing  paradigms to analyze the complicated content before sched­ uling services. The framework provides advanced security  measures to secure network attacks and threats. The intro­ duced framework improves the performance and execution  time of the systems. Zhang et al. [33] developed a secured  software-defined network (SDN) based task scheduling  framework for edge computing systems. A priority-aware  semi-greedy with GA (PSG-GA) is employed here to iden­ tify the priorities of the tasks before providing scheduling  services to the networks. The PSG-GA reduces the over­ all computational cost ratio of the systems. Experimental  results show that the developed framework increases the  accuracy range in scheduling tasks for the systems.\nAlam et al. [34] designed a security-prioritized multiple  workflow allocation (SPMWA) model for cloud computing  environments. The model is used as a mapping scheme that  provides high-quality paths to the tasks. The actual priority  and significance rate of the tasks are identified and optimal  resources via allocation services. The designed model ele­ vates the performance and efficiency range of the computing  systems. Javanmardi et al. [35] proposed a secure workflow  scheduling approach for SDN-based IoT-Fog networks. It is  used as a proper traditional scheduling algorithm that sched­ ules the paths as per necessity. The unwanted vulnerable  problems are eliminated by providing significant solutions to  the networks. The proposed approach minimizes the overall  distributed denial of service (DDoS) which enlarges the effec­ tiveness of the networks. Liang et al. [36] introduced a secure  and makespan-oriented workflow (SMWE) framework for  serverless computing systems. The SMWE is used to accom­ plish complex tasks by providing optimal scheduling services  to the networks. The introduced framework protects the net­ work from problems which maximizes the performance range  of the systems. The introduced SMWE framework maximizes  the overall security and safety level of the systems. From the  provided statement, the problem focuses on the automated  tasks scheduling workflows in a MEC system with limited  resources while maintaining the demanded efficiency, perfor­ mance and security. Traditional scheduling approaches, either  greedy, meta-heuristic or reinforcement learning based, focus  optimizing the execution time, cost or energy. In focusing on  optimization, credibility and trustworthiness of edge devices  which take part of the execution is sidelined. This poses a  security and performance vulnerability where unreliable or\n1 3\n398\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nParameter Description Symbol Description Role in Model/Impact on Computation  Uy  Busy state  indicator\nNumber of devices currently in busy  state; affects allocation feasibility.  ia  Idle state  indicator\nNumber of devices in idle state; higher  values provide more flexibility for task  allocation.\nir′  Irregularity  rate\nSignifies operational irregularities or  anomalies; higher values reduce stability.\n△\n′ = 1 ks + \u001f uy\nia Al0 ∗(rt + pe) −met+\n(Wf ∗Te′ ) ∗\n\nSy\n′ + Edv\n\u001b\u001a\n+ (Edv ∗Al0)\n\u0019\n\n[(met + pe) + (Al0 ∗Wf)] ∗Te\n′ \u0019\n∗\nuy−ia (Al0 −Edv) +\n\u0018\u0018\u0018Sy\n′ ∗Br\n′ \u0018\u0018\u0018 ∗\n+\nWf Edv ∗\n\nTe\n′ ∗ks\n\u001b\n+ [(rt + pe) −ir′ ]\n\b (1)\nThe computation is represented as ∆′ , and the task is  denoted as ks, the allocation is described as Al0. The objec­ tive is computed in the above equation where request and  response are symbolized as rt and pe. Here, the busy and  ideal state of the devices are verified and then, the allocation  of tasks is evaluated and they are represented as uy and ia.  The time of computation is considered and it is described  as met, Wf is the workflow whereas, Te′ is detection.  The edge device is Edv and Sy′ is security and Br′ is  described as reliability. The task allocation rate values based  on the provided system model are tabulated in Table 1.\nThe task allocation increases when periodically the iden­ tification of busy and ideal state of devices are evaluated.  Here, the scheduling is done for the edge devices based\nfor this knowledge-based learning is introduced. The secure  workflow is evaluated by completing the task. The initial step  here is an objective of this method, where the security for  workflow devices is computed as follows and the description  of each parameter is illustrated in parameter description. Parameter Description Symbol Description Role in Model/Impact on Computation\n△′  Security  related objec­ tive value\nIt is used to estimate the measure to iden­ tify the secure workflow during device  scheduling.  ks  Task count Represented that the task scheduled  which affects the ∆′ in which tasks mini­ mize the per-task security margin  AIO  Allocation  factor\nRepresents that how effectively task is  assigned to device.  rt  Request rate Computes the incoming task requests;  high values indicate the high system load  affects the loading decisions.  Pe  Response rate the rate at which responses are generated;  works with to regulate communication  efficiency.  met  Computation  time\nTime required to complete a task\nwf  Workflow  factor\nSignifies workflow complexity; influ­ ences detection and allocation processes.\nTe′  Detection time Time taken to notice and confirm device  security; impacts scheduling delay.  Edv  Edge device  factor\nReplicates security status of the edge  device; insecure devices lower reliability.  Sy′  Security level Indicates current evaluated security of  the workflow; higher values improve  system trust.\nBr′  Reliability  factor\nSignifies system reliability; used with  security measures to ensure safe comple­ tion of tasks.\nFig. 1  Overall illustration of the proposed technique\n\n1 3\n399\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nThe evaluation is done on the above equation and it is  described as V ut, the edge device is associated with task  sharing for the requested device. The edge device requests  for the task and securely it is shared on the required time  interval. The allocation is processed for the secure work­ flow where it finds the busy and ideal device and based on  this sharing is done. Based on the security the workflow  is securely transmitted. The task allocation is evaluated  to ensure the security between the sender and the receiver  which is said to be edge devices. Here, computation is  done to improve reliability and provide security within the\nassigned time interval and it is represented as\n(\nmet∗Wf ∑\nEdv Al0\n)\n.\nThe allocation is based on the device state whether it is  busy or ideal, if it is busy then, the task is not allocated to  the specific device. In other cases, if it is ideal then, the tasks  are assigned to the particular devices. This is how the task  allocation is processed with the busy and ideal state of the  edge devices and ensures security. Post this allocation step,  the scheduling is done for the pending tasks in edge devices.\non the request and response Al0 ∗(rt + pe) where the  workflow is processed with security. The task allocation\nks (Al0 + Edv) ∗Sh + Di′ is given to the ideal devices  where it avoids allocation failure. Here, the allocation is  evaluated by scheduling Sβ (Edv + Sh) ∗ks + Sy′ ∗rt  the edge devices based on the request and ensure  secure task sharing. Thus, scheduling is properly com­ puted Sβ + (V ut ∗ks) + Al0 to improve the task allocation  (Table 2). Here, the objective is to improve the reliability by  reducing the risk device during detection and ensuring the  security of the workflow devices ∑\nuy−ia (Al0 −Edv).  Based on the objective the proposal is designed by schedul­ ing and allocating the edge device with the task allocation.  The secured workflow is transmitted to the edge device  on the required time interval Al0(met −ks). Thus, the  computation is processed for the edge devices, and from  this objective equation, the device allocation is evaluated  below.\nV ut = (Sy′ + Edv) ∗\n∑∆′\nks Al0 ∗(uy + ia) +\n( met ∗Wf ∑\nEdvAl0\n)\n\b (2)\nTable 1  Task allocation rate valuation\nks Device Count Edv (Alo/min)\n5 10 15 20 25 30 150 8 5 6 8 7 9 175 5 6 8 7 12 7 200 12 8 8 9 8 8 225 9 5 8 5 11 7 250 8 7 9 9 7 6 275 5 6 8 8 12 5 300 12 9 8 11 9 5 325 6 6 5 10 5 8 350 13 13 13 12 11 13 375 12 11 14 12 12 14 400 12 12 15 14 13 15 425 13 11 13 12 13 14 450 14 13 12 14 13 14\nTable 2  Scheduling rate tabulation for different variables Variable= ks 150 200 250 300 350 400 450\nEdv 10 0.625 0.674 0.714 0.789 0.821 0.932 0.951 20 0.614 0.651 0.698 0.751 0.785 0.904 0.924 30 0.593 0.621 0.652 0.701 0.741 0.851 0.897 Variable= Alo Time (min) 30 40 50 60 70 80 90\nEdv 10 0.741 0.721 0.701 0.691 0.681 0.697 0.687 20 0.725 0.704 0.694 0.674 0.667 0.654 0.657 30 0.701 0.691 0.614 0.604 0.621 0.601 0.598 Variable= met (min) 10 20 30 40 50 60\nEdv 10 0.652 0.714 0.824 0.924 0.954 0.995 20 0.605 0.698 0.801 0.901 0.869 0.821 30 0.618 0.621 0.741 0.894 0.852 0.801\n1 3\n400\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nworkflow of the edge device is considered and evaluates  the scheduling on the required time interval. Here, the  scheduling is represented as Sβ , where it verifies the sta­ tus of the devices such as if it is busy or ideal. By com­ puting the scheduling process, the throughput is increased  by reducing the computation time and it is described  as (ks + ∆′ ) ∗(uy + ia) −met. The scheduling process  is described in Fig. 2.\nThe scheduling and allocation process of the proposed  technique are depicted using Fig.  2. This Sβ is different  from the existing/conventional methods by concurrent allo­ cation of Edvbased on ia and [1 −Wf (met ∗Br′ )]com­ putations. These computations validate the Te′ = max  and Te′ = min allocations across active devices are  used to differentiate pe and met scheduling demands. In  the Sβ process, both pe and Alousing Edv ∈ia = true  validated for the remaining met. The ia̸ = true relates  the uy = true such that the tasks are pending between\n[(met ∗Br′ ) , met] interval. Similarly, if the allocation is  monotonous, then rt is incremented for the consecutive task  acceptance and Alo ∀Edv takes place. This differentiation  in Sβ requires a security-based classification for device  selection to prevent task/ wf failures. The scheduling rate  for different variables is tabulated in Table 2.\nThe scheduling rate increases concerning the task alloca­ tion ks (Al0 ∗Wf) + Edv for the edge devices. Here, the  computation states the scheduling process and indicates  the task-sharing ks + Sh (Al0 ∗V ut) + ∑\nWf vs ∗(Edv)\n3.2  Scheduling\nTask scheduling is used to decide which device should hold  which task and based on this task distribution is evaluated.  The evaluation takes place by defining the device workflow  and allocation process. Both the process is considered and  scheduling is done for the task completion with security. The  scheduling is evaluated in the below equation as follows.\nSβ = Al0 −met ∑\nWf (Edv + ks) ∗\n∑Wf\nT e′ (ks + ∆′ ) ∗(uy + ia) −met\nThe above equation is re-written as,\nAl0 (ks) = ∆′ ∗[(uy −ia) + Wf] −met\nSimilarly,\n∆′ (Wf) = ks (Sh) + Edv −met (ia)\nConsequently,\nAl0 (Edv) = (ia −Te′ ) ∗\n∑\nuy (rt −pe)\nV ut (Sh) = Al0 (Sh) + ks (ia) −Te′ \b (3)\nScheduling is a process based on the decision-making of  which task must be allocated to which edge device. The\nFig. 2  Scheduling process illustrations\n\n1 3\n401\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nwhether the device is busy or ideal. The workflow schedul­ ing is described in Snippet 1. to the required user within the fixed time frame. Thus,  the scheduling takes place by increasing the workflow\nWf (Sβ + vs) ∗∏\nSy′ Te′ (uy −ia)  by  considering\nTable 3  Acf Observed before and after F Li\nProcesses Alo V ut Sβ\nVariables Before After Before After Before After Edv 10 0.5112 0.3020 0.7366 0.5044 0.8601 0.8907 20 0.3684 0.2108 0.5537 0.3616 0.8506 0.7132 30 0.2902 0.1842 0.5258 0.4806 0.8516 0.6088 150 0.1711 0.4643 0.5773 0.4571 0.9078 0.6156 200 0.5019 0.1136 0.5755 0.4402 0.9092 0.3695 250 0.5150 0.4741 0.5709 0.3338 0.8009 0.3091 300 0.2302 0.4407 0.5314 0.2429 0.8908 0.5043 350 0.4439 0.2393 0.5330 0.3153 0.8310 0.2842 400 0.0471 0.1721 0.5462 0.1336 0.9117 0.4222 450 0.1911 0.2128 0.5746 0.4737 0.8816 0.5951 met (min) 10 0.5173 0.3399 0.6339 0.5673 0.9166 0.1269 20 0.0407 0.1144 0.5992 0.3812 0.8556 0.8036 30 0.2644 0.2990 0.5943 0.2600 0.8715 0.7463 40 0.2720 0.2652 0.5500 0.4138 0.8444 0.6575 50 0.4523 0.3747 0.5934 0.4486 0.8362 0.7953 60 0.2112 0.2020 0.5366 0.4044 0.8601 0.7907\nSnippet 1 Wf Scheduling\n1. Function proposed algorithm Wf(Al0, Sβ)\n2. for Al0←pe to Sy' do 3. rt→ks(ps) * Al0(ia)// Allocation is done for the idle device\n4. if Sβ + ks(ia) +yef < vs// Allocation is scheduled\n5. Priorize device with optimal latency energy balance 6. End if  7. (Al0 + ks) * Edv 8. end for 9. return Sβ(ia) 10. end function\nFrom this identification process, the scheduling  rate is improved. Here, the evaluation for schedul­ ing V ut (Sβ + vs) ∗ks −(rt −pe) is processed with  secure task sharing to the requested devices (Table  3).  Therefore, the classification of scheduling is equated in the  below Eq.\nFLi = (Wf + Di′ ) ∗∑\niaSβ +\n(\nTe\n′ ∗Al0\n)\n−met, ∀Secure device selection (\n∴varDelta\n′ +Wf ∑\nT e′ Sβ\n)\n∗∏\nAl0Te\n′\n+ (Edv ∗uy) , ∀Allocation failure\n\b (4)\nThe classification for scheduling is evaluated in the above  equation and it is expressed as FLi. The first condition  is secure device selection where the allocation of tasks is  given for the ideal edge device. Here, the device selec­ tion is based on the workflow for the ideal edge device  and decides whether the task can be allocated to the  specific edge device or not. The decision is described  as Di′ , the sharing is Sh. The second condition refers to  the allocation failure where the task is given to the busy  device on the respective time interval and it is represented  as Te′ + (Edv ∗uy). Thus, the classification is done for  the scheduling process; post to this allocation failure is  detected in the following Eq.\n1 3\n402\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nthe decision process. Here, it defines the sharing of tasks is  not done properly so allocation failure occurs, it is sorted  out with knowledge-based learning which uses the prior  data for the current model and provides the result. The allo­ cation failure computation is presented in Snippet 2.\nAcf = Sβ +\n∑T e′\nEdv (uy + Sh) ∗ks + |Di′ + Al0|\b (5)\nThe allocation failure is detected on the above deriva­ tive where the task is allocated to the busy edge device  on this process the failure occurs. The allocation failure is  described as Acf, where the task is not scheduled based on\nThis allocation failure is due to the detection of risk  devices and it is formulated below.\nTe′ = R′ (ia) ∗\n∑Sβ\nEdvFLi +\n[\n(Acf ∗V ut) + ∆′ ]\n∗Sh\nThe task sharing to the busy device is expressed as,\nks (Sh) = R′ (uy) + ∆′ ∗met\nSy′ −V ut\nThe above equation is rewritten as,\nV ut (Edv) = Sy′ (ks) ∗Sh + pe (Di′ )\nIt means,\nV ut (ks) = Di′ (ks) ∗Sy′ +\n∑\nV ut\n(\n∆′ ∗Edv\n)\n\b (6)\nTable 4  Device detection rates for different variables\nW f 150 200 250 300 350 400 450\nF Li 0.5 0.7650 0.7720 0.8092 0.8207 0.8532 0.9220 0.9421 0.6 0.7789 0.7805 0.7839 0.8431 0.8637 0.9241 0.9222 0.7 0.7947 0.7833 0.8515 0.8519 0.8925 0.8977 0.9420 0.8 0.7795 0.8216 0.8535 0.8622 0.8507 0.8992 0.9273 0.9 0.7856 0.8066 0.8181 0.8659 0.9014 0.9089 0.9280 1.0 0.7876 0.7910 0.8101 0.8520 0.8526 0.9226 0.9361 Acf 0–0.2.2 0.7925 0.8547 0.8724 0.9197 0.9228 0.9057 0.9465 0.21–0.4 0.7985 0.8324 0.8224 0.8819 0.9099 0.9352 0.9635 0.41–0.6 0.7737 0.8326 0.8251 0.8742 0.8719 0.8931 0.9617 0.61–0.8 0.7712 0.7913 0.8414 0.8725 0.9080 0.8918 0.9297 0.81–1.0.81.0 0.7764 0.8264 0.7811 0.8766 0.9067 0.9284 0.9557 Alo (min) 30 0.7717 0.7869 0.8213 0.8437 0.9080 0.8950 0.9396 60 0.7950 0.8020 0.8592 0.8607 0.9032 0.9220 0.9421 90 0.7789 0.8205 0.8739 0.8531 0.9137 0.9241 0.9422\nThe risk device is detected to reduce the failure during  workflow on edge devices. The risk device is described  as R′ , here decision is made to share the data to the  responder. Based on the classification presented, the Acf  observed is tabulated in Table 3.\nThe allocation failure decreases if no secure shar­ ing Sy′ + Sh (ks) ∗∑\nAl0 (Wf + V ut)  takes  place  between the edge devices. Here, the scheduling is computed  to share the task Sh (ks + rt) →pe (Wf) −ia −met to  the ideal device and ensures the allocation failure. The fail­ ure is due to the device, where if the device is busy and task  is assigned to the device means the assigned new task is  not completed. In this case, the allocation failure occurs so  the identification V ut (Edv ∗vs) + Al0 of busy and ideal  devices is detected and so the allocation failure is reduced  (Table 4 Data). The classification is evaluated for secure task  sharing, at some point risk devices lead to failure. To sort  out these issues the risk device is detected which is equated\n1 3\n403\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\ndetection. The device detection rates for different variables  are tabulated in Table 4.\nThe device detection is higher when the edge device  responds to the necessary task requested. Here, the evalu­ ation takes place by scheduling the task and classification  is done for the secure device selection and allocation fail­ ure. Here, the allocation is done to identify the risk device,  and then, Wf ∗∏\nks (Sh + Edv) workflow is generated  for the scheduled task. The detection is done to ensure the  security Sy′ ∗∏vs\nδ 0 (FLi + Acf) and improves device  detection by computing offloading. The knowledge-based  learning is introduced where it uses the prior task and  detects the current task (Table 5). The device detection R′  is described in Snippet 3.\nin the above equation by the use of scheduling. Henceforth,  the workflow termination is analyzed in the below Eq.\nω (Wf) = ∏T e′\nEdvSβ ∗\n(\nR\n′ −ia\n)\n+ ks ∗Em0 −Acf+ [(\nAcf ∗Te\n′ )\n∗(Acf + uy)\n]\n{\n+∴varDelta\n′ }\n−met\n\b (7)\nThe termination workflow is expressed above where the risk  device is detected which leads to failure. Here, the compu­ tation is processed to the termination if the risk is detected  during task allocation, termination is Em0, analysis is ω .  Thus, the termination point is analyzed from the risk device\nThe termination is reduced by knowing the prior knowl­ edge of the task allocation and scheduling and it is done by  introducing knowledge-based learning.\n3.3  Knowledge Learning\nKnowledge learning is described as having a deep knowl­ edge about the data which helps to retrieve the prior knowl­ edge about the data and reduce the failure. It is used to  know about the task which is processed in the prior section  and gains the knowledge and gives to the current task. The  below equation is computed to store and notify the data with  the prior knowledge.\nKLg = ri0 −ks\n(\nR\n′ + Acf\n)\n+ ∑T e\n′\n△′\n(\nSh + Di\n′ )\n∗ nf (V ut) ∗Edv + sr\n\b (8)\nThe knowledge is KLg, the prior is represented as, the data  is notified and it is described as nf whereas data storage is  represented as sr. Based on this computation step, the prior  knowledge is used to decide the workflow of edge devices.  The stored data is retrieved from the prior knowledge and  notified whether there is any risk to processing the task  which is been allocated. Based on this notification the risk is  reduced and improves the reliability for workflow devices.  Post this knowledge extraction, the secure device selection  is evaluated in the following equation.\nvs (δ 0) = Sβ +\n∏\nSy′ Al0 ∗(Edv + Wf)\nConsequently,\nWf (Sβ ) = |Edv + Al0| −ri0\nri0 = sr →nf (pe) + ks −met\n1 3\n404\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nthe notification regarding the task sharing to the responder.  From this task completion is verified in the below derivative.\nks (Cmp) = rt (Edv)\n∗(ia −uy) + ∑Sβ\nWf KLg− ri0 + Sh\n\b (10)\nThe task completion is represented as Cmp, where it veri­ fies the current and the previous knowledge and provides  the notification process where the insecure device selection  is reduced by improving reliability. The secure device selec­ tion procedure is presented in Snippet 4.\nThe above equation is re-written as,\nnf = Edv + R′ (Te′ ) −met\nTe′ (met) = Edv (sr + nf) ∗KLg\b (9)\nThe secure device is vs, the selection is represented as δ 0,  the security is given for the task allocation and reaches the  destination as task completion. The task selection is securely  processed and ensures the notification with the prior knowl­ edge. Here, scheduling takes place by selecting the edge  device securely and reduces the insecurity. It is evaluated  by using knowledge learning to retrieve the data and gives\nTable 5  Offloading verification tabulation Variants Values Of ′ yef Of ′ (Cmp) yef DU g\nEdv 10 0.574 0.956 0.818 0.891 0.1342 20 0.421 0.952 0.846 0.908 0.1280 30 0.369 0.962 0.814 0.922 0.1346\nW f 150 0.526 0.952 0.829 0.934 0.1294 200 0.547 0.957 0.912 0.941 0.1235 250 0.415 0.952 0.898 0.912 0.1139 300 0.569 0.954 0.888 0.957 0.1097 350 0.587 0.955 0.921 0.939 0.1232 400 0.541 0.954 0.846 0.952 0.1084 450 0.524 0.957 0.876 0.937 0.1172 Alo Time (min) 30 0.354 0.953 0.837 0.950 0.1141 60 0.415 0.968 0.865 0.936 0.0934 90 0.514 0.955 0.945 0.947 0.0613\nThe reliability is higher by using knowledge-based learn­ ing and completing the task. The task completion is done by  securely sharing between the sender and receiver. Here, the  scheduling takes place by deciding which task is assigned  to which edge device. By evaluating this process, the task is  completed in the desired time interval. Post to this schedul­ ing lag is identified in the below Eq.\nDUg = Sβ + (Edv) + ks →pe (met) ∗Al0 (KLg) −Cmp\b (11)\nThe scheduling lag occurs if the task is not completed properly  and it is reduced with the knowledge-based learning assess­ ments to fix the failure or risk devices and stop the scheduling.  Once the scheduling is stopped then, the allocation of tasks  is processed on the acquired time interval. The scheduling  lag is represented as DUg where it is due to the edge device  being busy and upcoming tasks being scheduled means the  lag occurs. So, the initial step is to check whether the device  is busy or ideal based on this scheduling is done to reduce the  lag. The role of KLg is explained using Fig. 3 illustrations.\n1 3\n405\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nFig. 3  Role of KLg through illustrations\n\nIn Fig.  3, the KLgfor 3 processes: rt = 0, Alo = 0 and nf = true are presented. Based on the FLi, the\n(T ′\ne ∗Alo) = met is the satisfying condition to ensure a  risk-free device is selected such that the rio at Sβ =maxi­ mum is satisfied. Based on the available pe = maximum  condition, the need for new FLi is pursued. If the above  conditions for rt = 0 is not satisfied, then the Acf esti­ mation using Eq. (5) is computed. Therefore, the number  of Edvsatisfying Sy′ is reduced and Wf allocation is  increased. Thus the R′ = false identifies the maximum  number of allocation failures across various met. This\nensures Edv is risk-oriented and therefore new Alo are  terminated and the current Wf is terminated as ω (Wf).  When a new task comes in, the KLg, assesses previously  generated reports to ascertain whether the current device  can securely and efficiently execute the task. If the prior  report indicates low security or considerable delays, the  system either reallocates the task to a more trustworthy  edge device or modifies the allocation parameters. This  approach enhances the system’s reliability while reducing  the probability of task failure. Then the process of KLg  updating in rio\n1 3\n406\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\npseudocode is illustrated in Snippet 5.\n3.4  Offloading\nThe specific task is offloaded if scheduling lag occurs to  improve the reliability. The offloading is transferring the  task to another edge device to increase the performance  of workflow. The below equation is used to compute the  offloading.\nOf ′ = Edv\nDUg\n+\n∏uy\nia yef ∗(Sh + pe) −met\nThe above equation is re-written as,\nyef = (uy −ia) + ω ∗\n∑V ut\nSh (Cmp + vs)\nConsequently,\nCmp (Edv) = vs (Sβ ) ∗\n∑\nV utω + [(yef −Wf) −Al0]\nSimilarly,\nyef (Edv, Al0) =\n∏\npeSβ + (Wf ∗vs) + Te′\nTe′ (DUg, ks) = (Sβ + yef) ∗(Al0 + Edv) −vs\b (12)\nThe offloading is represented as Of′ where verification is  described as yef and it is evaluated with the sharing process.  The computation is done once the scheduling lag occurs to  sort out this lag the offloading is performed to complete the  assigned task to the edge devices. The offloading process is  described in Snippet 5.\n1 3\n407\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nFig. 5  Comparative analysis of δ ooverhead\n\nFig. 4  Comparative analysis of normalized Sy′\n\n1 3\n408\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nfor the trade-off is a globally optimal adaptive η tuning\nOf′ based on yef. Real time yefbased off local execution  require optimum leverage with network distributed process­ ing in a reliable manner. The device verification increases  when the task is completed ks (yef + Sβ ) + ∑\nEdvpe  from the scheduling process. The workflow is done  securely Sy′ (Al0 + Edv) ∗∏\nω\n(\n∆′ + δ 0\n) and evaluates  the allocation to the edge device. The reliability is enhanced  between the edge device Br′ (Edv ∗ω ) + |Al0 ∗Sβ |  and  evaluates  the  decision-making  to  share  the  task. The allocation failure is estimated to detect  the  risk  device Al0 (Of ′ ∗yef) + ∑\nδ 0Wf  and  results in termination. The workflow is securely\nSy′ (Of ′ + Cmp) ∗yef and verifies by making deci­ sion Di′ (yef + R′ ) ∗Acf (Table  10). Here, it uses the  prior knowledge which provides the notification regarding  the task assigned and produces the resultant. Thus, the task  completion with offloading is higher by reducing the sched­ uling lag. Here forth, the reliability is enhanced and it is  expressed in the below Eq.\nBr′ = Sβ + Of ′ (Cmp) −met −rio (yef) + Edv\b (14)\nThe reliability is improved by processing the offloading- based task completion by using prior knowledge on the  required time frame met −rio (yef) + Edv. Here, the reli­ ability is described as Br′ , by considering the workflow of  the edge device the request and response are handled prop­ erly. The insecure selection of devices is reduced by bench­ marking the secure task sharing to the requested devices.  Thus, scheduling and offloading are integrated to process  the secure task sharing between the edge devices. In Snippet  6, the secure scheduling verification is discussed.\nThe detection of task completion is estimated by sched­ uling the requested task to the user, for this, the initial  step is to detect whether the device is ideal or busy based  on this scheduling is performed and it is represented  as ∏uy\nia yef ∗(Sh + pe) −met. Post to this offloading  computation, the task completion with offloading is evalu­ ated below.\nOf ′ (Cmp) = (Al0 + Edv) −vs ∗DUg (Sβ ) + yef(uy −ia)\b (13)\nThe task completion is done with the offloading process  where the verification is the preliminary step to perform  scheduling. Here, the scheduling is properly done with  knowledge-based learning and ensures a secure workflow  among the edge devices. The offloading verification values  are tabulated in Table 5.\nThe discrepancies in Table  10 suggest that a greater  yef (workflow efficiency factor) does not always result in a  greater Of′ (offloading factor) value, which is the case for\nEdv = 30 where yef = 0.962 while Of′ = 0.369. This  disparity indicates that while internal scheduling for offload­ ing workflows has high efficiency, the level of offloading being  performed is low—probably because the local processing  capacity is sufficient. Under these scenarios, the throughput  appears stable. However, there are missed chances to opti­ mize the resource load balance among the devices. On the  other hand, those configurations where yef is lower, how­ ever, Of′ is greater, suggest that offloading is a lot heavier.  This may enhance load distribution, but may also add net­ work latency. The impact to the completion of the exchanges  lies in the balance of both conditions. Too little offloading  burdens local nodes while too much offloading incurs delay  from overhead due to communication costs. The work out\n1 3\n409\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nthe considerable security and overhead reduction achieved  in the scaled CES with CSM, persist for the large MEC  network topology. The impact of these variables is stud­ ied over the two metrics using the graphical illustrations in  Figs. 4 and 5.\nThe normalized security is higher compared to the  existing method vs (δ 0 + FLi) ∗∑\nWf Sβ where the  offloading is evaluated with a secure device. The task shar­ ing Sh (ks) > Al0, for all Al0 ∈ri0 where scheduling is  computed to the requested device. The secure device selec­ tion is evaluated vs (Edv ∗Al0) + ∑\nOf′ R′ . Based on  prior knowledge the detection of risk devices is computed\nR′ (Edv + vs) ∗∏\nks\n(\n∆′ −met\n)\n≈ω (yef) and from  this security is normalized for the edge devices. From this  knowledge-based learning is used to improve the security  level KLG (ri0 −ks) + ∑\nWf (vs + yef) and verifies  the security between the edge devices (Fig. 4). A weighted  combination of two primary protection metrics is used to  compute this score. These metrics are the threat detection  rate, which is the percentage of attack attempts that have  been detected and mitigated, and encryption strength, which  is measured as the effective bit-length and complexity of the  encryption mechanism that is used in data transmission and  storage. Following the calculation of the raw Sy score for  each test case, the score is then normalized to a scale rang­ ing from 0 to 3 by the utilization of min–max normaliza­ tion is computed as Sy′ norm = Sy′ −Sy′ min Sy′ max−Sy′ min ⋅ 3. This\nnormalization makes it possible to make direct compari­ sons across different workflow sizes ( Wf), allocation times  ( Alo), number of edge devices ( Edv), and allocation rates.  This serves to ensure that the plotted results accurately rep­ resent relative protection performance rather than raw val­ ues that cannot be compared to one another. The overhead  comparative analysis is presented below.\nThe device selection overhead is lesser consider­ ing the previous methods (Fig.  5), the secure task\nSy′ + (Sh ∗ks) −Di′ is shared to the edge device. Here,  the classification is evaluated for the secure device selec­ tion and allocation failure FLi (vs (δ 0) ∗Acf) > Dug,  where the scheduling lag is reduced. The lag is addressed\n4  Results and Discussion\nIn the results and discussion section, the comparative anal­ ysis for normalized security and δ ooverhead is presented.  Setting up the implementation was done in a simulated  environment which emulated the functionality of multiple  edge devices and various levels of task loads. The setup for  the experiment had a workstation with an Intel® CoreTM  i3-1215U processor and 16 GB of DDR4 RAM which  served as the host for the simulation framework. This sim­ ulation environment was set up to run device scheduling,  security assessment and task offloading in a scenario with  30 edge devices and a task range of 150 to 950. All the  performance metrics including normalized security and\nδ o overhead were computed from these simulation runs,  which in turn means the results were purely theoretical.  The methods proposed in [32] and [36] are used alongside  the proposed technique to verify its reliability. These two  methods selected for this analysis focus on the most recent  and advanced methodologies in secure workflow sched­ uling for edge–cloud and serverless environments. While  Morabito et al. [32] concentrate on osmotic computing  systems with integrated security features, Liang et al. [36]  focus on achieving optimal make span and security dur­ ing complex task execution. Assessing these frameworks  enhances the comparative analysis underscoring the effec­ tiveness and trustworthiness of the proposed strategy which  operates alongside intensely security-oriented schedul­ ing frameworks. In this comparative analysis, the follow­ ing variables along the x-axis are considered; Wf (150 to  450) Alo time (30 min to 90 min), Edv (5 to 30), and allo­ cation rate (5/minto 15/min). As of now, the evaluation’s  rating baseline has the value set at Edv=30, as it permits  the simulation to remain computationally manageable.  Even though this value corresponds to the small-to-medium  MEC cluster scale, practical deployments are usually con­ figured at much larger device counts, for example, Edv ≥100. Testing the proposed method in these extended con­ ditions would provide evidence of responsiveness to scal­ ing in network size and task concurrency. This simulation  will be first augmented with Edv=100, and up, to verify if\n1 3\n410\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\nand it is decreased to improve the workflow among  the edge devices Wf (Edv + Sβ ) ∗Cmp, and detects  the risk of failure. The device selection is evaluated\nEdv (Dug ∗Wf) > yef, for all yef ∈δ 0 and leads to  task completion. The selection overhead is reduced if risk  failure occurs (δ 0 ∗FLi) + ∏\nSβ KLg where the knowl­ edge is repeatedly visited to update the prior and current  outcomes. Despite achieving a Maximum overhead reduc­ tion of 12.44% compared to references [32] and [36], the  proposed method’s improvement is offset by the extra com­ putation expense brought about by the knowledge learning  process. More specifically, the retrieval, evaluation, and  updating of prior knowledge for each task incurs a process­ ing overhead of about 3–5% for each allocation cycle in  the simulation. However, this slight increase in computa­ tion expense is more than offset by the increase in security  and reliability, which renders the approach feasible in prac­ tice for edge–cloud scheduling in real world scenarios. The  proposed method functions within an indirect threat model  whereby risks are observed through device comportment  instead of through an adversary’s direct approach. This sim­ plification of the system’s model comes at the cost of some  internal compromise models (i.e., insider threat or collud­ ing devices). These assumptions can be expanded upon by  incorporating multi-factor trust evaluation which integrates  device authentication history, behavioral anomaly, and traf­ fic pattern anomaly to identify contrived compliant devices.  With regards to negative scenarios like DDoS attacks, the  current model does address some of these concerns by clas­ sifying devices into risk groups and excluding high-risk  devices from scheduling, though this approach requires  prior classification instead of real-time traffic analysis.  Implementing rate limiting or traffic shaping at the MEC  level, as well as packet filtering and adaptive load redistri­ bution, can strengthen resiliency and shift the scheduling  process from dependence to convergence, thus maintaining  uninterrupted service even during external pressure. Mov­ ing the security framework from assumption-dependent to  assumption-minimized would enhance its reliability in real- world scenarios.\n5  Conclusion\nIn this article, the secure workflow scheduling technique  using mobile edge devices is introduced. The proposed  technique administers and verifies security for workflow  allocation and scheduling. In both processes, security is  administered using device verification on account of its pre­ vious completion outputs. The device verification for allo­ cation, scheduling, offloading, and workflow completions  are validated before and after security classifications. If\nthe above demands are satisfied using the non-risk devices  identified, then the security normalization is high. Besides  the risk-induced device identified is monitored for its allo­ cation failure and completion lag that detects the credibility  of the device. Therefore knowledge learning updates the  existing inputs with the updated outcomes based on the  above parameters. This process is repeated until the maxi­ mum scheduling and completion are achieved. Besides,  the number of pending/lagging workflows are allocated to  the verified devices for completion to Maximize security.  The proposed algorithm improved normalized security  by 14.061% and reduced the overhead by 12.44% for the  highest Wf defined. The simulation framework presumes  perfect alignment with current Mobile Edge Computing  (MEC) protocols. However, in practical scenarios, cross- compatibility with different MEC frameworks, authentica­ tion protocols, and latency constraints would impact the  actual benefits realized. While the approach implemented  in this simulation includes both verification and security  normalization in the allocation and scheduling phases, the  lack of live MEC protocol evaluation means factors such  as control signalling delays and policy conflicts have not  been directly observed. These elements in real-world con­ ditions, alongside the need for real-world validation after  MEC testing, would underscore the need for simulative and  real-world MEC testing.\nAcknowledgments  This work has been supported by the Universiti  Kebangsaan Malaysia (UKM) the Grant Scheme DIP 2025-033. The  authors extend their appreciation to the Deanship of Research and  Graduate Studies at King Khalid University for funding this work  through Large Research Project under grant number RGP2/447/46.\nAuthor Contributions  Taher M. Ghazal, Mohammad Kamrul Hasan,  and Abdelrahman H. Hussein: Conceptualisation, Data analysis, Meth­ odology, supervision, Administration, Funding, manuscript drafting  and writing, Review and editing. Ala Eldin Awouda, Abdul Hadi Abd  Rahman Shayla Islam, Rashid A Saeed, Hashim Elshafie, Adeel Iqbal:  Conceptualisation, Data analysis, Data modelling, Formal Analysis,  Methodology, Software, Validation, Review and editing.\nFunding  This work has been supported by the Universiti Kebangsaan  Malaysia (UKM) the Grant Scheme DIP 2025-033. The authors extend  their appreciation to the Deanship of Research and Graduate Studies at  King Khalid University for funding this work through Large Research  Project under grant number RGP2/447/46.\nData Availability  No Data used in this work.\nDeclarations\nCompeting interests  The authors declare no competing interests.\nOpen Access  This article is licensed under a Creative Commons  Attribution-NonCommercial-NoDerivatives 4.0 International License,  which permits any non-commercial use, sharing, distribution and  reproduction in any medium or format, as long as you give appropriate\n1 3\n411\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\ncredit to the original author(s) and the source, provide a link to the  Creative Commons licence, and indicate if you modified the licensed  material. You do not have permission under this licence to share  adapted material derived from this article or parts of it. The images or  other third party material in this article are included in the article’s Cre­ ative Commons licence, unless indicated otherwise in a credit line to  the material. If material is not included in the article’s Creative Com­ mons licence and your intended use is not permitted by statutory regu­ lation or exceeds the permitted use, you will need to obtain permission  directly from the copyright holder. To view a copy of this licence, visit ​ h​t​t​p​:​/​/​c​r​e​a​t​i​v​e​c​o​m​m​o​n​s​.​o​r​g​/​l​i​c​e​n​s​e​s​/​b​y​-​n​c​-​n​d​/​4​.​0​/.\nReferences\n1.\t Hussain M, Wei LF, Rehman A, Hussain A, Ali M, Javed MH  (2024) An electricity price and energy-efficient workflow sched­ uling in geographically distributed cloud data centers. J King  Saud Univ 36(8):102170 2.\t Saeedizade E, Ashtiani M (2024) Scientific workflow scheduling  algorithms in cloud environments: a comprehensive taxonomy,  survey, and future directions. J Sched. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​0​0​7​/​s​1​ 0​9​5​1​-​0​2​4​-​0​0​8​2​0​-​1 3.\t Khaleel MI (2023) A fault tolerance aware green IoT workflow  scheduling algorithm for multi-dimensional resource utilization  in sustainable cloud computing. Internet of Things 23:100909 4.\t Nazeri M, Soltanaghaei M, Khorsand R (2024) A predictive  energy-aware scheduling strategy for scientific workflows in fog  computing. Expert Syst Appl 247:123192 5.\t Hussain M, Luo MX, Hussain A, Javed MH, Abbas Z, Wei LF  (2023) Deadline-constrained cost-aware workflow scheduling in  hybrid cloud. Simul Model Pract Theory 129:102819 6.\t Raeisi-Varzaneh M, Dakkak O, Fazea Y, Kaosar MG (2024)  Advanced cost-aware max–min workflow tasks allocation and  scheduling in cloud computing systems. Cluster Comput. ​h​t​t​p​s​:​ /​/​d​o​i​.​o​r​g​/​1​0​.​1​0​0​7​/​s​1​0​5​8​6​-​0​2​4​-​0​4​5​9​4​-​1 7.\t Stavrinides GL, Karatza HD (2024) Security, cost and energy  aware scheduling of real-time IoT workflows in a mist computing  environment. Inf Syst Front 26(4):1223–1241 8.\t Alam M, Shahid M, Mustajab S (2024) Security challenges for  workflow allocation model in cloud computing environment: a  comprehensive survey, framework, taxonomy, open issues, and  future directions. J Supercomputing, 1–65 9.\t Taghinezhad-Niar A, Taheri J (2024) Security, reliability, cost,  and energy-aware scheduling of real-time workflows in compute- continuum environments. IEEE Trans Cloud Comput. ​h​t​t​p​s​:​/​/​d​o​i​.​ o​r​g​/​1​0​.​1​1​0​9​/​T​C​C​.​2​0​2​4​.​3​4​2​6​2​8​2 10.\t Khaledian N, Voelp M, Azizi S, Shirvani MH (2024) AI-based  & heuristic workflow scheduling in cloud and fog computing: a  systematic review. Cluster Comput. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​0​0​7​/​s​1​0​5​ 8​6​-​0​2​4​-​0​4​4​4​2​-​2 11.\t Ye L, Yang L, Xia Y, Zhan Y, Zhao X (2024) Deadline-Con­ strained and Cost-Effective Multi-Workflow scheduling with  uncertainty in cloud control systems. J Syst Sci Complexity, 1–26 12.\t Zhang S, Zhao Z, Liu C, Qin S (2023) Data-intensive workflow  scheduling strategy based on deep reinforcement learning in  multi-clouds. J Cloud Comput 12(1):125 13.\t Talha A, Malki MOC (2023) Ppts-pso: a new hybrid scheduling  algorithm for scientific workflow in cloud environment. Mul­ timed Tools Appl 82(21):33015–33038 14.\t Hosseini Shirvani M (2024) A survey study on task schedul­ ing schemes for workflow executions in cloud computing\nenvironment: classification and challenges. J Supercomput  80(7):9384–9437 15.\t Kamanga CT, Bugingo E, Badibanga SN, Mukendi EM (2023) A  multi-criteria decision making heuristic for workflow scheduling  in cloud computing environment. J Supercomput 79(1):243–264 16.\t Xia Y, Luo X, Yang W, Jin T, Li J, Xing L, Pan L (2024) Dynamic  variable analysis guided adaptive evolutionary multi-objective  scheduling for large-scale workflows in cloud computing. Swarm  Evol Comput 90:101654 17.\t Khaledian N, Khamforoosh K, Akraminejad R, Abualigah L,  Javaheri D (2024) An energy-efficient and deadline-aware work­ flow scheduling algorithm in the fog and cloud environment.  Computing 106(1):109–137 18.\t Ye L, Yang L, Xia Y, Zhao X (2024) A cost-driven intelligence  scheduling approach for deadline-constrained IoT workflow  applications in cloud computing. IEEE Internet Things J. ​h​t​t​p​s​:​/​/​ d​o​i​.​o​r​g​/​1​0​.​1​1​0​9​/​J​I​O​T​.​2​0​2​4​.​3​3​5​1​6​3​0 19.\t Hussain M, Wei LF, Rehman A, Ali M, Waqas SM, Abbas F  (2024) Cost-aware quantum-inspired genetic algorithm for  workflow scheduling in hybrid clouds. J Parallel Distrib Comput  191:104920 20.\t Pan J, Wei Y (2024) A deep reinforcement learning-based sched­ uling framework for real-time workflows in the cloud environ­ ment. Expert Syst Appl 255:124845 21.\t Zhang J, Cheng L, Liu C, Zhao Z, Mao Y (2023) Cost-aware  scheduling systems for real-time workflows in cloud: an approach  based on genetic algorithm and deep reinforcement learning.  Expert Syst Appl 234:120972 22.\t Ma L, Zhang Y, Zhou J, Zhang G (2024) A gene-inspired meta­ heuristic for scheduling workflow tasks in mobile edge comput­ ing-supported cyber–physical systems. J Syst Archit 151:103136 23.\t Bansal S, Aggarwal H (2024) An efficient workflow scheduling in  Cloud–Fog computing environment using a hybrid particle Whale  optimization algorithm. Wireless Pers Commun 137(1):441–475 24.\t Zade BMH, Javidi MM, Mansouri N (2023) An improved Cale­ donian crow learning algorithm based on ring topology for secu­ rity-aware workflow scheduling in cloud computing. Peer-to-Peer  Netw Appl 16(6):2929–2984 25.\t Mohammadzadeh A, Javaheri D, Artin J (2024) Chaotic hybrid  multi-objective optimization algorithm for scientific workflow  scheduling in multisite clouds. J Oper Res Soc 75(2):314–335 26.\t Wang S, Yuan Z, Zhang X, Wu J, Wang Y (2024) Cloud-edge- end workflow scheduling with multiple privacy levels. J Parallel  Distrib Comput 189:104882 27.\t Lyu S, Dai X, Ma Z, Zhou Y, Liu X, Gao Y, Hu Z (2023) A het­ erogeneous cloud-edge collaborative computing architecture with  affinity-based workflow scheduling and resource allocation for  internet-of-things applications. Mob Networks Appl, 1–17 28.\t Abdi S, Ashjaei M, Mubeen S (2024) Cost-aware workflow  offloading in edge-cloud computing using a genetic algorithm. J  Supercomput 80(17):24835–24870 29.\t Li Z, Yu H, Fan G, Tang Q, Zhang J, Chen L (2023) Cost-efficient  security-aware scheduling for dependent tasks with endpoint con­ tention in edge computing. Comput Commun 211:119–133 30.\t Li L, Zhou C, Cong P, Shen Y, Zhou J, Wei T (2024) Makespan  and security-aware workflow scheduling for cloud service cost  minimization. IEEE Trans Cloud Comput. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​g​/​1​0​.​1​1​0​ 9​/​T​C​C​.​2​0​2​4​.​3​3​8​2​3​5​1 31.\t Sajnani DK, Li X, Mahesar AR (2024) Secure workflow schedul­ ing algorithm utilizing hybrid optimization in mobile edge com­ puting environments. Comput Commun 226:107929 32.\t Morabito G, Sicari C, Ruggeri A, Celesti A, Carnevale L (2023)  Secure-by-design serverless workflows on the edge–cloud\n1 3\n412\n\n--- Page Break ---\n\nMobile Networks and Applications (2025) 30:395–413\ncontinuum through the osmotic computing paradigm. Internet of  Things 22:100737 33.\t Zhang S, Tang Y, Wang D, Karia N, Wang C (2023) Secured Sdn  based task scheduling in edge computing for smart city health  monitoring operation management system. J Grid Comput  21(4):71 34.\t Alam M, Shahid M, Mustajab S (2024) Security prioritized  multiple workflow allocation model under precedence con­ straints in cloud computing environment. Cluster Comput  27(1):341–376\n35.\t Javanmardi S, Shojafar M, Mohammadi R, Persico V, Pescapè A  (2023) S-fos: a secure workflow scheduling approach for perfor­ mance optimization in SDN-based IoT-fog networks. J Inf Secur  Appl 72:103404 36.\t Liang H, Zhang S, Liu X, Cheng G, Ma H, Wang Q (2024)  SMWE: a framework for secure and makespan-oriented work­ flow execution in serverless computing. Electronics 13(16):3246\nPublisher’s Note  Springer Nature remains neutral with regard to juris­ dictional claims in published maps and institutional affiliations.\n1 3\n413",
+  "equations": [
+    {
+      "page": 4,
+      "raw_extracted": "The experimental system model is first described to disclose  the number of devices, tasks, and time-based measurements.  The system for the proposed technique is simulated in a  standalone computer with 16GB RAM 256 GB SSD and a  2.20 GHz i3processor. Besides the platform architecture sup­ port is 64-bit built on Windows 11 supported by 2GB NVIDIA  graphics. As far as the experiment configurations, the number  of edge devices assigned is 30 accommodating 5 tasks/1 min  interval. The average task completion time is 30 min to 90 min.  Therefore a workflow (batch) is modelled with 150 to 950  tasks in an interval and a device accommodates 5 to 15 work­ flows for a Maximum of 6 h operation time. The authentication  security for device access and task allocation is administered  using a central server device connected to the cloud. The value  described in the experimental setting part is used as variants for  studying the proposed technique’s performance.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Parameter Description Symbol Description Role in Model/Impact on Computation  Uy  Busy state  indicator",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Number of devices currently in busy  state; affects allocation feasibility.  ia  Idle state  indicator",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "ir′  Irregularity  rate",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "△",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "′ = 1 ks + \u001f uy",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "ia Al0 ∗(rt + pe) −met+",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "(Wf ∗Te′ ) ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Sy",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "′ + Edv",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "\u001b\u001a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "+ (Edv ∗Al0)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "\u0019",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "[(met + pe) + (Al0 ∗Wf)] ∗Te",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "′ \u0019",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "uy−ia (Al0 −Edv) +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "\u0018\u0018\u0018Sy",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "′ ∗Br",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "′ \u0018\u0018\u0018 ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "+",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Wf Edv ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Te",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "′ ∗ks",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "\u001b",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "+ [(rt + pe) −ir′ ]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "The computation is represented as ∆′ , and the task is  denoted as ks, the allocation is described as Al0. The objec­ tive is computed in the above equation where request and  response are symbolized as rt and pe. Here, the busy and  ideal state of the devices are verified and then, the allocation  of tasks is evaluated and they are represented as uy and ia.  The time of computation is considered and it is described  as met, Wf is the workflow whereas, Te′ is detection.  The edge device is Edv and Sy′ is security and Br′ is  described as reliability. The task allocation rate values based  on the provided system model are tabulated in Table 1.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "△′  Security  related objec­ tive value",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "It is used to estimate the measure to iden­ tify the secure workflow during device  scheduling.  ks  Task count Represented that the task scheduled  which affects the ∆′ in which tasks mini­ mize the per-task security margin  AIO  Allocation  factor",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Represents that how effectively task is  assigned to device.  rt  Request rate Computes the incoming task requests;  high values indicate the high system load  affects the loading decisions.  Pe  Response rate the rate at which responses are generated;  works with to regulate communication  efficiency.  met  Computation  time",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "wf  Workflow  factor",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Te′  Detection time Time taken to notice and confirm device  security; impacts scheduling delay.  Edv  Edge device  factor",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Replicates security status of the edge  device; insecure devices lower reliability.  Sy′  Security level Indicates current evaluated security of  the workflow; higher values improve  system trust.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 5,
+      "raw_extracted": "Br′  Reliability  factor",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "The evaluation is done on the above equation and it is  described as V ut, the edge device is associated with task  sharing for the requested device. The edge device requests  for the task and securely it is shared on the required time  interval. The allocation is processed for the secure work­ flow where it finds the busy and ideal device and based on  this sharing is done. Based on the security the workflow  is securely transmitted. The task allocation is evaluated  to ensure the security between the sender and the receiver  which is said to be edge devices. Here, computation is  done to improve reliability and provide security within the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "met∗Wf ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Edv Al0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "on the request and response Al0 ∗(rt + pe) where the  workflow is processed with security. The task allocation",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "ks (Al0 + Edv) ∗Sh + Di′ is given to the ideal devices  where it avoids allocation failure. Here, the allocation is  evaluated by scheduling Sβ (Edv + Sh) ∗ks + Sy′ ∗rt  the edge devices based on the request and ensure  secure task sharing. Thus, scheduling is properly com­ puted Sβ + (V ut ∗ks) + Al0 to improve the task allocation  (Table 2). Here, the objective is to improve the reliability by  reducing the risk device during detection and ensuring the  security of the workflow devices ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "uy−ia (Al0 −Edv).  Based on the objective the proposal is designed by schedul­ ing and allocating the edge device with the task allocation.  The secured workflow is transmitted to the edge device  on the required time interval Al0(met −ks). Thus, the  computation is processed for the edge devices, and from  this objective equation, the device allocation is evaluated  below.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "V ut = (Sy′ + Edv) ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "∑∆′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "ks Al0 ∗(uy + ia) +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "( met ∗Wf ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "EdvAl0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "ks Device Count Edv (Alo/min)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Table 2  Scheduling rate tabulation for different variables Variable= ks 150 200 250 300 350 400 450",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Edv 10 0.625 0.674 0.714 0.789 0.821 0.932 0.951 20 0.614 0.651 0.698 0.751 0.785 0.904 0.924 30 0.593 0.621 0.652 0.701 0.741 0.851 0.897 Variable= Alo Time (min) 30 40 50 60 70 80 90",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Edv 10 0.741 0.721 0.701 0.691 0.681 0.697 0.687 20 0.725 0.704 0.694 0.674 0.667 0.654 0.657 30 0.701 0.691 0.614 0.604 0.621 0.601 0.598 Variable= met (min) 10 20 30 40 50 60",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 6,
+      "raw_extracted": "Edv 10 0.652 0.714 0.824 0.924 0.954 0.995 20 0.605 0.698 0.801 0.901 0.869 0.821 30 0.618 0.621 0.741 0.894 0.852 0.801",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "workflow of the edge device is considered and evaluates  the scheduling on the required time interval. Here, the  scheduling is represented as Sβ , where it verifies the sta­ tus of the devices such as if it is busy or ideal. By com­ puting the scheduling process, the throughput is increased  by reducing the computation time and it is described  as (ks + ∆′ ) ∗(uy + ia) −met. The scheduling process  is described in Fig. 2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "The scheduling and allocation process of the proposed  technique are depicted using Fig.  2. This Sβ is different  from the existing/conventional methods by concurrent allo­ cation of Edvbased on ia and [1 −Wf (met ∗Br′ )]com­ putations. These computations validate the Te′ = max  and Te′ = min allocations across active devices are  used to differentiate pe and met scheduling demands. In  the Sβ process, both pe and Alousing Edv ∈ia = true  validated for the remaining met. The ia̸ = true relates  the uy = true such that the tasks are pending between",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "[(met ∗Br′ ) , met] interval. Similarly, if the allocation is  monotonous, then rt is incremented for the consecutive task  acceptance and Alo ∀Edv takes place. This differentiation  in Sβ requires a security-based classification for device  selection to prevent task/ wf failures. The scheduling rate  for different variables is tabulated in Table 2.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "The scheduling rate increases concerning the task alloca­ tion ks (Al0 ∗Wf) + Edv for the edge devices. Here, the  computation states the scheduling process and indicates  the task-sharing ks + Sh (Al0 ∗V ut) + ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Wf vs ∗(Edv)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Sβ = Al0 −met ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Wf (Edv + ks) ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "∑Wf",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "T e′ (ks + ∆′ ) ∗(uy + ia) −met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Al0 (ks) = ∆′ ∗[(uy −ia) + Wf] −met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "∆′ (Wf) = ks (Sh) + Edv −met (ia)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "Al0 (Edv) = (ia −Te′ ) ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "uy (rt −pe)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 7,
+      "raw_extracted": "V ut (Sh) = Al0 (Sh) + ks (ia) −Te′ \b (3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Wf (Sβ + vs) ∗∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Sy′ Te′ (uy −ia)  by  considering",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Table 3  Acf Observed before and after F Li",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Processes Alo V ut Sβ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Variables Before After Before After Before After Edv 10 0.5112 0.3020 0.7366 0.5044 0.8601 0.8907 20 0.3684 0.2108 0.5537 0.3616 0.8506 0.7132 30 0.2902 0.1842 0.5258 0.4806 0.8516 0.6088 150 0.1711 0.4643 0.5773 0.4571 0.9078 0.6156 200 0.5019 0.1136 0.5755 0.4402 0.9092 0.3695 250 0.5150 0.4741 0.5709 0.3338 0.8009 0.3091 300 0.2302 0.4407 0.5314 0.2429 0.8908 0.5043 350 0.4439 0.2393 0.5330 0.3153 0.8310 0.2842 400 0.0471 0.1721 0.5462 0.1336 0.9117 0.4222 450 0.1911 0.2128 0.5746 0.4737 0.8816 0.5951 met (min) 10 0.5173 0.3399 0.6339 0.5673 0.9166 0.1269 20 0.0407 0.1144 0.5992 0.3812 0.8556 0.8036 30 0.2644 0.2990 0.5943 0.2600 0.8715 0.7463 40 0.2720 0.2652 0.5500 0.4138 0.8444 0.6575 50 0.4523 0.3747 0.5934 0.4486 0.8362 0.7953 60 0.2112 0.2020 0.5366 0.4044 0.8601 0.7907",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "1. Function proposed algorithm Wf(Al0, Sβ)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "4. if Sβ + ks(ia) +yef < vs// Allocation is scheduled",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "5. Priorize device with optimal latency energy balance 6. End if  7. (Al0 + ks) * Edv 8. end for 9. return Sβ(ia) 10. end function",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "From this identification process, the scheduling  rate is improved. Here, the evaluation for schedul­ ing V ut (Sβ + vs) ∗ks −(rt −pe) is processed with  secure task sharing to the requested devices (Table  3).  Therefore, the classification of scheduling is equated in the  below Eq.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "FLi = (Wf + Di′ ) ∗∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "iaSβ +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Te",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "′ ∗Al0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "−met, ∀Secure device selection (",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∴varDelta",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "′ +Wf ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "T e′ Sβ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "∗∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Al0Te",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "+ (Edv ∗uy) , ∀Allocation failure",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "The classification for scheduling is evaluated in the above  equation and it is expressed as FLi. The first condition  is secure device selection where the allocation of tasks is  given for the ideal edge device. Here, the device selec­ tion is based on the workflow for the ideal edge device  and decides whether the task can be allocated to the  specific edge device or not. The decision is described  as Di′ , the sharing is Sh. The second condition refers to  the allocation failure where the task is given to the busy  device on the respective time interval and it is represented  as Te′ + (Edv ∗uy). Thus, the classification is done for  the scheduling process; post to this allocation failure is  detected in the following Eq.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Acf = Sβ +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∑T e′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Edv (uy + Sh) ∗ks + |Di′ + Al0|\b (5)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "The allocation failure is detected on the above deriva­ tive where the task is allocated to the busy edge device  on this process the failure occurs. The allocation failure is  described as Acf, where the task is not scheduled based on",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Te′ = R′ (ia) ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∑Sβ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "EdvFLi +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "[",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(Acf ∗V ut) + ∆′ ]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∗Sh",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ks (Sh) = R′ (uy) + ∆′ ∗met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Sy′ −V ut",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "V ut (Edv) = Sy′ (ks) ∗Sh + pe (Di′ )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "V ut (ks) = Di′ (ks) ∗Sy′ +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "V ut",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "∆′ ∗Edv",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "W f 150 200 250 300 350 400 450",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "F Li 0.5 0.7650 0.7720 0.8092 0.8207 0.8532 0.9220 0.9421 0.6 0.7789 0.7805 0.7839 0.8431 0.8637 0.9241 0.9222 0.7 0.7947 0.7833 0.8515 0.8519 0.8925 0.8977 0.9420 0.8 0.7795 0.8216 0.8535 0.8622 0.8507 0.8992 0.9273 0.9 0.7856 0.8066 0.8181 0.8659 0.9014 0.9089 0.9280 1.0 0.7876 0.7910 0.8101 0.8520 0.8526 0.9226 0.9361 Acf 0–0.2.2 0.7925 0.8547 0.8724 0.9197 0.9228 0.9057 0.9465 0.21–0.4 0.7985 0.8324 0.8224 0.8819 0.9099 0.9352 0.9635 0.41–0.6 0.7737 0.8326 0.8251 0.8742 0.8719 0.8931 0.9617 0.61–0.8 0.7712 0.7913 0.8414 0.8725 0.9080 0.8918 0.9297 0.81–1.0.81.0 0.7764 0.8264 0.7811 0.8766 0.9067 0.9284 0.9557 Alo (min) 30 0.7717 0.7869 0.8213 0.8437 0.9080 0.8950 0.9396 60 0.7950 0.8020 0.8592 0.8607 0.9032 0.9220 0.9421 90 0.7789 0.8205 0.8739 0.8531 0.9137 0.9241 0.9422",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "The risk device is detected to reduce the failure during  workflow on edge devices. The risk device is described  as R′ , here decision is made to share the data to the  responder. Based on the classification presented, the Acf  observed is tabulated in Table 3.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "The allocation failure decreases if no secure shar­ ing Sy′ + Sh (ks) ∗∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Al0 (Wf + V ut)  takes  place  between the edge devices. Here, the scheduling is computed  to share the task Sh (ks + rt) →pe (Wf) −ia −met to  the ideal device and ensures the allocation failure. The fail­ ure is due to the device, where if the device is busy and task  is assigned to the device means the assigned new task is  not completed. In this case, the allocation failure occurs so  the identification V ut (Edv ∗vs) + Al0 of busy and ideal  devices is detected and so the allocation failure is reduced  (Table 4 Data). The classification is evaluated for secure task  sharing, at some point risk devices lead to failure. To sort  out these issues the risk device is detected which is equated",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "The device detection is higher when the edge device  responds to the necessary task requested. Here, the evalu­ ation takes place by scheduling the task and classification  is done for the secure device selection and allocation fail­ ure. Here, the allocation is done to identify the risk device,  and then, Wf ∗∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ks (Sh + Edv) workflow is generated  for the scheduled task. The detection is done to ensure the  security Sy′ ∗∏vs",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "δ 0 (FLi + Acf) and improves device  detection by computing offloading. The knowledge-based  learning is introduced where it uses the prior task and  detects the current task (Table 5). The device detection R′  is described in Snippet 3.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ω (Wf) = ∏T e′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "EdvSβ ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "R",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "′ −ia",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ ks ∗Em0 −Acf+ [(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Acf ∗Te",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "′ )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "∗(Acf + uy)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "{",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+∴varDelta",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "′ }",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "−met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "The termination workflow is expressed above where the risk  device is detected which leads to failure. Here, the compu­ tation is processed to the termination if the risk is detected  during task allocation, termination is Em0, analysis is ω .  Thus, the termination point is analyzed from the risk device",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "KLg = ri0 −ks",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "R",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "′ + Acf",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "+ ∑T e",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "△′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Sh + Di",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "′ )",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "∗ nf (V ut) ∗Edv + sr",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "The knowledge is KLg, the prior is represented as, the data  is notified and it is described as nf whereas data storage is  represented as sr. Based on this computation step, the prior  knowledge is used to decide the workflow of edge devices.  The stored data is retrieved from the prior knowledge and  notified whether there is any risk to processing the task  which is been allocated. Based on this notification the risk is  reduced and improves the reliability for workflow devices.  Post this knowledge extraction, the secure device selection  is evaluated in the following equation.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "vs (δ 0) = Sβ +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Sy′ Al0 ∗(Edv + Wf)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "Wf (Sβ ) = |Edv + Al0| −ri0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "ri0 = sr →nf (pe) + ks −met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "ks (Cmp) = rt (Edv)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "∗(ia −uy) + ∑Sβ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Wf KLg− ri0 + Sh",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "The task completion is represented as Cmp, where it veri­ fies the current and the previous knowledge and provides  the notification process where the insecure device selection  is reduced by improving reliability. The secure device selec­ tion procedure is presented in Snippet 4.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "nf = Edv + R′ (Te′ ) −met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Te′ (met) = Edv (sr + nf) ∗KLg\b (9)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "The secure device is vs, the selection is represented as δ 0,  the security is given for the task allocation and reaches the  destination as task completion. The task selection is securely  processed and ensures the notification with the prior knowl­ edge. Here, scheduling takes place by selecting the edge  device securely and reduces the insecurity. It is evaluated  by using knowledge learning to retrieve the data and gives",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Table 5  Offloading verification tabulation Variants Values Of ′ yef Of ′ (Cmp) yef DU g",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "Edv 10 0.574 0.956 0.818 0.891 0.1342 20 0.421 0.952 0.846 0.908 0.1280 30 0.369 0.962 0.814 0.922 0.1346",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "W f 150 0.526 0.952 0.829 0.934 0.1294 200 0.547 0.957 0.912 0.941 0.1235 250 0.415 0.952 0.898 0.912 0.1139 300 0.569 0.954 0.888 0.957 0.1097 350 0.587 0.955 0.921 0.939 0.1232 400 0.541 0.954 0.846 0.952 0.1084 450 0.524 0.957 0.876 0.937 0.1172 Alo Time (min) 30 0.354 0.953 0.837 0.950 0.1141 60 0.415 0.968 0.865 0.936 0.0934 90 0.514 0.955 0.945 0.947 0.0613",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "DUg = Sβ + (Edv) + ks →pe (met) ∗Al0 (KLg) −Cmp\b (11)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "The scheduling lag occurs if the task is not completed properly  and it is reduced with the knowledge-based learning assess­ ments to fix the failure or risk devices and stop the scheduling.  Once the scheduling is stopped then, the allocation of tasks  is processed on the acquired time interval. The scheduling  lag is represented as DUg where it is due to the edge device  being busy and upcoming tasks being scheduled means the  lag occurs. So, the initial step is to check whether the device  is busy or ideal based on this scheduling is done to reduce the  lag. The role of KLg is explained using Fig. 3 illustrations.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "Fig. 3  Role of KLg through illustrations",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "In Fig.  3, the KLgfor 3 processes: rt = 0, Alo = 0 and nf = true are presented. Based on the FLi, the",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "(T ′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "e ∗Alo) = met is the satisfying condition to ensure a  risk-free device is selected such that the rio at Sβ =maxi­ mum is satisfied. Based on the available pe = maximum  condition, the need for new FLi is pursued. If the above  conditions for rt = 0 is not satisfied, then the Acf esti­ mation using Eq. (5) is computed. Therefore, the number  of Edvsatisfying Sy′ is reduced and Wf allocation is  increased. Thus the R′ = false identifies the maximum  number of allocation failures across various met. This",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 12,
+      "raw_extracted": "ensures Edv is risk-oriented and therefore new Alo are  terminated and the current Wf is terminated as ω (Wf).  When a new task comes in, the KLg, assesses previously  generated reports to ascertain whether the current device  can securely and efficiently execute the task. If the prior  report indicates low security or considerable delays, the  system either reallocates the task to a more trustworthy  edge device or modifies the allocation parameters. This  approach enhances the system’s reliability while reducing  the probability of task failure. Then the process of KLg  updating in rio",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Of ′ = Edv",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "DUg",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "∏uy",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "ia yef ∗(Sh + pe) −met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "yef = (uy −ia) + ω ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "∑V ut",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Sh (Cmp + vs)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Cmp (Edv) = vs (Sβ ) ∗",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "V utω + [(yef −Wf) −Al0]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "yef (Edv, Al0) =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "peSβ + (Wf ∗vs) + Te′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Te′ (DUg, ks) = (Sβ + yef) ∗(Al0 + Edv) −vs\b (12)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "The offloading is represented as Of′ where verification is  described as yef and it is evaluated with the sharing process.  The computation is done once the scheduling lag occurs to  sort out this lag the offloading is performed to complete the  assigned task to the edge devices. The offloading process is  described in Snippet 5.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Fig. 5  Comparative analysis of δ ooverhead",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Fig. 4  Comparative analysis of normalized Sy′",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "for the trade-off is a globally optimal adaptive η tuning",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Of′ based on yef. Real time yefbased off local execution  require optimum leverage with network distributed process­ ing in a reliable manner. The device verification increases  when the task is completed ks (yef + Sβ ) + ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Edvpe  from the scheduling process. The workflow is done  securely Sy′ (Al0 + Edv) ∗∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "ω",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "∆′ + δ 0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": ") and evaluates  the allocation to the edge device. The reliability is enhanced  between the edge device Br′ (Edv ∗ω ) + |Al0 ∗Sβ |  and  evaluates  the  decision-making  to  share  the  task. The allocation failure is estimated to detect  the  risk  device Al0 (Of ′ ∗yef) + ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "δ 0Wf  and  results in termination. The workflow is securely",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Sy′ (Of ′ + Cmp) ∗yef and verifies by making deci­ sion Di′ (yef + R′ ) ∗Acf (Table  10). Here, it uses the  prior knowledge which provides the notification regarding  the task assigned and produces the resultant. Thus, the task  completion with offloading is higher by reducing the sched­ uling lag. Here forth, the reliability is enhanced and it is  expressed in the below Eq.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Br′ = Sβ + Of ′ (Cmp) −met −rio (yef) + Edv\b (14)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "The reliability is improved by processing the offloading- based task completion by using prior knowledge on the  required time frame met −rio (yef) + Edv. Here, the reli­ ability is described as Br′ , by considering the workflow of  the edge device the request and response are handled prop­ erly. The insecure selection of devices is reduced by bench­ marking the secure task sharing to the requested devices.  Thus, scheduling and offloading are integrated to process  the secure task sharing between the edge devices. In Snippet  6, the secure scheduling verification is discussed.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "The detection of task completion is estimated by sched­ uling the requested task to the user, for this, the initial  step is to detect whether the device is ideal or busy based  on this scheduling is performed and it is represented  as ∏uy",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "ia yef ∗(Sh + pe) −met. Post to this offloading  computation, the task completion with offloading is evalu­ ated below.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Of ′ (Cmp) = (Al0 + Edv) −vs ∗DUg (Sβ ) + yef(uy −ia)\b (13)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "The discrepancies in Table  10 suggest that a greater  yef (workflow efficiency factor) does not always result in a  greater Of′ (offloading factor) value, which is the case for",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 15,
+      "raw_extracted": "Edv = 30 where yef = 0.962 while Of′ = 0.369. This  disparity indicates that while internal scheduling for offload­ ing workflows has high efficiency, the level of offloading being  performed is low—probably because the local processing  capacity is sufficient. Under these scenarios, the throughput  appears stable. However, there are missed chances to opti­ mize the resource load balance among the devices. On the  other hand, those configurations where yef is lower, how­ ever, Of′ is greater, suggest that offloading is a lot heavier.  This may enhance load distribution, but may also add net­ work latency. The impact to the completion of the exchanges  lies in the balance of both conditions. Too little offloading  burdens local nodes while too much offloading incurs delay  from overhead due to communication costs. The work out",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "The normalized security is higher compared to the  existing method vs (δ 0 + FLi) ∗∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Wf Sβ where the  offloading is evaluated with a secure device. The task shar­ ing Sh (ks) > Al0, for all Al0 ∈ri0 where scheduling is  computed to the requested device. The secure device selec­ tion is evaluated vs (Edv ∗Al0) + ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Of′ R′ . Based on  prior knowledge the detection of risk devices is computed",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "R′ (Edv + vs) ∗∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "ks",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "∆′ −met",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "≈ω (yef) and from  this security is normalized for the edge devices. From this  knowledge-based learning is used to improve the security  level KLG (ri0 −ks) + ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Wf (vs + yef) and verifies  the security between the edge devices (Fig. 4). A weighted  combination of two primary protection metrics is used to  compute this score. These metrics are the threat detection  rate, which is the percentage of attack attempts that have  been detected and mitigated, and encryption strength, which  is measured as the effective bit-length and complexity of the  encryption mechanism that is used in data transmission and  storage. Following the calculation of the raw Sy score for  each test case, the score is then normalized to a scale rang­ ing from 0 to 3 by the utilization of min–max normaliza­ tion is computed as Sy′ norm = Sy′ −Sy′ min Sy′ max−Sy′ min ⋅ 3. This",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "normalization makes it possible to make direct compari­ sons across different workflow sizes ( Wf), allocation times  ( Alo), number of edge devices ( Edv), and allocation rates.  This serves to ensure that the plotted results accurately rep­ resent relative protection performance rather than raw val­ ues that cannot be compared to one another. The overhead  comparative analysis is presented below.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "Sy′ + (Sh ∗ks) −Di′ is shared to the edge device. Here,  the classification is evaluated for the secure device selec­ tion and allocation failure FLi (vs (δ 0) ∗Acf) > Dug,  where the scheduling lag is reduced. The lag is addressed",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "In the results and discussion section, the comparative anal­ ysis for normalized security and δ ooverhead is presented.  Setting up the implementation was done in a simulated  environment which emulated the functionality of multiple  edge devices and various levels of task loads. The setup for  the experiment had a workstation with an Intel® CoreTM  i3-1215U processor and 16 GB of DDR4 RAM which  served as the host for the simulation framework. This sim­ ulation environment was set up to run device scheduling,  security assessment and task offloading in a scenario with  30 edge devices and a task range of 150 to 950. All the  performance metrics including normalized security and",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 16,
+      "raw_extracted": "δ o overhead were computed from these simulation runs,  which in turn means the results were purely theoretical.  The methods proposed in [32] and [36] are used alongside  the proposed technique to verify its reliability. These two  methods selected for this analysis focus on the most recent  and advanced methodologies in secure workflow sched­ uling for edge–cloud and serverless environments. While  Morabito et al. [32] concentrate on osmotic computing  systems with integrated security features, Liang et al. [36]  focus on achieving optimal make span and security dur­ ing complex task execution. Assessing these frameworks  enhances the comparative analysis underscoring the effec­ tiveness and trustworthiness of the proposed strategy which  operates alongside intensely security-oriented schedul­ ing frameworks. In this comparative analysis, the follow­ ing variables along the x-axis are considered; Wf (150 to  450) Alo time (30 min to 90 min), Edv (5 to 30), and allo­ cation rate (5/minto 15/min). As of now, the evaluation’s  rating baseline has the value set at Edv=30, as it permits  the simulation to remain computationally manageable.  Even though this value corresponds to the small-to-medium  MEC cluster scale, practical deployments are usually con­ figured at much larger device counts, for example, Edv ≥100. Testing the proposed method in these extended con­ ditions would provide evidence of responsiveness to scal­ ing in network size and task concurrency. This simulation  will be first augmented with Edv=100, and up, to verify if",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "and it is decreased to improve the workflow among  the edge devices Wf (Edv + Sβ ) ∗Cmp, and detects  the risk of failure. The device selection is evaluated",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "Edv (Dug ∗Wf) > yef, for all yef ∈δ 0 and leads to  task completion. The selection overhead is reduced if risk  failure occurs (δ 0 ∗FLi) + ∏",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "Sβ KLg where the knowl­ edge is repeatedly visited to update the prior and current  outcomes. Despite achieving a Maximum overhead reduc­ tion of 12.44% compared to references [32] and [36], the  proposed method’s improvement is offset by the extra com­ putation expense brought about by the knowledge learning  process. More specifically, the retrieval, evaluation, and  updating of prior knowledge for each task incurs a process­ ing overhead of about 3–5% for each allocation cycle in  the simulation. However, this slight increase in computa­ tion expense is more than offset by the increase in security  and reliability, which renders the approach feasible in prac­ tice for edge–cloud scheduling in real world scenarios. The  proposed method functions within an indirect threat model  whereby risks are observed through device comportment  instead of through an adversary’s direct approach. This sim­ plification of the system’s model comes at the cost of some  internal compromise models (i.e., insider threat or collud­ ing devices). These assumptions can be expanded upon by  incorporating multi-factor trust evaluation which integrates  device authentication history, behavioral anomaly, and traf­ fic pattern anomaly to identify contrived compliant devices.  With regards to negative scenarios like DDoS attacks, the  current model does address some of these concerns by clas­ sifying devices into risk groups and excluding high-risk  devices from scheduling, though this approach requires  prior classification instead of real-time traffic analysis.  Implementing rate limiting or traffic shaping at the MEC  level, as well as packet filtering and adaptive load redistri­ bution, can strengthen resiliency and shift the scheduling  process from dependence to convergence, thus maintaining  uninterrupted service even during external pressure. Mov­ ing the security framework from assumption-dependent to  assumption-minimized would enhance its reliability in real- world scenarios.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 17,
+      "raw_extracted": "the above demands are satisfied using the non-risk devices  identified, then the security normalization is high. Besides  the risk-induced device identified is monitored for its allo­ cation failure and completion lag that detects the credibility  of the device. Therefore knowledge learning updates the  existing inputs with the updated outcomes based on the  above parameters. This process is repeated until the maxi­ mum scheduling and completion are achieved. Besides,  the number of pending/lagging workflows are allocated to  the verified devices for completion to Maximize security.  The proposed algorithm improved normalized security  by 14.061% and reduced the overhead by 12.44% for the  highest Wf defined. The simulation framework presumes  perfect alignment with current Mobile Edge Computing  (MEC) protocols. However, in practical scenarios, cross- compatibility with different MEC frameworks, authentica­ tion protocols, and latency constraints would impact the  actual benefits realized. While the approach implemented  in this simulation includes both verification and security  normalization in the allocation and scheduling phases, the  lack of live MEC protocol evaluation means factors such  as control signalling delays and policy conflicts have not  been directly observed. These elements in real-world con­ ditions, alongside the need for real-world validation after  MEC testing, would underscore the need for simulative and  real-world MEC testing.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

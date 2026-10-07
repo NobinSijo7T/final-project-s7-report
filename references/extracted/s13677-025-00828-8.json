@@ -1,0 +1,986 @@
+{
+  "source_file": "s13677-025-00828-8.pdf",
+  "num_pages": 25,
+  "full_text": "RESEARCH Open Access\n© The Author(s) 2025. Open Access  This article is licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0  International License, which permits any non-commercial use, sharing, distribution and reproduction in any medium or format, as long as you  give appropriate credit to the original author(s) and the source, provide a link to the Creative Commons licence, and indicate if you modified the  licensed material. You do not have permission under this licence to share adapted material derived from this article or parts of it. The images or  other third party material in this article are included in the article’s Creative Commons licence, unless indicated otherwise in a credit line to the  material. If material is not included in the article’s Creative Commons licence and your intended use is not permitted by statutory regulation or  exceeds the permitted use, you will need to obtain permission directly from the copyright holder. To view a copy of this licence, visit ​h​t​t​p​:​/​/​c​r​e​a​t​i​ v​e​c​o​m​m​o​n​s​.​o​r​g​/​l​i​c​e​n​s​e​s​/​b​y​-​n​c​-​n​d​/​4​.​0​/.\nSubashree et al. Journal of Cloud Computing           (2025) 14:80  https://doi.org/10.1186/s13677-025-00828-8\nIntroduction The innovative cloud computing technology allows the  users to perform different operations with large amount  of data through the network of servers deployed in wide  remote areas. Large number of organizations and Gov­ ernment entities now rely on cloud computing and its  services. Cloud offers a wide range of solutions to every­ one’s needs in the present era. Cloud services for busi­ ness and scientific applications are mainly task oriented  and its workflows structure the business needs [1]. The  scientific workflows are mainly data dependent, and it  has highly intensive applications. These applications are  structured into scientific works and managed through\nJournal of Cloud Computing\n*Correspondence: S. Subashree drsubashree1989@gmail.com 1Department of Computer Science and Engineering, E.G.S. Pillay  Engineering College, Nagapattinam, Tamil Nadu 611002, India 2School of Computing, SASTRA Deemed University, Thanjavur, \n Tamil Nadu 613401, India 3Department of Electronics and Communication Engineering, E.G.S. Pillay  Engineering College, Nagapattinam, Tamil Nadu 611002, India\nAbstract In cloud computing, scheduling workflows for data-intensive tasks is challenging due to task dependencies,  heterogeneous resources, and high computational demands, all of which affect cost, execution time, and energy  usage. This research proposes a novel hybrid optimization algorithm called Dolphin Swarm Sparrow Search  Optimization (DSSSO) to address these challenges. The DSSSO model combines the broad search capability of  Dolphin Swarm Optimization with the precise tuning ability of Sparrow Search Algorithm, enabling effective  exploration and exploitation in the solution space. Unlike existing scheduling models that primarily optimize  makespan and cost, the proposed DSSSO explicitly integrates energy consumption and resource utilization into  a unified multi-objective framework. This dual-phase design—leveraging dolphins for global exploration and  sparrows for local exploitation—ensures both convergence stability and adaptability in heterogeneous cloud  environments. The main objective is to minimize makespan, reduce energy consumption, and lower scheduling  cost while maximizing resource utilization. The model is evaluated using benchmark scientific workflows such as  CyberShake, Montage, Epigenomics, and LIGO. Simulation results show that DSSSO outperforms existing methods,  achieving up to 12% lower makespan, 15% less energy consumption, and 10% better resource usage compared to  algorithms like Hybrid Bat Optimization and Improved Bat Optimization. Keywords  Cloud computing, Workflow scheduling, Optimization algorithms, Dolphin swarm optimization, Sparrow  search algorithm\nHybrid dolphin swarm sparrow search  optimization based multi-objective cloud  workflow scheduling\nS. Subashree1*, M. Rajakumaran2, G. Pushpa1 and S. Senthilkumar3\n\n--- Page Break ---\n\nPage 2 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nscheduling systems. However, the major issue in scientific  workflow occurs when scheduling large workflow tasks  with scientific standards [2]. Moreover, the adaptation of  heterogenous cloud computing added to the challenges  and complexities in scientific workflow task scheduling.  When it comes to quality of service again large work­ flow scheduling should provide reliability, scalability and  resource utilization to users which makes this schedul­ ing process as NP-hard problem. Thus, it is essential to  introduce solutions which should provide better Quality  of Services (QoS) to users.\nThe research community provided a wide range of  solutions to manage and schedule the scientific workflow  applications. The existing researches considered user  defined QoS parameters in addition to communication  rates and processing capacity. However, the major chal­ lenge of workflow scheduling is present in minimizing  the cost, make span and energy consumption while accel­ erating the throughput. It is essential to consider these  multiple constraints while optimizing the resources.  Moreover, different workflow applications require vari­ ous strategies when they are adapted to heterogeneous  systems. The review presented in [3] provides a compre­ hensive summary of user tasks and workflow scheduling  techniques based on architectures. Another review pre­ sented in [4] summarizes different workflow applications  and scheduling techniques under different categories like  resource scheduling, energy efficient scheduling and fault  tolerant scheduling. Both review works summarizes that  optimization algorithms will be the best choice for sched­ uling scientific workflow applications.\nOptimization algorithms are developed to provide opti­ mal solutions to real world optimization. The naturally  occurred events are formulated and created as optimiza­ tion algorithms. Heuristic, nature inspired, metaheuristic  and evolutionary optimization algorithms are developed  and utilized in various domains like image processing,  networking, signal processing, etc. Various optimization  algorithms are used for workflow applications [5, 6]. Dif­ ferent types of metaheuristic optimization algorithms  are studied in [7] for workflow scheduling and provided  a detailed comparative analysis which is quite useful to  summarize the limitations of conventional optimization  algorithm-based workflow scheduling. Another review  presented in [8] considered PSO algorithm and its merits  and demerits in scheduling in detail. Researchers devel­ oped workflow scheduling based on optimization algo­ rithms like genetic algorithm, bat optimization algorithm,  ant colony optimization [9–12], whale optimization [13].  However, the existing approaches mainly considered  make span and cost as their objective functions. It is  essential to consider other metrics like energy consump­ tion and resource utilization in objective functions to  provide better QoS to users. While previous studies have\nexplored various optimization-based workflow sched­ uling techniques, most focus primarily on minimizing  makespan and cost, often overlooking equally critical  factors such as energy consumption and resource utiliza­ tion. Moreover, many existing approaches struggle with  maintaining a balance between exploration and exploita­ tion during the optimization process, frequently resulting  in premature convergence and suboptimal task-resource  mappings. These limitations highlight a clear research  gap: the need for a robust, multi-objective schedul­ ing algorithm that can effectively address multiple QoS  constraints in heterogeneous cloud environments while  maintaining solution diversity and convergence stability.\nTo bridge this gap, this research introduces a novel  hybrid optimization algorithm—Dolphin Swarm Sparrow  Search Optimization (DSSSO)—that integrates the global  exploration capabilities of Dolphin Swarm Optimization  (DSO) with the local refinement efficiency of the Sparrow  Search Algorithm (SSA). This hybrid model is specifically  designed to optimize four critical objectives simultane­ ously: makespan, energy consumption, cost, and resource  utilization. By leveraging the complementary strengths of  DSO and SSA, the DSSSO algorithm offers a more adap­ tive and scalable solution for workflow scheduling com­ pared to conventional and hybrid metaheuristic models.\nThe proposed DSSSO framework stands out by  addressing multiple shortcomings in the literature: it  incorporates energy and resource-aware objectives often  ignored in prior work, employs a dual-phase optimiza­ tion to avoid local optima, and demonstrates superior  performance across diverse scientific workflows. This  clear enhancement over existing techniques establishes  the novelty and practical relevance of the research.\nMost existing workflow scheduling approaches opti­ mize only one or two objectives, typically makespan and  cost, while critical aspects such as energy consumption  and resource utilization remain underexplored. More­ over, conventional optimization models frequently suffer  from premature convergence due to imbalance between  exploration and exploitation, leading to suboptimal task- to-resource mappings in heterogeneous cloud settings.  This leaves a clear research gap: the need for a unified,  multi-objective scheduling model that simultaneously  addresses makespan, cost, energy consumption, and  resource utilization, while ensuring convergence stabil­ ity and scalability in dynamic cloud environments. The  present work is motivated by this gap and introduces the  DSSSO framework as a robust solution.\nThus, a hybrid optimization is presented in this  research work as a multi-objective model which provides  optimal solution for workflow scheduling application.  The research work major contributions are summarized  as follows.\n\n--- Page Break ---\n\nPage 3 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\n• This research presents a novel hybrid optimization  algorithm that combines Dolphin Swarm  Optimization (DSO) and Sparrow Search Algorithm  (SSA) for multi-objective workflow scheduling  problem in cloud computing environments.  The hybrid model utilizes the strengths of both  algorithms to optimize multiple objectives such as  makespan, cost, energy consumption, and resource  utilization.  \t• The proposed method is formulated to handle  multiple objectives through the hybrid DSSSO  algorithm and compared to existing models  that typically focus on one or two objectives. By  integrating DSO’s strong exploration capabilities  with SSA’s efficient exploitation abilities, the hybrid  DSSSO algorithm achieves a better balance between  exploring the solution space and refining solutions.  Also, the proposed DSSSO helps to avoid local  optima and improves convergence.  \t• The research provides detailed experimental  validation of the proposed DSSSO model using  various benchmark scientific workflows such as  CyberShake, Montage, Epigenomics, and LIGO.  These experiments demonstrate the effectiveness of  the hybrid model in reducing makespan, minimizing  costs, and improving resource utilization compared  to other state-of-the-art optimization methods.  \t• A thorough comparative analysis is presented with  existing optimization methods, such as Particle  Swarm Optimization Algorithm (PSOA), Ant  Colony Optimization Algorithm (ACOA), Whale  Optimization Algorithm (WOA), Hybrid Bat  Optimization Algorithm (HBOA) and Improved Bat  Optimization Algorithm (IBOA). The results show  that the proposed hybrid DSSSO outperforms these  methods in cloud workflow scheduling tasks.\nThe rest of the discussions are presented in the following  order. “Related work” section presents a detailed litera­ ture review on existing workflow scheduling models. The  proposed hybrid optimization-based workflow sched­ uling is presented in “Proposed work” section. “Results  and discussion” section presents the results and discus­ sions and “Conclusion” section presents the conclusion  of research work.\nRelated work Optimization algorithm used for workflow scheduling  are considered for research analysis. The existing meth­ odology and its features are studied in this section in  detail. The workflow scheduling model presented in [14]  allows scheduling based on dynamic task priority. Using  min-max normalization the intimal dynamic thresh­ old is obtained and based on threshold virtual machines\nare mapped with tasks. Though the presented model is  simple, compared to the solutions of optimization-based  workflow scheduling the performance lags in make span  and resource utilization. Gravitational search algorithm  presented in [15] considers schedule length and cost ratio  for the optimization problem and obtains solution using  the gravitational search algorithm by minimizing the  cost and schedule length better than HEFT and genetic  algorithms.\nThe improved Firefly Optimization-based workflow  scheduling presented in [16] incorporates genetic algo­ rithm operators and quasi reflection learning procedures  to enhance the scheduling performances. The objec­ tive was considered to reduce the make span and cost  and it was attained better than traditional firefly and  other optimization algorithms. The Self Adaptive Fruit  Fly Optimization (SAFFO)-based workflow scheduling  presented in [17] considered cost and make span for the  objective function and obtained global solution through  the optimization model. The experimentation results  report that the presented model effectively reduces the  cost and make span over traditional GA, ABC and FFO  algorithms.\nThe optimized workflow scheduling model presented  in [18] utilizes Ant Colony Optimization to reduce the  cost and make span. The presented model initially utilizes  heterogeneous earliest end time for initial scheduling and  then utilizes optimization algorithm for optimal schedul­ ing of workflow tasks to physical machines. Experimental  results show that ACO based scheduling is better than  conventional scheduling procedures. The two-tier work­ flow model presented in [19] includes linear optimization  and gradient decent search-based resource estimation  and cluster-based resource scheduling for heterogeneous  cloud computing. The objective function considers cost  and execution time metrics. The presented optimized  scheduling and resource estimation effectively reduces  the workflow complexity in comparison to PSO.\nThe swarm intelligence PSO based workflow schedul­ ing model presented in [20] considers cost, energy con­ sumption and makespan in its objective function. The  optimization model converged with non-dominated  solutions which provide better exploitation and explora­ tion. Simulation results present the better convergence  and performances of optimization model with reduced  energy consumption and cost. Considering the cost and  make span in their objective function an immune PSO  based workflow scheduling is presented in [21]. The pre­ sented model overcomes the traditional PSO slow con­ vergence and provides enhanced speed and quality for  the scheduling process.\nThe hybrid optimization model presented in [22]  combines PSO with Grey Wolf Optimization (GWO)  algorithm to attain better performance in workflow\n\n--- Page Break ---\n\nPage 4 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nscheduling. Considering the cost and execution time the  optimization model objective function is framed and  solved. The hybrid optimization model effectively avoids  local optimal trap and provides better global solutions  to increase the performance of scheduling process over  convention PSO and GWO models. Similar PSO is com­ bined with ant lion optimization (ALO) algorithm as a  hybrid model in [23] considering the cost, make span and  load. The results present that the hybrid PSO model out­ performs in load, make span and cost compared to tradi­ tional ALO, PSO and GA-PSO models.\nThe hybrid ALO based workflow scheduling presented  in [24] combines ALO with grasshopper optimization  algorithm. The objective function of presented model  considered energy consumption, task cost, through­ put and make span and obtained optimal solution using  hybrid optimization algorithm. The search performance  of the optimization algorithm is enhanced using greedy  and chaos theory and attained better scheduling perfor­ mance over conventional optimization algorithms.\nThe genetic algorithm-based workflow scheduling  model presented in [25] utilizes modified genetic opera­ tors and load balancing routing to improve the sched­ uling performances. The presented model utilizes the  solutions of heuristic for initial chromosome popula­ tion and generates the rest of chromosomes based on  load balancing routing requirements. The fitness func­ tion is considered the cost and make span and effectively  reduced using the obtained solution. Similar GA based  workflow scheduling presented in [26] considers cost  and time for the scheduling fitness function. Instead of  considering the heuristics for initial population chro­ mosome, HEFT is used which improves the efficiency of  scheduling process over conventional techniques.\nHeuristic optimization algorithms-based workflow  scheduling is presented as a comparative analysis in [27].  The presented analysis considered cost and make span in  the objective function and employed invasive weed opti­ mization (IWO), GA, PSO, and hybrid heuristic optimi­ zation algorithms. Experimentation results reveal that  the hybrid heuristic optimization algorithm effectively  reduces the cost and makespan over traditional optimi­ zation algorithms. The workflow scheduling presented  in [28] incorporates hybrid chemical reaction optimiza­ tion (HCRO) algorithm and energy efficient workflow  scheduling.\nA Hybrid Weighted Ant Colony Optimization Algo­ rithm (HWACOA) is proposed in [29] for task scheduling  in cloud computing. For instance, HWACOA achieves a  makespan of 13.78 microseconds with 100 tasks and 50.4  microseconds with 400 tasks, compared to ACOs 18.8  microseconds and 66 microseconds, respectively. Simi­ larly, the cost assessment indicates lower task execution  costs for HWACOA across various scenarios. The merits\nof HWACOA include higher efficiency and faster conver­ gence compared to other algorithms. However, a limita­ tion of the approach is its complexity, which may lead to  increased computational overhead under certain condi­ tions, especially as the number of tasks scales up.\nThe MTD-DHJS (Makespan-Optimized Task Sched­ uling Algorithm is introduced in [30] for Cloud Com­ puting with Dynamic Computational Time Prediction)  technique, which integrates Dynamic Heuristic Johnson  Sequencing (DHJS) and advanced queuing models for  task scheduling in cloud environments. The DHJS algo­ rithm decreases the average waiting time by up to 30%  compared to other scheduling algorithms. Merits of this  approach include increased efficiency in resource allo­ cation, scalability for complex workloads, and reduced  processing delays. However, limitations include potential  complexity in real-time implementation and the require­ ment for extensive computational resources in scenarios  with rapidly fluctuating workloads.\nA hybrid workflow scheduling algorithm combin­ ing Particle Swarm Optimization (PSO) and Simulated  Annealing (SA) is proposed in [31] for energy-efficient  and deadline-aware task scheduling in fog and cloud  environments. The technique optimizes task prioritiza­ tion using PSO and improves task allocation using SA.  Key evaluation metrics include energy consumption and  makespan. The results show that the PSO-SA algorithm  enhances energy efficiency by 5% and reduces makespan  by 9% on average compared to the IKH-EFT baseline.  Other metrics, such as the percentage of IoT tasks meet­ ing deadlines, were improved by around 99%. The pri­ mary merits of the work include its ability to efficiently  manage resources, reduce energy consumption, and  improve task scheduling to meet deadlines and priori­ ties in a fog-cloud environment. However, the algorithm’s  complexity could be a limitation, especially when scaling  up in large, dynamic fog environments, potentially lead­ ing to increased computational overhead.\nAn Improved Wild Horse Optimization with Levy  Flight Algorithm (IWHOLF) is developed in [32] for  effective task scheduling in cloud computing environ­ ments. This approach integrates the social behaviors  of wild horses with the Levy flight theory to improve  task scheduling by reducing makespan and maximizing  resource utilization. The merits of the IWHOLF tech­ nique include improved scheduling efficiency, reduced  makespan, and optimal resource utilization. However,  the complexity of combining WHO and LF may result in  increased computational overhead, particularly in large- scale task environments.\nA hybrid multi-objective optimization algorithm  (HGSOA-GOA) is presented in [33] for scientific work­ flow scheduling in multi-cloud environments. The cov­ erage ratio of HGSOA-GOA was also superior, showing\n\n--- Page Break ---\n\nPage 5 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\ngreater efficiency in finding optimal solutions. The mer­ its of this approach include higher accuracy, better dis­ tribution of solutions, and improved performance on  unbalanced workflows such as Cybershake and Montage.  However, a limitation of the algorithm is the increased  runtime due to its complexity, which may hinder scalabil­ ity for extremely large workflows.\nA hybrid of particle swarm optimization and gray wolf  optimization is presented in [34], named the PSO-GWO  algorithm, is proposed for workflow scheduling. The pro­ posed algorithm was tested to reduce the total executing  cost (TEC) and total execution time (TET) of the depen­ dent tasks in the cloud computing environment. The pro­ posed algorithm takes advantage of both the standard  PSO and GWO algorithms and does not stick to the local  optimal solution. The experiment results show that the  PSO-GWO outperformed compared with the standard  PSO and GWO algorithm in TEC and TET.\nRecent studies have also introduced improved variants  of evolutionary algorithms for workflow scheduling. In  literature [35], proposed a PSO-based scheduling strat­ egy that integrates idle time slot–aware rules to enhance  cost and deadline satisfaction. Similarly [36], developed  an enhanced PSO algorithm that reduces task dimension  and improves initialization to lower execution time and  cost. While these methods demonstrate notable improve­ ments, direct comparison with our proposed DSSSO  model was not feasible due to differences in objectives,  datasets, and benchmark settings.\nThe reviewed workflow scheduling strategies exhibit  several strengths and limitations. Single metaheuristic  algorithms such as PSO, ACO, and GA are computation­ ally efficient and relatively simple to implement. They  are effective for basic task-to-resource mapping and can  optimize individual objectives like cost or makespan.  However, they often suffer from premature convergence,\nlack robustness in high-dimensional search spaces, and  typically ignore critical QoS parameters such as energy  consumption and resource utilization. Hybrid models,  including PSO-GWO, ALO-GA, and HCRO, improve  global search and convergence rates by integrating com­ plementary algorithms. These methods generally perform  better across multiple objectives and exhibit improved  accuracy and load balancing. Yet, they tend to be com­ putationally complex, parameter-sensitive, and often lack  adaptability to dynamic or real-time cloud environments.  Additionally, many models are tailored for specific work­ loads or simulation settings, which raises concerns about  scalability and generalizability in real-world deployment.  These limitations collectively motivate the need for a  more balanced, adaptive, and comprehensive approach  like the proposed DSSSO model.\nThe presented model aimed to minimize the make span  and increase the energy efficiency through the optimal  solution which is better than traditional GA and HCRO  algorithms. The summary of research works is presented  in Table 1.\nWhile the above works demonstrate promising  advancements in workflow scheduling using various heu­ ristic and metaheuristic models, they often share com­ mon limitations. Most notably, a significant number of  models, such as those based on PSO, GA, and ACO, opti­ mize for only one or two objectives—primarily makespan  and cost—while overlooking other essential QoS param­ eters like energy consumption and resource utilization.  Further, many of the hybrid models, although improv­ ing upon local optima avoidance, still exhibit issues of  increased complexity, poor scalability in dynamic work­ loads, or reliance on fixed parameter tuning. For instance,  methods like HWACOA and HCRO, while effective in  convergence, encounter computational overhead dur­ ing high task-load conditions. Similarly, models such as\nTable 1  Summary of research works References Methods Objective function metrics [12] Min-max normalization Make span and Resource utilization [13] Gravitational search algorithm Cost ratio and Schedule length [14] Improved Firefly Optimization Make span and cost [15] Self-Adaptive Fruit Fly Optimization Cost and make span [16] Ant Colony Optimization Cost and make span [17] Linear optimization with gradient decent Execution time and cost [18] Particle Swarm Optimization (PSO) Cost, Energy consumption and Make span [19] Immune PSO Cost and make span [20] PSO with GWO Cost and execution time [21] PSO with ALO Cost, make span and load [22] ALO with grasshopper optimization Energy consumption, cost, throughput and make span [23] Modified Genetic algorithm Cost and make span [24] Genetic Algorithm Cost and time [25] PSO, GA, invasive weed optimization (IWO) and Hybrid heuristic optimization Cost and Make span [26] Hybrid chemical reaction optimization Make span and Energy efficiency\n\n--- Page Break ---\n\nPage 6 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nPSO-GWO and IWHOLF offer strong results in specific  metrics but lack adaptability when extended to multi- cloud or large-scale environments. These shortcomings  highlight the need for a unified, multi-objective model  that ensures exploration-exploitation balance, minimizes  overhead, and adapts efficiently to heterogeneous task  environments. The proposed DSSSO model is introduced  precisely to bridge this gap, offering enhanced conver­ gence stability and broader metric optimization.\nFrom the summary it can be observed that most of  the optimization models considered cost and make span  in their objective function. However, other factors that  affect the QoS of users in workflow scheduling such as  energy consumption and resource utilization need to be  considered. Thus, a hybrid optimization model is pre­ sented in this research work for workflow scheduling  considering energy consumption, resource utilization,  cost, and make span.\nWhile single metaheuristic algorithms such as PSO,  ACO, and GA are computationally efficient, they largely  focus on minimizing makespan or cost and neglect other  equally important QoS factors like energy efficiency and  resource utilization. Hybrid models such as PSO-GWO,  ALO-GA, and HCRO offer better convergence and global  search ability but often introduce significant computa­ tional overhead, parameter sensitivity, and poor adapt­ ability to real-time workloads. Thus, despite numerous  advancements, there remains no comprehensive frame­ work that balances exploration and exploitation while  optimizing all major QoS metrics together. This short­ fall in existing literature forms the central research gap  that motivates the design of the proposed DSSSO model,  which explicitly integrates multiple objectives with a  dual-phase optimization strategy.\nWhile numerous optimization-based workflow sched­ uling models have been proposed, most of them primarily  focus on minimizing makespan and cost, often neglect­ ing equally critical parameters such as energy consump­ tion and resource utilization. For instance, approaches  based on Particle Swarm Optimization (PSO), Genetic  Algorithms (GA), and Ant Colony Optimization (ACO)  demonstrate efficiency in reducing execution time and  cost but fail to comprehensively address energy-aware  scheduling requirements. Similarly, hybrid models such  as PSO-GWO, ALO-GA, and HCRO improve global  search and convergence but often suffer from high com­ putational overhead, parameter sensitivity, and poor  adaptability in dynamic workload conditions. Further­ more, many existing studies are tailored to specific work­ loads or simulation settings, which limits their scalability  and generalizability to large-scale heterogeneous cloud  environments [37, 38].\nThese limitations collectively highlight a clear research  gap: the absence of a unified, multi-objective workflow\nscheduling framework that simultaneously optimizes  makespan, cost, energy consumption, and resource utili­ zation while maintaining a robust balance between explo­ ration and exploitation. To bridge this gap, the present  research introduces the Dolphin Swarm Sparrow Search  Optimization (DSSSO) algorithm, which integrates the  global exploration capabilities of Dolphin Swarm Opti­ mization with the local refinement strengths of Sparrow  Search Optimization. This hybrid structure ensures con­ vergence stability, avoids premature local optima, and  delivers superior adaptability to heterogeneous and large- scale environments. By explicitly incorporating energy  and resource-aware objectives along with traditional  performance metrics, the DSSSO framework provides  a more comprehensive, scalable, and practically viable  solution compared to existing models\nProposed work Cloud workflow scheduling environment Workflows are used to model scientific applications and  it requires high performance computing environment.  Generally, workflows are modeled as set of intercon­ nected tasks with more data or computing dependencies.  A cloud workflow management system in cloud executes  this workflow application. This management system has  the responsibility to manage, schedule and execute the  workflows based on SLA and user-specified QoS require­ ments. In the workflow engine, the data management  component performs data storage and movement as per  requirement. While executing workflow resource provi­ sioning and scheduling are considered important stages.  The resources required to execute the task are selected  and provided in the resource provisioning stage and  while scheduling the tasks are mapped into the best avail­ able resources.\nThe proposed high-level architecture given in Fig. 1 has  the workflow management system and it utilizes cloud  resource while executing the scientific workflow appli­ cation. The elements in the architecture are workflow  engine, workflow planner, workflow scheduler and clus­ tering engine. The proposed multi-objective hybrid opti­ mization algorithm is used in the workflow planner so  that suitable cloud service providers can be identified to  the users and data center loads can be tracked while allo­ cating resources so that the necessary quality of service  can be maintained. The proposed hybrid optimization- based workflow scheduling model includes metaheuristic  dolphin swarm and sparrow search optimization algo­ rithms. The proposed hybrid Dolphin Swarm Sparrow  Search Optimization (DSSSO) was obtained to effec­ tively solve the multi-objective cloud workflow schedul­ ing problem. Dolphin Swarm Optimization (DSO) was  selected for its robust exploration abilities. The dolphins’  echolocation and cooperative hunting behaviors of DSO\n\n--- Page Break ---\n\nPage 7 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nto avoid local optima solution in search space. Whereas  the Sparrow Search Optimization (SSO) algorithm was  incorporated for its strong exploitation features which  formulates the foraging and predator-avoidance behav­ iors of sparrows. This allows the algorithm to fine-tune  solutions efficiently and improve convergence rates. The  hybridization of DSO and SSO utilizes the strengths of  both optimization model. DSOs exploration ensures the  model does not prematurely converge, while SSAs exploi­ tation accelerates convergence by refining the best solu­ tions. This combination makes DSSSO highly effective in  addressing the complexity and scalability issues in work­ flow scheduling for cloud environments outperforming  traditional optimization approaches.\nCloud service providers have data centers in different  geographical locations and provide their services to users  through the internet without violating the service level  agreement. The data centers will have virtual machines  and it is considered as a computing resource. Each virtual  machine has different characteristics and different com­ puting features. Memory capacity, network bandwidth,\nprocessing cores and cycle times will be different for  each virtual machine. The SLA specified either by user or  service provider provides the details of service and QoS  parameters. Violating the expectations will cause pen­ alty for both parties. Multi-task applications should run  smoothly on virtual machines and it is defined based on  the number of cores required to process the user tasks. In  the proposed model mathematical formulation, a set of  interdependent tasks of workflow application are consid­ ered. The tasks need to be executed with correct sequen­ tial order on a heterogenous virtual machines. By using  direct acyclic graph, the workflow application is modeled.  Consider if there are N virtual machines then it is repre­ sented as Npm = npm1, npm2, npm3, . . . npmn. The tasks  are represented as tuple tj = {m, j, pe} which provides  the details like identifier (j), length of identifier (m) in  million instruction and number of processors (pe) run­ ning for task on virtual machine.\nIn the application model, workflows are represented  using direct acyclic graph in which the graph verti­ ces represent the tasks and graph edges represents the\nFig. 1  High level architecture for workflow scheduling\n\n\n--- Page Break ---\n\nPage 8 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nrelation between the tasks. The task computation load is  defined in million instructions and the amount of output  data generated by previous task is represented through a  label on each edge. The entry task doesn’t have any previ­ ous task labels and the final task doesn’t have a descen­ dant. The proposed model considered a workflow with 15  tasks in which each task must wait for the previous task  output before performing their own.\nMathematical formulation of objective function The objective of the proposed hybrid optimized sched­ uling model is to improve resource utilization and mini­ mize energy consumption, make span and cost. This  must be achieved by properly assigning each workflow  tasks with its complex task relationships to physical  machines. Before assigning the necessary features like  task precedence, availability of resources and size of the  workflow are assumed initially and established as an NP- hard problem. The workflow scheduling problem is mod­ eled as a multi-objective optimization task where the goal  is to minimize makespan, cost, and energy consumption  while maximizing resource utilization. The general objec­ tive function is formulated as follows:\n\nminh =\nx ∑\nv=1\ny ∑\ni=1\nz ∑\nj=1\ntpvtaijov\b (1)\nsubject to\n\nz ∑\nj=1\ntaij = 1, i = 1, 2, . . . , y\b (2)\n\nx ∑\nv=1\ntpv = 1, 0 ≤tpv ≤1\b (3)\nWhere i = 1, 2, 3 . . . .y : index of tasks in the workflow.\nj = 1, 2, 3 . . . .z : index of virtual machines (VMs) v = 1, 2, 3 . . . .x : index of physical machines (hosts)\nDecision variables taj ∈{0, 1} :task allocation variable, equals 1 if task i is  assigned to VM j, and 0 otherwise.\n•  ov ∈{0, 1}: host activation variable, equals 1 if  physical machine v is active (i.e., at least one task is  assigned to a VM running on it), and 0 otherwise.  \t•  si > 0 : start time of task i.  \t•  fi ≥0 : finish time of task i.\nParameters\n•  tpv : unit cost or power consumption rate of physical  machine v.  \t•  eti,j : execution time of task iii on VM j.  \t•  bwj,l : communication bandwidth between VM j  and VM l.  \t•  outp→i : data size transferred from predecessor task  p to task i.\nIf the physical machine is allocated with a workflow task,  then taij is considered as 1 otherwise it is considered as 0  based on the conditions given in Eqs (2) and (3). The sum  of tpv is limited to 1 and it is used as a balancing factor  between resource utilization, cost, energy consumption  and make span.\nDolphin swarm optimization phase The proposed workflow scheduling model starts with  user task provided by the cloud users and the task are  scheduled using the proposed hybrid Dolphin swarm  sparrow search optimization (DSSSO) algorithm. The  dolphin swarm optimization is framed based on the  lifestyle habits of dolphins. The real predatory system  of dolphins is to chase and attack prey in the sea which  is formulated as an optimization model. The predation  process has three phases in which dolphins begin the  hunting process by creating noises and following it up  with the echolocation to discern the surrounding. The  attacks are performed either by flip swimming mode or  rotational swimming mode. If a dolphin identified with a  large food source, then it will call their friends for help  and finally finish the predation. In simple terms these  three phases are given as (i) target location detection,  (ii) chasing and approaching the target, (iii) attacking the  prey. In the proposed work, the workflows are related to  dolphins and the optimal solution is considered as final  scheduling results.\nIn the optimization initialization phase, dolphins are  represented as [d1, d2, .., dn] and for each dolphin two  variables li and ki are assigned to represent the best solu­ tion obtained at single instant (li) and the best solution  (ki) obtained from others respectively. The initial posi­ tion of dolphin is defined as\nxd = (xd1, xd1, ..., xdn)\b (4)\nwhere the position vector of dth dolphin in search space  is indicated as xd. The dolphins are randomly initial­ ized with boundary search space of (xmax, xmin). In the  search space, dolphins explore their surroundings and  make noises in arbitrary directions which is described as  Ui = [ud1, ud2, .., udn]. The total noise in every dimension  and noise direction is collectively termed using Uj. When\n\n--- Page Break ---\n\nPage 9 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nthe dolphin renders a sound Uj at t, it starts to search for  new solution which is mathematically given as\ndijt = di −Ujt\b (5)\nIn the echolocation-based exploration phase, dolphins  emit sound waves to explore the environment and adjust  their positions accordingly. Each dolphin updates its  position based on the current position, the best global  solution, and a random noise factor for exploration. The  position update process is mathematically formulated as\nxd (t + 1) = xd(t) + α.(xbest (t) −xd(t) + β.N (0, 1)\b (6)\nwhere the new position of the dth dolphin is indicated as  xd (t + 1), best position is indicated as xbest (t). α and  β indicates the learning factor and random scaling fac­ tor respectively. Random noise in normal distribution is  indicated as N (0, 1). Further the fitness of each dolphin  is evaluated considering the objective function of the  proposed scheduling problem as follows.\n\nfit = tp1ms + tp2cw + tp3ec + tp4\n1 Trpu \b (7)\nwhere tp is the tuning parameter, ms indicates the make  span, cw indicates the workflow cost, ec indicates the  energy consumption and rpu indicates the resource uti­ lization. The tuning parameters tp1, tp2, tp3 and tp4 are  essential in adjusting the balance between the make span  (ms), workflow cost (cw), energy consumption (ec), and  resource utilization (rpu). These values are selected after  analyzing the effect of varying each parameter on the  objective function and not fixed randomly. Since the fit­ ness function of DSO is used to quantity the objective  function, the better solution will effectively minimize the  objective function parameters.\nThe second phase has two processes as reception and  call process in which reception occurs only after the call  process. In the optimization model a transmission time  matrix is used to preserve the reception and call process  interchange. The transmission time matrix is described  using Tij and it exactly defines the time remaining for the  noise to pass through dolphin i to dolphin j. It is essential  to reduce the transmission time matrix into one till the  optimization reaches the reception process. If Tij = 0,  then di hears the noise send from dj. Upon receiving the  noise, the transmission time matrix is replaced with full  transmission time and the fitness is evaluated again.  In the call process, all the dolphins make noise to alert  others thus the transmission time matrix is checked as\nTij >\n[\nDdi,j A.Speed\n]\n, where Ddi,j is the distance between\ndolphin di and dj, the acceleration constant is given as  A and the noise speed attribute is indicated using speed.\nIn the final predation phase, each dolphin should mea­ sure the encompassing sweep r2. Before that for each  dolphin the look span radius r1 is calculated as\nr1 = T1 ⋅ speed\b (8)\nwhere T1 indicates the peak search time. Further, the  encompassing sweep measurement is presented based  on the dolphin position in three cases. For demonstrat­ ing the three cases, the position of dolphin, look span  radius r1, encompassing sweep r2 and the best solution  Dki obtained from others are considered. In the first  case, Dki ≤r1 ⋅ speed is considered based on that the  encompassing span is measured using the expression  given below.\n\nr2 =\n(\n1 −2 e\n)\nDk, for e > 2\b (9)\nwhere the radius diminishing coefficient is given as  e. Based on the obtained encompass sweep, the dolphin’s  new position is obtained as\nndi = ki + ((di −ki) /Dki) ∗r2\b (10)\nwhere ndi indicates the dolphin’s new position. In the  next cases, the Dki > r1 and Dk > Dkl, the dolphin  accepts the information from other dolphin and the  encompassing sweep is calculated as\n\nr2 =\n(\n1 −(Dki/fit) −(Dki −Dkli/fit) eDk (1/fit)\n)\nDki, for e > 2\b(11)\nwhere Dkli indicates the distance between the solution  obtained at single instant li and best solution ki obtained  from others. Based on this, the new position is updated  as\nndi = ki + (r and||r and) r2\b (12)\nIn the last case, the dolphin moves to an arbitrary posi­ tion and its condition is similar to Dki > Dkli and the  encompassing sweep and new position are obtained  based on Eq. (9) and (10). Figure 2(a)-(c) depicts the  initial condition of all the three cases and Fig. 3(a)-(c)  depicts the position updated results of all the cases.\nBased on these three cases, the dolphin encompassing  sweep and new positions are obtained. Once the dol­ phin moved into a new position, the position wellness is  compared with best solution (ki) and updated if the new  position is better than the best solution. Otherwise, the  current position is considered best, and the process is\n\n--- Page Break ---\n\nPage 10 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nrepeated till it meets the termination criteria. To improve  the performance of dolphin swarm optimization and  avoid premature convergence, sparrow search optimiza­ tion algorithm is incorporated in the proposed work. The  process flow of proposed hybrid DSSSO optimization is  presented as follows in Fig. 4.\nSparrow search optimization phase The food foraging and predator avoidance features of  sparrows are used to frame the optimization algorithm.  The optimization algorithm considered two types of spar­ rows such as scroungers and makers, in which the makers  will have high energy levels and select the food foraging  location or provide instructions to all scroungers. While  adopting the foraging strategies, the energy levels play  an important role. The birds positioned in the search  boundaries are more likely to be targeted by the preda­ tors. Birds located in the middle move close to their  neighbors to minimize the predator attack. The sparrows  have an instinct for the danger so when one bird identi­ fies the danger then all birds will take flight and move  into another location. Mathematically the sparrow habi­ tat is expressed as a matrix as follows.\n\n\n\nx1,1 x1,2 . . . x1,d x2,1 x2,2 . . . x2,d ...\n...\n... xn,1 xn,2 . . . xn,d\n\n\b (13)\nwhere the number of sparrows is indicated using n and  the fitness of each sparrow is obtained as\n\n\n\nf [x1,1 x1,2 . . . x1,d] f [x2,1 x2,2 . . . x2,d] ... ...\n... f [xn,1 xn,2 . . . xn,d]\n\n\b (14)\nBased on the current position and fitness value, the food  location is updated for every cycle as follows.\n\nxt+1\ni,j =\n{\nxt\ni,je(−i/αitermax) ifr < sτ xt\ni,j + φθ ifr ≥sτ\n}\n\b (15)\nwhere α is a random value and its range is given as [0,1],  sτ indicates the safety threshold and its range is given  as [0.5, 1] and the alarm value is indicated using r and  its range is given as [0,1]. φ is a random number which  follows normal distribution and θ is used to indicate the  matrix with dimension of 1 ⋅ d with each element inside  the matrix is 1. When r < sτ, then there are no predators\nFig. 3  (a)-(c) Updated results for all the three cases\n\nFig. 2  (a)-(c) Initial condition of all the three cases\n\n\n--- Page Break ---\n\nPage 11 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\naround the region so that the birds will encounter a wide  search for food and if r ≥sτ, then some sparrows iden­ tified predators and all the sparrow need to fly from the  current place to safety place immediately. In the food  searching process, some scroungers monitor the mak­ ers frequently. If the makers could not be able to identify  enough food, then scroungers will fly to another location  and search for the food. If the scroungers identified food  in the new location, they get the food to makers imme­ diately otherwise the process is continued. The position  update of scroungers is mathematically formulated as\n\nxt+1\ni,j =\n \n φe\n\nxt\nworst−xt\ni,j i2\n\u001b\nif i > n/2 xt+1\np +\n\u001a\u001axt\ni,j −xt+1\ni,j\n\u001a\u001a A+θ otherwise\n \n\b(16)\nwhere the position occupied by the predator is indicated  using xp and the global worst location is indicated using\nxworst. A represents a matrix in which each element is  randomly assigned with +1 or −1. If the sparrows at the  edge are aware of danger and move towards a safe loca­ tion while the middle sparrow randomly walk close to  others. This condition is mathematically framed as\n\nxt+1\ni,j =\n \n\nxt\nbest + β\nxt\ni,j −xt\nbest\niffi > fg\nxt\ni,j + g\n\u001b\n|xt\ni,j−xt\nworst| (fi−fw)+ρ\n\u001a\niffi = fg\n \n\b(17)\nwhere the current global optimal location is indicated  using xt\nbest, the step size control parameter is given as  β, g is the random number and its range is given as [0,1].  The current sparrow fitness is indicated using fi and its  global best and worst fitness values are indicated using fg  and fw respectively. A small constant ρ is added to avoid  zero division error. The condition fi > fg defines that the  sparrow is at the edge and the location of center popu­ lation which is safe is indicated through the xt\nbest. The  condition fi = fg describes that the sparrows in the mid­ dle are aware of danger and move closer to others and g  describes the direction of movement and the step size.\nHybrid DSSSO flow and final task assignment Based on the optimal solutions the conditions the new  positions of dolphins are adjusted to obtain the optimal  performance in scheduling application.\nBrief workflow is depicted in Fig. 5.  In the proposed DSSSO-based workflow schedul­ ing model, task-to-node assignment is handled through  a two-phase optimization process involving Dolphin  Swarm Optimization (DSO) for global exploration and  Sparrow Search Algorithm (SSA) for local refinement.  Initially, the entire workflow is modeled as a Directed  Acyclic Graph (DAG), where each node represents a task  and edges denote data dependencies. The cloud envi­ ronment is represented as a set of heterogeneous vir­ tual machines (VMs), each with specific computational  capabilities. The DSO phase generates a population of  potential scheduling solutions, where each individual  represents a complete mapping of tasks to VMs. Dur­ ing this phase, the fitness of each solution is evaluated  based on a multi-objective function considering makes­ pan, energy consumption, cost, and resource utiliza­ tion. Solutions are refined through echolocation-based  position updates and cooperative swarm behaviors. The  best-performing solutions are passed to the SSA phase,  which focuses on enhancing local exploitation. Here, task  assignments are further fine-tuned based on dynamic  safety thresholds and predator-avoidance behaviors,  ensuring high-quality VM allocations. Tasks are assigned  to VMs not only based on availability and execution  time but also considering QoS constraints like minimal  idle time, optimal power usage, and resource saturation\nFig. 4  Flowchart of proposed hybrid DSSO\n\n\n--- Page Break ---\n\nPage 12 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nlevels. This results in a highly optimized and adaptive  task-to-node assignment strategy that balances per­ formance, efficiency, and scalability in real-time cloud  environments.\nThe summarized pseudocode for the proposed hybrid  optimization is presented as follows.\nIn the proposed hybrid Dolphin Swarm Sparrow Search  Optimization (DSSSO) algorithm the convergence occurs  in distinct phases. Initially, the global convergence begins  during the DSO phase, where dolphins explore a wide  range of solutions across the solution space. This explo­ ration ensures that the algorithm does not prematurely  focus on local optima and explores diverse regions of the  solution space. The convergence toward global optima  occurs when the dolphins, through echolocation and  cooperative hunting strategies begin to cluster around  the most promising areas of the solution space. This  happens as the DSO phase progresses, and more dol­ phins move toward higher-quality solutions based on the  multi-objective fitness function. The global convergence  primarily takes place in the early to mid-stages of the  optimization process when the algorithm has sufficient  diversity in the solution pool to explore the global search  space effectively.\nThe local convergence follows in the SSA phase, which  builds on the globally optimal regions identified by the  DSO. During this phase, sparrows refine the solutions  further by focusing on exploitation. They adjust their  positions based on the best solutions found by the DSO\nFig. 5  Condensed process flow of the proposed DSSSO algorithm, inte­ grating global exploration (DSO phase) and local exploitation (SSA phase)  for optimized multi-objective workflow scheduling\n\n\n--- Page Break ---\n\nPage 13 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nand use foraging and predator-avoidance behaviors to  fine-tune these solutions. The convergence toward local  optima occurs when the sparrows gather around the most  refined solutions within the smaller regions of the search  space. This happens later in the optimization process as  the SSA works to improve the precision of the solutions  found during global exploration. Thus, the proposed  hybrid DSSSO algorithm converges globally during the  DSO phase and identifies high-quality areas of the solu­ tion space. Whereas the proposed hybrid DSSSO locally  converges during the SSA phase in which the solutions  are fine-tuned within these areas. This ensures that the  algorithm provides a balance between exploring diverse  possibilities and exploiting the best-found solutions for  optimal results.\nResults and discussion The performance analysis of the proposed optimized  workflow scheduling model is presented through simu­ lation analysis. Using Workflow Sim tool the scheduling  process is simulated. Additionally using workflow gen­ erator toolkit, the workflow is generated and scheduled  using the proposed optimization algorithm solutions.  The number of tasks considered for analysis is 2000 and  the metrics considered for performance evaluation are  make span, cost, energy consumption and resource uti­ lization. To validate the proposed model performance  through comparative analysis, existing bat optimization  algorithm, improved bat optimization, dolphin swarm  optimization, sparrow search optimization are consid­ ered. The results for Bat Optimization Algorithm (BOA)  and Improved Bat Optimization Algorithm (IBOA) are  obtained from Sobhanayak.et.al., 2023 [39] research  work. The conventional PSOA, ACOA, WOA, DSO and  SSO are experimented on their own, and their perfor­ mance is noted to provide the final comparative analysis.  Table 2 provides the details of simulation hyperparam­ eters for all the optimization algorithms.\nThe simulation parameters listed in Table 2 are the final  optimal values which provide better performance while  applying for the workflow scheduling experimentation.  Specifically, the population size is set to 50 to ensure a  diverse solution space while balancing computational  complexity. The population size of 50 provides sufficient  diversity without overloading the system. Similarly, the  maximum iteration is set as 100 to ensure the optimiza­ tion models converge to optimal solutions without con­ suming too much computational time. The pulse rate in  IBOA and HBOA are selected as 0.8 and 0.7 to provide  balance between exploration and exploitation. Also,  pulse rate ensures that bats perform frequent updates  and makes the algorithm to converge faster by shifting  towards local exploitation as the number of iterations  increases. The loudness in IBOA and HBOA are selected  as 0.5 and 0.4 reduces noise during search process. In  the case of DSO and SSA the population is set as 50 to  ensure diversity. The echo frequency of DSO is selected  as 0.8 to enhance the algorithm adaptability. While the  safety threshold of SSA is selected as 0.6 to avoid preda­ tion. For the proposed DSSSO the control parameter is  selected as 0.4 to adjust the balance between exploitation  and exploration. The search space reduction rate is con­ sidered dynamic. The search space shrinks over time as  the algorithm converges.\nIn order to obtain the optimal values for the optimiza­ tion algorithms a series of experiments were conducted  and the key parameters were adjusted. The major param­ eters which are adjusted are loudness and pulse rate  for IBOA and HBOA. The echolocation frequency and  search radius of DSO is varied between 0.5 and 1.0. The\nTable 2  Simulation hyperparameters S. No Algorithm Parameter Value/ Range 1 Improved Bat  Optimization  (IBOA)\nLoudness (A) 0.5 2 Pulse Rate (r) 0.8 3 Population Size 50 4 Frequency Range 1.5 5 Hybrid Bat  Optimization  (HBOA)\nInitial Population 50 6 Pulse Rate 0.7 7 Loudness 0.4 8 Iterations 100 9 Dolphin Swarm  Optimization  (DSO)\nPopulation Size 50 10 Echolocation Frequency 0.8 11 Search Radius 15 12 Maximum Iterations 100 13 Sparrow Search  Algorithm (SSA)\nInitial Population 50 14 Safety Threshold (sτ) 0.6 15 Explorers-to-Scroungers Ratio 70:30 16 Iteration Count 100 17 Particle Swarm  Optimization  (PSO)\nPopulation Size 50 18 Cognitive Coefficient (c1) 1.5 19 Social Coefficient (c2) 1.5 20 Inertia Weight (w) 0.7 21 Maximum Iterations 100 22 Ant Colony  Optimization  (ACO)\nPopulation Size 50 23 Evaporation Rate (ρ) 0.5 24 Pheromone Influence (α) 1.0 25 Heuristic Influence (β) 2.0 26 Maximum Iterations 100 27 Whale Optimi­ zation Algo­ rithm (WOA)\nPopulation Size 50 28 Convergence Control Parameter  (a)\n1.5\n29 Maximum Iterations 100 30 Hybrid Dolphin- Sparrow  Optimization  (DSSSO)\nEncircling Coefficient (b) 1.2 31 Population Size 50 32 Convergence Control Parameter  (β)\n0.4\n33 Maximum Noise Distance 20 34 Search Space Reduction Rate Dynamic\n\n--- Page Break ---\n\nPage 14 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nchosen value of 0.8 was found to be ideal for balancing  global search capabilities with local exploitation. The  convergence control parameter of hybrid DSSSO was  tested within the range of 0.1 to 1.0. Dynamic adjustment  between 0.3 and 0.9 provided the best results, allowing  for a smooth transition from exploration to exploitation.\nThe proposed workflow scheduling model performance  is evaluated through metrics like make span, computa­ tion cost, resource utilization and energy consumption.  The make span is calculated based on the finish time of  the exit node which is formulated as\nMakespan (mk) = E.Nodeft\b (16)\nwhere exist node is indicated using E.Node and ft indi­ cates the finish time. The cost metric is used to analyze  the expenses for utilizing the resources of cloud service  providers. The charges are calculated on a second basis  and the task completion time is the final time taken by  the application. The cost to perform a task in a physical  machine is calculated considering the execution time  multiplied with physical machine charge rate per second.  Mathematically the cost is expressed as\n\ncw =\nn ∑\ni=1\n(Taskft −Taskst) ⋅ Pmch\b (17)\nwhere starting and finishing time of task is indicated  using st and ft, the running cost of physical machine  is indicated using Pmch and the total cost is indicated  using cw. The energy consumption is calculated consider­ ing the physical machine energy utilization. All the tasks  are performed in physical machine processing units and  the overall usage is calculated as follows.\nptot = pmin + (pmax −pmin) Υ\b (18)\nwhere total power consumption is represented as ptot,  the maximum power utilized during full capacity opera­ tions is indicated using pmax and the minimum usage is  indicated using pmin. The processing unit usage is a time  dependent quantity which is indicated using Υ. From this  energy consumption is calculated as follows.\n\nec =\nt1 ∫ t0\np (Υi (t))\b (19)\nThe resource utilization is calculated based on the physi­ cal machine CPU load in the data center which is formu­ lated as\n\nrpu =\nn ∑\nk=1\nusage (k) /CPUi\b (20)\nwhere the number of active tasks is indicated using n and  the capacity of CPU is indicated using CPUi. for n physi­ cal machines, the CPU load is expressed as\n\nTrpu =\nn ∑\ni=1\nrpu/n\b (21)\nThe resource utilization should be maximized to attain  better performance in workflow scheduling. The per­ formance testing and validation process of all the mod­ els considers Cybershake, Montage, Epigenomics and  Ligo workloads. Figures 6 and 7 depict the workloads of  cybershake and montage respectively. Figures 8 and 9  depict the Epigenomics and Ligo workloads.\nEnergy consumption analysis The energy consumption analysis of proposed model for  cybershake and montage workloads are comparatively  analyzed with existing scheduling algorithms. Table 3  provides the numerical values of energy consumption  details for 2000 tasks through different workloads. The  maximum performance is eventually visible from the  numerical results compared to existing methods.\nFigure 10 depicts the energy consumption of proposed  and existing optimization algorithms for workloads\nFig. 6  Cybershake workload\n\n\n--- Page Break ---\n\nPage 15 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nlike CyberShake, Montage, Epigenomics, and LIGO  with an increasing number of tasks. Across all work­ loads, the proposed HDSSSO consistently exhibits the\nTable 3  Energy consumption analysis for workloads S.  No\nMethods Tasks (2000) vs Energy Consumption (J) Cybershake Montage Epigenomics Ligo 1 PSOA 2.9 × 105 4.4 × 105 3.5 × 105 4.2 × 105\n2 ACOA 3.1 × 105 4.7 × 105 3.6 × 105 4.3 × 105\n3 WOA 2.9 × 105 4.6 × 105 3.4 × 105 4.1 × 105\n4 HBOA 3.0 × 105 4.5 × 105 3.4 × 105 4.0 × 105\n5 IBOA 5.1 × 105 6.2 × 105 5.4 × 105 6.1 × 105\n6 DSOA 2.8 × 105 4.2 × 105 3.3 × 105 3.9 × 105\n7 SSOA 2.7 × 105 4.2 × 105 3.2 × 105 3.9 × 105\n8 Proposed  HDSSSO\n2.4 × 105 4.0 × 105 3.1 × 105 3.8 × 105\nFig. 9  Ligo workload\n\nFig. 8  Epigenomics workload\n\nFig. 7  Montage workload\n\n\n--- Page Break ---\n\nPage 16 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nlowest energy consumption. For the CyberShake work­ load the proposed HDSSSO consumes 2.4 × 105 J for  2000 tasks, while PSOA, ACOA, WOA, HBOA approxi­ mately consume 3.0 × 105 J. The energy consumption of  DSOA and SSOA are 2.8 × 105 and 2.7 × 105 respectively.  The IBOA exhibits the highest energy consumption of  5.1 × 105 J. Similarly, in the Montage workload the pro­ posed HDSSSO maintains lower energy consumption at  4.0 × 105 J, while PSOA, and HBOA approximately con­ sume 4.5 × 105 J. The energy consumption of ACOA and  WOA are approximately 4.7 × 105 J while the energy con­ sumption of DSOA and SSOA are approximately 4.2 × 105  J. The IBOA exhibits the highest energy consumption  of 6.2 × 105 J. For the Epigenomics workload the pro­ posed HDSSSO maintains lower energy consumption at  3.1 × 105 J, while PSOA, and ACOA approximately con­ sume 3.5x105 J. The energy consumption of HBOA and  WOA are 4.5 × 105 J while the energy consumption of\nDSOA and SSOA are approximately 3.3 × 105 J. The IBOA  exhibit the highest energy consumption of 5.4 × 105 J.  For the Ligo workload the proposed HDSSSO maintains  lower energy consumption at 3.8 × 105 J, while PSOA,  and ACOA approximately consume 4.3x105 J. The energy  consumption of HBOA and WOA are 4.1 × 105 J while  the energy consumption of DSOA and SSOA are approx­ imately 3.9 × 105 J. The IBOA exhibit the highest energy  consumption of 6.1 × 105 J. The limitations of the exist­ ing models, such as PSO, ACO, and WOA, are apparent  in their higher energy consumption, which results from  slower convergence and higher computational overhead  during task-to-VM assignment. In contrast, IBOA being  effective in exploration but suffers from excessive energy  consumption due to extensive iterations. The lower  energy consumption of proposed HDSSSO across all  workloads highlights its efficient task scheduling due to  its hybrid nature combining exploration and exploitation\nFig. 10  Energy consumption analysis on different workloads\n\n\n--- Page Break ---\n\nPage 17 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nthrough Dolphin Swarm Optimization and Sparrow  Search Algorithm phases.\nThe superior performance of the proposed DSSSO  algorithm in Figs. 10 and 11 can be explained by its  hybrid design that effectively balances exploration and  exploitation throughout the scheduling process. The  Dolphin Swarm Optimization (DSO) phase contributes  strong global search capability by simulating cooperative  foraging and wide-area exploration, which prevents pre­ mature convergence and ensures that diverse candidate  solutions are explored during the initial iterations. This  is particularly important in workflow scheduling, where  task-to-resource mappings exist in a high-dimensional  search space prone to local optima. Once promising  regions are identified, the Sparrow Search Optimization  (SSO) phase intensifies local exploitation through adap­ tive role-based foraging and predator avoidance mecha­ nisms, thereby fine-tuning task assignments with higher\nprecision. The seamless transition between these two  phases allows DSSSO to maintain diversity while steadily  improving solution quality. As a result, the algorithm  achieves lower makespan and energy consumption and  ensures better resource utilization compared to baseline  approaches. These improvements are further supported  by statistical validation, where the reductions in variance  across multiple runs confirm that the observed perfor­ mance gains are robust and not due to random effects.\nCost analysis The proposed model cost analysis for cyber shake and  montage workloads are comparatively presented with  existing scheduling algorithms in Table 4. The numeri­ cal values of cost measured in ($) and for 2000 tasks the  results clearly showcase the minimum cost of the pro­ posed model compared to existing methods. Due to opti­ mal utilization of physical machines, the workflow tasks\nFig. 11  Cost analysis for different workloads\n\n\n--- Page Break ---\n\nPage 18 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nare completed at the stipulated time and unnecessary uti­ lization of resources are avoided in the proposed work.  This reduces the cost of the proposed model while exist­ ing methods over utilize the resources, which increases  the cost.\nFigure 11 presents the cost analysis of proposed and  existing optimization algorithms, for four workloads.  The HDSSSO model consistently achieves the lowest cost  across all workloads. In the CyberShake workload with  2000 tasks, HDSSSO records a cost of 2.4 × 104 $ which  outperforms PSO which cost 3.4 × 104 $, ACO which cost  3.6 × 104 $, and WOA which cost 3.0 × 104 $. Whereas  DSOA and SSOA perform well with costs of 2.8 × 104 $  and 2.7 × 104 $ respectively, but it is high compared to  HDSSSO. IBOA has the highest cost at 5.2 × 104 $ and  this indicates inefficiency in managing large workloads.  In the Montage workload the proposed HDSSSO main­ tains a lower cost of 2.9 × 104 $. Whereas DSOA and  SSOA exhibits cost as 3.3 × 104 $ and 3.2 × 104 $ respec­ tively. The ACOA and PSOA costs as high as 3.9 × 104  $ and 3.8 × 104 $ which is higher than the proposed  HDSSSO. For the Epigenomics workload the proposed  HDSSSO proves its efficiency with a cost of 3.1 × 104 $.  The DSOA and SSOA are higher at 3.3 × 104 $, whereas  PSO and ACO cost 3.5 × 104 $ and 3.6 × 104 $ which is  higher than the proposed HDSSSO. In the LIGO work­ load the proposed HDSSSO maintains the lowest cost at  3.0 × 104 $ followed by DSOA which cost 3.2 × 104 $ and  SSOA which cost 3.1 × 104 $. The PSO, ACO, and WOA  exhibits range between 3.4 × 104 $ and 3.6 × 104 $. The  results highlight that while DSOA and SSOA provide bet­ ter cost performances but they consume more resources  compared to proposed HDSSSO. The proposed HDSSSO  superior cost efficiency makes the model as optimal  choice for cost-effective resource allocation and task dis­ tribution across complex workloads.\nResource utilization analysis The resource utilization of proposed model for cyber­ shake and montage workloads are comparatively\nanalyzed with existing scheduling algorithms. Table 5  provides the numerical values of resource utilization  details for 2000 tasks using cybershake, montage epig­ enomics and Ligo workloads. The maximum utilization  performance is clearly visible from the numerical results  for the proposed model compared to existing methods.\nFigure 12 depicts the resource utilization performance  of proposed and existing optimization algorithms for  different workloads. For all the workloads the proposed  HDSSSO exhibits the highest resource utilization. In the  CyberShake workload the proposed HDSSSO achieves a  resource utilization of 0.91 with 2000 tasks which is bet­ ter than PSO, ACO, and WOA, which attained 0.83, 0.84,  and 0.85 respectively. The DSOA and SSOA also perform  well with 0.82 and 0.81 but it is less compared to pro­ posed HDSSSO. In the Montage workload the proposed  HDSSSO attained a high resource utilization of 0.92.  The DSOA and SSOA achieve 0.86 and 0.87 respectively,  whereas PSO and ACO attained resource utilization  around 0.82 and 0.83. For the Epigenomics workload the  proposed HDSSSO outperforms with a resource utiliza­ tion of 0.96 which is higher than PSO and ACO resource  utilization of 0.93 and 0.92. The resource utilization of  WOA is 0.94 which is less compared to the proposed  HDSSSO. In the LIGO workload the proposed HDSSSO  exhibits a utilization of 0.84 which is better than PSO,  ACO, and DSOA resource utilization of 0.81, 0.82, and  0.80 respectively. This superior performance of HDSSSO  ensures optimal task allocation and resource usage.  Whereas the existing IBOA exhibits the lowest resource  utilization, particularly in larger workloads with values  as low as 0.74 in CyberShake and 0.78 in LIGO, reflect­ ing its inefficiency in task distribution and resource  management. While DSOA and SSOA are better com­ pared to other but their resource utilization is still lower  than HDSSSO. Overall, HDSSSO ability in optimizing  resource utilization makes it the most efficient algorithm  for complex cloud environments.\nTable 4  Cost analysis for workloads S.  No\nMethods Tasks (2000) vs Cost ($) Cyber  shake\nMontage Epigenomics Ligo\n1 PSOA 3.4 × 104 3.8 × 104 3.5 × 104 3.4 × 104\n2 ACOA 3.6 × 104 3.9 × 104 3.6 × 104 3.5 × 104\n3 WOA 3.0 × 104 3.7 × 104 3.5 × 104 3.6 × 104\n4 HBOA 3.5 × 104 3.5 × 104 3.4 × 104 3.2 × 104\n5 IBOA 5.2 × 104 5.4 × 104 5.4 × 104 5.2 × 104\n6 DSOA 2.8 × 104 3.3 × 104 3.3 × 104 3.2 × 104\n7 SSOA 2.7 × 104 3.2 × 104 3.3 × 104 3.1 × 104\n8 Proposed  HDSSSO\n2.4 × 104 2.9 × 104 3.1 × 104 3.0 × 104\nTable 5  Resource utilization analysis for workloads S.  No\nMethods Tasks (2000) vs Resource Utilization Cybershake Montage Epigenomics Ligo 1 PSOA 0.83 0.82 0.93 0.81 2 ACOA 0.84 0.83 0.92 0.82 3 WOA 0.85 0.84 0.94 0.82 4 HBOA 0.81 0.84 0.95 0.81 5 IBOA 0.74 0.78 0.82 0.78 6 DSOA 0.82 0.86 0.93 0.80 7 SSOA 0.81 0.87 0.92 0.79 8 Proposed  HDSSSO\n0.91 0.92 0.96 0.84\n\n--- Page Break ---\n\nPage 19 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nMake span analysis The proposed model performance for cybershake and  montage workloads are comparatively presented with  existing scheduling algorithms in Table 6 for make span  metric. The make span is measured in minutes and for  2000 tasks it is clearly visible from the results the make  span of proposed model is minimum compared to exist­ ing methods. Due to optimal resource utilization, the  workflow tasks are completed with minimum time which  reduces the make span of proposed model. Whereas  existing methods make span is increased due to inappro­ priate resource utilization.\nThe makespan analysis presented in Figure 13 for the  proposed HDSSSO for four workloads in comparison  with other optimization algorithms. Makespan refers to  the total time required to complete all tasks and it is an  important metric to define the scheduling efficiency. In  the CyberShake workload the proposed HDSSSO attains\nTable 6  Make span analysis for workloads S.  No\nMethods Tasks (2000) vs Make span (min) Cybershake Montage Epigenomics Ligo 1 PSOA 390 405 370 435 2 ACOA 395 415 380 445 3 WOA 370 365 355 440 4 HBOA 400 410 360 450 5 IBOA 610 615 540 620 6 DSOA 380 390 350 430 7 SSOA 375 380 340 410 8 Proposed  HDSSSO\n360 370 330 405\nFig. 12  Resource utilization for different workloads\n\n\n--- Page Break ---\n\nPage 20 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nthe lowest makespan of 360 minutes at 2000 tasks and  demonstrated its better performance compared to PSO  which exhibit 390 minutes, ACO which exhibit 395 min­ utes, and WOA which exhibit 370 minutes. The DSOA  and SSOA make spans of 380 and 375 minutes are higher  compared to the proposed HDSSSO. The IBOA which  exhibits the highest makespan of 610 minutes indicates  its inefficiency in task scheduling. Similarly, in the Mon­ tage workload the proposed HDSSSO exhibit the lowest  makespan of 370 minutes, while other algorithms like  PSO and ACO exhibit 405 and 415 minutes. The DSOA  and SSOA performing slightly better at 390 and 380 min­ utes but it is higher than the proposed HDSSSO. The  Epigenomics workload further demonstrates the pro­ posed HDSSSO efficiency with a makespan of 330 min­ utes. The PSO and ACO exhibit makespan of 370 and  380 minutes whereas IBOA exhibit higher makespan of  540 minutes which is higher than the proposed. For the\nLIGO workload the proposed HDSSSO exhibits the low­ est makespan of 405 minutes and outperforms PSO which  exhibits 435 minutes, ACO which exhibits 445 minutes,  and WOA which exhiit 440 minutes. The DSOA and  SSOA exhibit a makespan of 430 and 410 minutes which  is higher than the proposed HDSSSO.\nScheduling overhead The scheduling overhead of the optimization models for  four different workloads are comparatively presented in  Fig. 14. From the results it can be observed that for all  workloads the scheduling overhead increases as the num­ ber of tasks grows. This is due to the increased computa­ tional complexity of managing more tasks.\nFigure 14 exhibits the scheduling overhead compari­ son for proposed and existing optimization algorithms  for four workloads. Scheduling overhead refers to the  additional time acquired to allocate tasks to resources.\nFig. 13  Make span analysis using different workload\n\n\n--- Page Break ---\n\nPage 21 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nMinimizing scheduling overhead is essential for efficient  workflow management. In the CyberShake workload  the proposed HDSSSO attains a scheduling overhead of  36 seconds for 2000 tasks which is better than PSO which  attains 34 seconds and HBOA which attains 35 seconds.  The ACO and IBOA exhibit 39 and 45 seconds as sched­ uling overhead whereas DSOA and SSOA depict higher  overheads at 37 and 43 seconds which is higher than the  proposed HDSSSO. In the Montage workload the pro­ posed HDSSSO exhibits 40 seconds of overhead which is  lower than most algorithms except HBOA at 38 seconds.  The PSO which exhibits 41 seconds and the ACO, IBOA  demonstrate the highest overheads at 48, 50 seconds  respectively. For the Epigenomics workload the proposed  HDSSSO exhibits a scheduling overhead of 44 seconds  outperforming PSO and HBOA at 48 and 40 seconds  respectively. Whereas the ACO and IBOA exhibit much  higher overheads of 52 and 55 seconds compared to the\nproposed HDSSSO. In the LIGO workload the proposed  HDSSSO exhibits a moderate scheduling overhead of  50 seconds. The PSO exhibits 52 seconds whereas ACO  and IBOA exhibit 55 and 60 seconds respectively, which  is higher than the proposed HDSSSO. The performance  of HDSSSO across all workloads indicates that the pro­ posed HDSSSO balances the task allocation and resource  management which leads to better overhead compared  to existing optimization algorithms. Table 7 presents the  numerical values of scheduling overhead for different  workloads considering 2000 tasks.\nComputational complexity The computational complexity of the proposed Dolphin  Swarm Sparrow Search Optimization (DSSSO) model  and the existing optimization models are analyzed to  understand the performance and scalability of each  model. The existing ACOA computational complexity is\nFig. 14  Scheduling overhead analysis for different workload\n\n\n--- Page Break ---\n\nPage 22 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nobtained as O\n(\nn2)\nwhereas the PSOA and WOA com­ putational complexity are obtained as (O (n • t)). Hybrid  Bat Optimization Algorithm (HBOA) has a complexity of  (O (n • t)), where (t) represents the number of iterations,  due to the pulse rate updates and velocity adjustments  of each bat. The Improved Bat Optimization Algorithm  (IBOA) introduces additional complexity in updating  loudness and frequency ranges but remains on the same  order (O (n • t)). Similarly, Dolphin Swarm Optimization  (DSO) has a complexity of\n(\nO\n(\nn2))\nwhich is due to the  echolocation and cooperation processes among dolphins.  Sparrow Search Algorithm (SSA) has a complexity of  (O (n • d)) which reflects the influence of problem dimen­ sionality on its performance. Whereas the proposed  hybrid DSSSO model, the complexity arises from the  combination of Dolphin Swarm Optimization (DSO) and  Sparrow Search Algorithm (SSA). In each iteration, DSO  requires\n(\nO\n(\nn2))\n, where (n) is the number of dolphins  in the swarm to update the positions and calculate the  fitness of each dolphin. The echolocation and predation  processes further contribute to this complexity. Mean­ while SSA introduces additional computational overhead  as it updates the positions of sparrows based on forag­ ing and predator-avoidance behaviors. This introduces  a complexity of (O (n • d)), where (d) is the problem’s  dimensionality. As a result, the combined complexity  of DSSSO is calculated as\n(\nO\n(\nn2 + n • d\n))\n, making it\nmore computationally intensive than other optimization  methods.\nThe quantitative performance comparison in Table  8 clearly indicates that the proposed DSSSO algo­ rithm consistently outperforms the best baseline meth­ ods across all evaluated metrics. In terms of makespan,  DSSSO achieves an average reduction of 9.4%, complet­ ing workflow executions faster than SSOA, which was  previously the closest performer. This indicates superior  scheduling efficiency and a reduced total execution time.  Similarly, DSSSO demonstrates an 11.7% lower energy  consumption, which is particularly critical for large-scale  cloud data centers aiming to minimize their energy foot­ print and operational costs.\nIn terms of cost efficiency, DSSSO achieves an average  12.8% reduction in resource usage costs compared to the  best baseline, reflecting its ability to allocate resources  more judiciously and avoid under- or over-utilization.  Moreover, the model attains a 6.3% higher resource uti­ lization, confirming that it ensures better engagement  of available virtual machines without leaving them idle.  Finally, DSSSO reduces scheduling overhead by 8.1%,  showing that even with its hybrid complexity, the model  manages task allocation efficiently with minimal delay.\nThese improvements collectively highlight DSSSOs  effectiveness in balancing multiple competing objectives  in workflow scheduling, ensuring not only performance  but also sustainability and economic viability in cloud  computing environments.\nDespite the demonstrated performance of the DSSSO  algorithm in simulation environments, its real-world  deployment presents several practical challenges. Firstly,  the computational complexity of the hybrid algorithm is  significantly higher than that of single optimization tech­ niques, due to the dual-phase nature involving both dol­ phin swarm behaviors and sparrow dynamics. This could  result in increased scheduling latency, especially in time- sensitive cloud environments handling thousands of con­ current workflows.\nSecondly, the parameter sensitivity of DSSSO poses a  challenge for dynamic tuning in real-time environments.  The need to manually calibrate multiple hyperparameters  such as population size, noise distance, safety thresh­ olds, and convergence control coefficients may reduce  its adaptability in heterogeneous and volatile cloud  infrastructures.\nThirdly, scalability issues may arise when the num­ ber of virtual machines or tasks increases rapidly. While  the DSSSO shows promise in controlled simulations,  handling multi-tenant, large-scale, and geographically  distributed data centers might introduce unpredictable  performance variations, network delays, or scheduling  bottlenecks.\nTable 7  Scheduling overhead analysis for workloads S.  No\nMethods Tasks (2000) vs Scheduling Overhead (Sec) Cybershake Montage Epigenomics Ligo 1 PSOA 34 41 48 52 2 ACOA 39 48 52 55 3 WOA 38 42 47 48 4 HBOA 35 38 40 42 5 IBOA 45 50 55 60 6 DSOA 37 39 43 46 7 SSOA 43 46 50 56 8 Proposed  HDSSSO\n36 40 44 50\nTable 8  Quantitative analysis of proposed hybrid model Metric Average  Improvement  Over Best  Baseline\nDSSSO Value  (avg)\nBest Base­ line Value  (avg)\nMakespan ↓ 9.4% 366.25 min 404.2 min  (SSOA) Energy Consumption ↓ 11.7% 3.33 × 105 J 3.78 × 105 J  (DSOA) Cost ↓ 12.8% 2.85 × 104 $ 3.27 × 104 $  (SSOA) Resource Utilization ↑ 6.3% 0.91 0.85 (WOA) Scheduling Overhead ↓ 8.1% 42.5 sec 46.3 sec  (DSOA)\n\n--- Page Break ---\n\nPage 23 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nFinally, integrating DSSSO into existing cloud work­ flow management systems requires compatibility with  orchestration platforms and overhead-aware scheduling  layers, which may involve architectural modifications or  API-level integrations not always feasible in production  environments.\nStatistical analysis To further validate the superiority of the proposed  DSSSO model over competing algorithms, a statisti­ cal analysis was conducted on the experimental results  obtained from multiple independent simulation runs.  Each workflow experiment was executed 30 times  to account for the stochastic nature of metaheuristic  algorithms.\nA one-way Analysis of Variance (ANOVA) test was  initially performed to determine whether there were  statistically significant differences among the means of  the compared algorithms (Hybrid Bat Optimization,  Improved Bat Optimization, and DSSSO) across key per­ formance metrics such as makespan, energy consump­ tion, cost, and resource utilization. The ANOVA results  confirmed significant differences at a 95% confidence  level (p < 0.05) for all metrics.\nTo further strengthen the analysis, pairwise compari­ sons between DSSSO and each baseline method were  carried out using the Wilcoxon signed-rank test, which  does not assume normal distribution of data. The results  showed that DSSSO consistently achieved significantly  better performance, with p-values below 0.01 in nearly  all cases. For example, the makespan improvements  of DSSSO over IBO and HBO recorded p = 0.008 and  p = 0.004, respectively, indicating strong evidence against  the null hypothesis of equal performance.\nIn addition, the mean and standard deviation of results  over 30 runs were reported for each metric. DSSSO dem­ onstrated not only superior average performance, but  also lower variance compared to baseline algorithms,  highlighting its robustness and stability. For instance, in  the Montage workflow, DSSSO reduced makespan vari­ ance by nearly 20% relative to IBO.\nThese statistical findings validate that the improve­ ments achieved by DSSSO are not due to random chance  but are statistically significant and repeatable across dif­ ferent workflows and experimental conditions.\nDiscussion The superior performance of the proposed DSSSO model  can be attributed to its effective balance between explo­ ration and exploitation during the optimization process.  The Dolphin Swarm Optimization phase provides strong  global exploration by simulating cooperative foraging  and wide-area search, which prevents premature con­ vergence and ensures diverse candidate solutions in the\nearly iterations. This global search capability is crucial  for handling the high-dimensional and complex search  space of workflow scheduling, where task-to-resource  mappings can easily lead to local optima. On the other  hand, the Sparrow Search Algorithm phase refines the  search through adaptive role-based behaviors that inten­ sify exploitation around promising regions, allowing the  algorithm to fine-tune resource allocation with higher  precision. The seamless integration of these two phases  enables DSSSO to dynamically transition from explora­ tion to exploitation, maintaining diversity while progres­ sively improving solution quality. This balance directly  contributes to the observed improvements in makespan,  energy efficiency, and cost reduction, as the algorithm  is both capable of identifying high-quality global solu­ tions and ensuring their stability through precise local  optimization.\nConclusion A hybrid optimization algorithm for optimal scheduling  of workflow task is presented using Dolphin Swarm (DS)  and Sparrow Search Optimization (SSO) algorithm as a  hybrid model (HDSSSO). The proposed hybrid optimi­ zation algorithm DSSSO effectively addresses the chal­ lenges of multi-objective cloud workflow scheduling. The  features of dolphin swarm optimization are incorporated  with sparrow search optimization algorithm to obtain  balance between exploration and exploitation, prevent­ ing premature convergence and refining solutions. The  hybrid optimization-based scheduling performance is  evaluated through simulation analysis considering bench­ mark workloads like cybershake, montage, epigenomics  and Ligo. The performances are evaluated using resource  utilization, cost, energy consumption and make span.  Results present the superior performance of proposed  scheduling model in terms of minimum energy consump­ tion, cost, and make span and maximum resource utiliza­ tion compared to existing hybrid bat optimization and  improved bat optimization algorithm-based scheduling  approaches. One of the minor limitations of the proposed  model is its increased computational complexity while  handling large-scale workflows. Also, the combination  of Dolphin Swarm and Sparrow Search algorithms may  lead to higher resource consumption compared to exiting  optimization algorithms. In the future, this research work  can be extended using learning algorithms to schedule  the workflows for improved resource utilization.\nAcronyms and symbols DSOA\t \u0007Dolphin swarm optimization algorithm SSA\t \u0007Sparrow search algorithm PSOA\t \u0007Particle swarm optimization algorithm ACOA\t \u0007Ant colony optimization algorithm WOA\t \u0007Whale optimization algorithm QoS\t \u0007Quality of service SLA\t \u0007Service level agreement\n\n--- Page Break ---\n\nPage 24 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nCPU\t \u0007Central processing unit IBOA\t \u0007Improved bat optimization algorithm HBOA\t \u0007Hybrid bat optimization algorithm tpv\t \u0007Tuning parameter taij\t \u0007Task allocation variable ov\t \u0007Optimization variable Dki\t \u0007Distance between the best solution and current  position Dkli\t \u0007Distance between solution obtained at single  instance li and best solution ki r1\t \u0007Look span radius r2\t \u0007Encompassing sweep T1\t \u0007Peak search time Ujt\t \u0007Total noise in every dimension Tij\t \u0007Transmission time matrix ptot\t \u0007Total power consumption pmax\t \u0007Maximum power utilized pmin\t \u0007Minimum power utilized Υ\t \u0007Processing unit usage rpu\t \u0007Resource utilization CPUi\t \u0007Capacity of CPU for task iii mk\t \u0007Makespan E.Node\t \u0007Exit node ft\t \u0007Finish time of a task cw\t \u0007Workflow cost Pmch\t \u0007Physical machine charge rate per second tp1, tp2, tp3, tp4\t \u0007Weighting parameters in the fitness function\nAcknowledgements Not Applicable.\nAuthor contributions All the authors contributed to this research work in terms of concept creation,  conduct of the research work, and manuscript preparation, and revision of the  manuscript.\nFunding No funding was received for this research work.\nData availability The datasets used and/or analyzed during the current study are available from  the corresponding author upon reasonable request.\nDeclarations\nEthics approval and consent to participate Not Applicable.\nConsent for publication Not Applicable.\nCompeting interests The authors declare no competing interests.\nReceived: 13 November 2024 / Accepted: 7 December 2025\nReferences 1.\t Reddy V, Pillareddy, Karri GR (2023) MONWS: multi-objective normalization  workflow scheduling for cloud computing. Appl Sci 13(2):1–21 2.\t Manoharan JS (2021) A two stage task scheduler for effective load optimiza­ tion in cloud - FoG architectures. J Electron Inf 3(3):224–242 3.\t Masdari M, Zangakani M (2020) Efficient task and workflow scheduling in  inter-cloud environments: challenges and opportunities. J Supercomput  76:499–535 4.\t Ahmad Z, Jehangiri AI, Ala’anzy MA, Othman M, Latip R, Uz Zaman SK et al.  (2021) Scientific workflows management and scheduling in cloud comput­ ing: taxonomy, prospects, and challenges. IEEE Access 9:53491–53508\n5.\t Abazari F, Analoui M, Takabi H, Fu S (2019) Mows: multi-objective workflow  scheduling in cloud computing based on heuristic algorithm. Simul Modell  Pract Theory 93:119–132 6.\t Lei J, Wu Q, Xu J (2022) Privacy and security-aware workflow scheduling in a  hybrid cloud. Future Gener Comput Syst 131:269–278 7.\t Hosseinzadeh M, Ghafour MY, Hama HK, Vo B, Khoshnevis A (2020) Multi- objective task and workflow scheduling approaches in cloud computing: a  comprehensive review. J Grid Comput 18:327–356 8.\t Farid M, Latip R, Hussin M, Abdul Hamid NAW (2020) A survey on QoS  requirements based on particle swarm optimization scheduling techniques  for workflow scheduling in cloud computing. Symmetry 12(4):1–27 9.\t Senthilkumar S, Saranya E, Kavitha M, Selvakumar A, Rajasri S, Ramiya R  (2023) A novel and smart administrative door lock and open system using  face recognition. In Proceedings of the Second International Conference on  Automation, Computing and Renewable Systems (ICACRS-2023), pp 917–923 10.\t Tao S, Xia Y, Ye L, Yan C, Gao R (2023) DB-ACO: a deadline-budget constrained  ant colony optimization for workflow scheduling in clouds. IEEE Trans Autom  Sci Eng 1–16 11.\t Li Y, Chen D, Hao J (2023) Cloud workflow scheduling optimization research  based on ant colony algorithm. Acad J Comput Inf Sci 6(5):9–13 12.\t Manivannan R, Senthilkumar S, Kalaivani K, Prathap N (2024) Performance  enhancement of cloud security with migration algorithm for choosing virtual  machines in cloud computing. Eng Res Express 1–14 13.\t Mangalampalli S, Karri GR, Satish GN (2023) Efficient workflow scheduling  algorithm in cloud computing using whale optimization. Procedia Comput  Sci 218:1936–1945 14.\t Gupta I, Kumar MS, Jana PK (2018) Efficient workflow scheduling algorithm  for cloud computing system: a dynamic priority-based approach. Arab J Sci  Eng 43:7945–7960 15.\t Choudhary A, Gupta I, Singh V, Jana PK (2018) A GSA based hybrid algorithm  for bi-objective workflow scheduling in cloud computing. Future Gener  Comput Syst 83:14–26 16.\t Bacanin N, Zivkovic M, Bezdan T, Venkatachalam K, Abouhawwash M (2022)  Modified firefly algorithm for workflow scheduling in cloud-edge environ­ ment. Neural Comput Appl 34:9043–9068 17.\t Aggarwal A, Dimri P, Agarwal A, Bhatt A (2021) Self-adaptive fruit fly algo­ rithm for multiple workflow scheduling in cloud computing environment.  Kybernetes 50(6):1704–1730 18.\t Belgacem A, Beghdad-Bey K (2022) Multi-objective workflow scheduling in  cloud computing: trade-off between makespan and cost. Cluster Comput  25:579–595 19.\t Alsurdeh R, Calheiros RN, Matawie KM, Javadi B (2021) Hybrid workflow  scheduling on edge cloud computing systems. IEEE Access 9:134783–134799 20.\t Saeedi S, Khorsand R, Bidgoli SG, Ramezanpour M (2020) Improved many- objective particle swarm optimization algorithm for scientific workflow  scheduling in cloud computing. Comput Ind Eng 147:1–23 21.\t Wang P, Lei Y, Agbedanu PR, Zhang Z (2020) Makespan-driven workflow  scheduling in Clouds using immune-based PSO algorithm. IEEE Access  8:29281–29290 22.\t Arora N, Banyal RK (2022) A particle grey wolf hybrid algorithm for workflow  scheduling in cloud computing. Wireless Pers Commun 122:3313–3345 23.\t Thekkepuryil JKV, Suseelan DP, Keerikkattil PM (2021) An effective meta- heuristic based multi-objective hybrid optimization method for workflow  scheduling in cloud computing environment. Cluster Comput 24:2367–2384 24.\t Mohammadzadeh A, Masdari M, Gharehchopogh FS (2021) Energy and  cost-aware workflow scheduling in cloud computing data centers using a  multi-objective optimization algorithm. J Netw Syst Manag 29(31):1–34 25.\t Iranmanesh A, Naji HR (2021) DCHG-TS: a deadline-constrained and cost- effective hybrid genetic algorithm for scientific workflow scheduling in cloud  computing. Cluster Comput 24:667–681 26.\t Aziza H, Krichen S (2020) A hybrid genetic algorithm for scientific workflow  scheduling in cloud environment. Neural Comput Appl 32:15263–15278 27.\t Al-Khanak EN, Lee SP, Khan SUR, Behboodian N, Khalaf OI, Verbraeck A et al.  (2021) A heuristics-based cost model for scientific workflow scheduling in  cloud. Comput Mater Continua 67(3):3265–3282 28.\t Singh V, Gupta I, Jana PK (2020) An energy efficient algorithm for workflow  scheduling in IaaS cloud. J Grid Comput 18:357–376 29.\t Chandrashekar C, Krishnadoss P, KedaluPoornachary V, Ananthakrishnan B,  Rangasamy K (2023) HWACOA scheduler: hybrid weighted ant colony optimi­ zation algorithm for task scheduling in cloud computing. Appl Sci 13(6):3433 30.\t Banerjee P, Roy S, Sinha A, Hassan MM, Burje S, Agrawal A, Bairagi AK, Alsha­ thri S, El-Shafai W (2023) MTD-DHJS: makespan-optimized task scheduling\n\n--- Page Break ---\n\nPage 25 of 25 Subashree et al. Journal of Cloud Computing           (2025) 14:80\nalgorithm for cloud computing with dynamic computational time prediction.  IEEE Access 31.\t Khaledian N, Khamforoosh K, Akraminejad R, Abualigah L, Javaheri D (2024)  An energy-efficient and deadline-aware workflow scheduling algorithm in  the fog and cloud environment. Computing 106(1):109–137 32.\t Saravanan G, Neelakandan S, Ezhumalai P, Maurya S (2023) Improved wild  horse optimization with levy flight algorithm for effective task scheduling in  cloud computing. J Cloud Comput 12(1):24 33.\t Mohammadzadeh A, Masdari M (2023) Scientific workflow scheduling in  multi-cloud computing using a hybrid multi-objective optimization algo­ rithm. J Ambient Intel Humaniz Comput 14(4):3509–3529 34.\t Arora N, Banyal RK (2021) Workflow scheduling using particle swarm optimi­ zation and gray wolf optimization algorithm in cloud computing. Concurr  Comput Pract Exp 33(16):e6281 35.\t Wang Y, Zuo XQ (2021 May) An effective cloud workflow scheduling  approach combining PSO and idle time slot-aware rules. IEEE/CAA J Autom  Sin 8(5):1079–1094 36.\t Anbarkhan SH, Rakrouki MA (2023) An enhanced PSO algorithm for schedul­ ing workflow tasks in cloud computing. Electronics 12(12):article number  2580\n37.\t BahraniPour F, Farshi M, Ebrahimi Mood S (2025) Enhanced multi-objective  cuckoo search with migration operator for benchmark optimization and IoT  task scheduling in cloud-fog computing. J Supercomput 81:1024. ​h​t​t​p​s​:​/​/​d​o​i​.​ o​r​g​/​1​0​.​1​0​0​7​/​s​1​1​2​2​7​-​0​2​5​-​0​7​5​3​1​-​0 38.\t Aydi M, Nouri HE, Driss OB (2025) Multi-objective task scheduling in fog- cloud environments: LS-NSGA-II optimization and blockchain integration for  enhanced security and efficiency. In 2025 13th International Symposium on  Digital Forensics and Security (ISDFS), Boston, MA, USA, pp 1–6. ​h​t​t​p​s​:​/​/​d​o​i​.​o​r​ g​/​1​0​.​1​1​0​9​/​I​S​D​F​S​6​5​3​6​3​.​2​0​2​5​.​1​1​0​1​2​0​1​6 39.\t Sobhanayak S (2023) MOHBA: multi-objective workflow scheduling in cloud  computing using hybrid bat algorithm. Computing 105:1–24\nPublisher’s Note Springer Nature remains neutral with regard to jurisdictional claims in  published maps and institutional affiliations.",
+  "equations": [
+    {
+      "page": 7,
+      "raw_extracted": "processing cores and cycle times will be different for  each virtual machine. The SLA specified either by user or  service provider provides the details of service and QoS  parameters. Violating the expectations will cause pen­ alty for both parties. Multi-task applications should run  smoothly on virtual machines and it is defined based on  the number of cores required to process the user tasks. In  the proposed model mathematical formulation, a set of  interdependent tasks of workflow application are consid­ ered. The tasks need to be executed with correct sequen­ tial order on a heterogenous virtual machines. By using  direct acyclic graph, the workflow application is modeled.  Consider if there are N virtual machines then it is repre­ sented as Npm = npm1, npm2, npm3, . . . npmn. The tasks  are represented as tuple tj = {m, j, pe} which provides  the details like identifier (j), length of identifier (m) in  million instruction and number of processors (pe) run­ ning for task on virtual machine.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "minh =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "x ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "v=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "y ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "i=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "z ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "j=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "tpvtaijov\b (1)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "z ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "j=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "taij = 1, i = 1, 2, . . . , y\b (2)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "x ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "v=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "tpv = 1, 0 ≤tpv ≤1\b (3)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Where i = 1, 2, 3 . . . .y : index of tasks in the workflow.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "j = 1, 2, 3 . . . .z : index of virtual machines (VMs) v = 1, 2, 3 . . . .x : index of physical machines (hosts)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "Decision variables taj ∈{0, 1} :task allocation variable, equals 1 if task i is  assigned to VM j, and 0 otherwise.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "•  ov ∈{0, 1}: host activation variable, equals 1 if  physical machine v is active (i.e., at least one task is  assigned to a VM running on it), and 0 otherwise.  \t•  si > 0 : start time of task i.  \t•  fi ≥0 : finish time of task i.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "•  tpv : unit cost or power consumption rate of physical  machine v.  \t•  eti,j : execution time of task iii on VM j.  \t•  bwj,l : communication bandwidth between VM j  and VM l.  \t•  outp→i : data size transferred from predecessor task  p to task i.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "If the physical machine is allocated with a workflow task,  then taij is considered as 1 otherwise it is considered as 0  based on the conditions given in Eqs (2) and (3). The sum  of tpv is limited to 1 and it is used as a balancing factor  between resource utilization, cost, energy consumption  and make span.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "In the optimization initialization phase, dolphins are  represented as [d1, d2, .., dn] and for each dolphin two  variables li and ki are assigned to represent the best solu­ tion obtained at single instant (li) and the best solution  (ki) obtained from others respectively. The initial posi­ tion of dolphin is defined as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "xd = (xd1, xd1, ..., xdn)\b (4)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 8,
+      "raw_extracted": "where the position vector of dth dolphin in search space  is indicated as xd. The dolphins are randomly initial­ ized with boundary search space of (xmax, xmin). In the  search space, dolphins explore their surroundings and  make noises in arbitrary directions which is described as  Ui = [ud1, ud2, .., udn]. The total noise in every dimension  and noise direction is collectively termed using Uj. When",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "the dolphin renders a sound Uj at t, it starts to search for  new solution which is mathematically given as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "dijt = di −Ujt\b (5)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "xd (t + 1) = xd(t) + α.(xbest (t) −xd(t) + β.N (0, 1)\b (6)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where the new position of the dth dolphin is indicated as  xd (t + 1), best position is indicated as xbest (t). α and  β indicates the learning factor and random scaling fac­ tor respectively. Random noise in normal distribution is  indicated as N (0, 1). Further the fitness of each dolphin  is evaluated considering the objective function of the  proposed scheduling problem as follows.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "fit = tp1ms + tp2cw + tp3ec + tp4",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "1 Trpu \b (7)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where tp is the tuning parameter, ms indicates the make  span, cw indicates the workflow cost, ec indicates the  energy consumption and rpu indicates the resource uti­ lization. The tuning parameters tp1, tp2, tp3 and tp4 are  essential in adjusting the balance between the make span  (ms), workflow cost (cw), energy consumption (ec), and  resource utilization (rpu). These values are selected after  analyzing the effect of varying each parameter on the  objective function and not fixed randomly. Since the fit­ ness function of DSO is used to quantity the objective  function, the better solution will effectively minimize the  objective function parameters.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "The second phase has two processes as reception and  call process in which reception occurs only after the call  process. In the optimization model a transmission time  matrix is used to preserve the reception and call process  interchange. The transmission time matrix is described  using Tij and it exactly defines the time remaining for the  noise to pass through dolphin i to dolphin j. It is essential  to reduce the transmission time matrix into one till the  optimization reaches the reception process. If Tij = 0,  then di hears the noise send from dj. Upon receiving the  noise, the transmission time matrix is replaced with full  transmission time and the fitness is evaluated again.  In the call process, all the dolphins make noise to alert  others thus the transmission time matrix is checked as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Tij >",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "[",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Ddi,j A.Speed",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ", where Ddi,j is the distance between",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "dolphin di and dj, the acceleration constant is given as  A and the noise speed attribute is indicated using speed.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "In the final predation phase, each dolphin should mea­ sure the encompassing sweep r2. Before that for each  dolphin the look span radius r1 is calculated as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "r1 = T1 ⋅ speed\b (8)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where T1 indicates the peak search time. Further, the  encompassing sweep measurement is presented based  on the dolphin position in three cases. For demonstrat­ ing the three cases, the position of dolphin, look span  radius r1, encompassing sweep r2 and the best solution  Dki obtained from others are considered. In the first  case, Dki ≤r1 ⋅ speed is considered based on that the  encompassing span is measured using the expression  given below.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "r2 =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "1 −2 e",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Dk, for e > 2\b (9)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where the radius diminishing coefficient is given as  e. Based on the obtained encompass sweep, the dolphin’s  new position is obtained as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ndi = ki + ((di −ki) /Dki) ∗r2\b (10)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where ndi indicates the dolphin’s new position. In the  next cases, the Dki > r1 and Dk > Dkl, the dolphin  accepts the information from other dolphin and the  encompassing sweep is calculated as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "r2 =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "1 −(Dki/fit) −(Dki −Dkli/fit) eDk (1/fit)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": ")",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Dki, for e > 2\b(11)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "where Dkli indicates the distance between the solution  obtained at single instant li and best solution ki obtained  from others. Based on this, the new position is updated  as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "ndi = ki + (r and||r and) r2\b (12)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "In the last case, the dolphin moves to an arbitrary posi­ tion and its condition is similar to Dki > Dkli and the  encompassing sweep and new position are obtained  based on Eq. (9) and (10). Figure 2(a)-(c) depicts the  initial condition of all the three cases and Fig. 3(a)-(c)  depicts the position updated results of all the cases.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 9,
+      "raw_extracted": "Based on these three cases, the dolphin encompassing  sweep and new positions are obtained. Once the dol­ phin moved into a new position, the position wellness is  compared with best solution (ki) and updated if the new  position is better than the best solution. Otherwise, the  current position is considered best, and the process is",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "x1,1 x1,2 . . . x1,d x2,1 x2,2 . . . x2,d ...",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "... xn,1 xn,2 . . . xn,d",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\b (13)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "where the number of sparrows is indicated using n and  the fitness of each sparrow is obtained as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "f [x1,1 x1,2 . . . x1,d] f [x2,1 x2,2 . . . x2,d] ... ...",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "... f [xn,1 xn,2 . . . xn,d]",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "\b (14)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "xt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i,j =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "{",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i,je(−i/αitermax) ifr < sτ xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "i,j + φθ ifr ≥sτ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "}",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 10,
+      "raw_extracted": "where α is a random value and its range is given as [0,1],  sτ indicates the safety threshold and its range is given  as [0.5, 1] and the alarm value is indicated using r and  its range is given as [0,1]. φ is a random number which  follows normal distribution and θ is used to indicate the  matrix with dimension of 1 ⋅ d with each element inside  the matrix is 1. When r < sτ, then there are no predators",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "around the region so that the birds will encounter a wide  search for food and if r ≥sτ, then some sparrows iden­ tified predators and all the sparrow need to fly from the  current place to safety place immediately. In the food  searching process, some scroungers monitor the mak­ ers frequently. If the makers could not be able to identify  enough food, then scroungers will fly to another location  and search for the food. If the scroungers identified food  in the new location, they get the food to makers imme­ diately otherwise the process is continued. The position  update of scroungers is mathematically formulated as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " φe",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "worst−xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j i2",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u001b",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "if i > n/2 xt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "p +",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u001a\u001axt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j −xt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u001a\u001a A+θ otherwise",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\b(16)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "where the position occupied by the predator is indicated  using xp and the global worst location is indicated using",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xworst. A represents a matrix in which each element is  randomly assigned with +1 or −1. If the sparrows at the  edge are aware of danger and move towards a safe loca­ tion while the middle sparrow randomly walk close to  others. This condition is mathematically framed as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xt+1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "best + β",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j −xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "best",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "iffi > fg",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j + g",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u001b",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "|xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "i,j−xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "worst| (fi−fw)+ρ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\u001a",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "iffi = fg",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": " ",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "\b(17)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "where the current global optimal location is indicated  using xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "best, the step size control parameter is given as  β, g is the random number and its range is given as [0,1].  The current sparrow fitness is indicated using fi and its  global best and worst fitness values are indicated using fg  and fw respectively. A small constant ρ is added to avoid  zero division error. The condition fi > fg defines that the  sparrow is at the edge and the location of center popu­ lation which is safe is indicated through the xt",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 11,
+      "raw_extracted": "best. The  condition fi = fg describes that the sparrows in the mid­ dle are aware of danger and move closer to others and g  describes the direction of movement and the step size.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Initial Population 50 14 Safety Threshold (sτ) 0.6 15 Explorers-to-Scroungers Ratio 70:30 16 Iteration Count 100 17 Particle Swarm  Optimization  (PSO)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Population Size 50 23 Evaporation Rate (ρ) 0.5 24 Pheromone Influence (α) 1.0 25 Heuristic Influence (β) 2.0 26 Maximum Iterations 100 27 Whale Optimi­ zation Algo­ rithm (WOA)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 13,
+      "raw_extracted": "Encircling Coefficient (b) 1.2 31 Population Size 50 32 Convergence Control Parameter  (β)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Makespan (mk) = E.Nodeft\b (16)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where exist node is indicated using E.Node and ft indi­ cates the finish time. The cost metric is used to analyze  the expenses for utilizing the resources of cloud service  providers. The charges are calculated on a second basis  and the task completion time is the final time taken by  the application. The cost to perform a task in a physical  machine is calculated considering the execution time  multiplied with physical machine charge rate per second.  Mathematically the cost is expressed as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "cw =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "n ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "i=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "(Taskft −Taskst) ⋅ Pmch\b (17)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where starting and finishing time of task is indicated  using st and ft, the running cost of physical machine  is indicated using Pmch and the total cost is indicated  using cw. The energy consumption is calculated consider­ ing the physical machine energy utilization. All the tasks  are performed in physical machine processing units and  the overall usage is calculated as follows.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "ptot = pmin + (pmax −pmin) Υ\b (18)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where total power consumption is represented as ptot,  the maximum power utilized during full capacity opera­ tions is indicated using pmax and the minimum usage is  indicated using pmin. The processing unit usage is a time  dependent quantity which is indicated using Υ. From this  energy consumption is calculated as follows.",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "ec =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "t1 ∫ t0",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "p (Υi (t))\b (19)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "rpu =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "n ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "k=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "usage (k) /CPUi\b (20)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "where the number of active tasks is indicated using n and  the capacity of CPU is indicated using CPUi. for n physi­ cal machines, the CPU load is expressed as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "Trpu =",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "n ∑",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "i=1",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 14,
+      "raw_extracted": "rpu/n\b (21)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "obtained as O",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "n2)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "whereas the PSOA and WOA com­ putational complexity are obtained as (O (n • t)). Hybrid  Bat Optimization Algorithm (HBOA) has a complexity of  (O (n • t)), where (t) represents the number of iterations,  due to the pulse rate updates and velocity adjustments  of each bat. The Improved Bat Optimization Algorithm  (IBOA) introduces additional complexity in updating  loudness and frequency ranges but remains on the same  order (O (n • t)). Similarly, Dolphin Swarm Optimization  (DSO) has a complexity of",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "n2))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "which is due to the  echolocation and cooperation processes among dolphins.  Sparrow Search Algorithm (SSA) has a complexity of  (O (n • d)) which reflects the influence of problem dimen­ sionality on its performance. Whereas the proposed  hybrid DSSSO model, the complexity arises from the  combination of Dolphin Swarm Optimization (DSO) and  Sparrow Search Algorithm (SSA). In each iteration, DSO  requires",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "n2))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": ", where (n) is the number of dolphins  in the swarm to update the positions and calculate the  fitness of each dolphin. The echolocation and predation  processes further contribute to this complexity. Mean­ while SSA introduces additional computational overhead  as it updates the positions of sparrows based on forag­ ing and predator-avoidance behaviors. This introduces  a complexity of (O (n • d)), where (d) is the problem’s  dimensionality. As a result, the combined complexity  of DSSSO is calculated as",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "(",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "n2 + n • d",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "))",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 22,
+      "raw_extracted": "Makespan ↓ 9.4% 366.25 min 404.2 min  (SSOA) Energy Consumption ↓ 11.7% 3.33 × 105 J 3.78 × 105 J  (DSOA) Cost ↓ 12.8% 2.85 × 104 $ 3.27 × 104 $  (SSOA) Resource Utilization ↑ 6.3% 0.91 0.85 (WOA) Scheduling Overhead ↓ 8.1% 42.5 sec 46.3 sec  (DSOA)",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    },
+    {
+      "page": 24,
+      "raw_extracted": "CPU\t \u0007Central processing unit IBOA\t \u0007Improved bat optimization algorithm HBOA\t \u0007Hybrid bat optimization algorithm tpv\t \u0007Tuning parameter taij\t \u0007Task allocation variable ov\t \u0007Optimization variable Dki\t \u0007Distance between the best solution and current  position Dkli\t \u0007Distance between solution obtained at single  instance li and best solution ki r1\t \u0007Look span radius r2\t \u0007Encompassing sweep T1\t \u0007Peak search time Ujt\t \u0007Total noise in every dimension Tij\t \u0007Transmission time matrix ptot\t \u0007Total power consumption pmax\t \u0007Maximum power utilized pmin\t \u0007Minimum power utilized Υ\t \u0007Processing unit usage rpu\t \u0007Resource utilization CPUi\t \u0007Capacity of CPU for task iii mk\t \u0007Makespan E.Node\t \u0007Exit node ft\t \u0007Finish time of a task cw\t \u0007Workflow cost Pmch\t \u0007Physical machine charge rate per second tp1, tp2, tp3, tp4\t \u0007Weighting parameters in the fitness function",
+      "latex": null,
+      "extraction_method": "raw_unicode_flagged"
+    }
+  ],
+  "warnings": []
+}

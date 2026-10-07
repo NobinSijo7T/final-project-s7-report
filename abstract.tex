@@ -1,0 +1,16 @@
+%============================= abstract.tex================================
+\chapter*{Abstract}%
+\addcontentsline{toc}{chapter}{Abstract}%
+\vspace{-20pt}
+
+\begin{spacing}{1.25}
+\noindent Contemporary software engineering workflows are increasingly characterized by high cognitive overload, fragmented tooling, and fragile developer contexts. While Large Language Models (LLMs) and autonomous agents offer transformative potential to automate complex multi-step programming and research tasks, existing solutions typically operate as opaque black boxes, lack rigorous protocol-level sandboxing, suffer from provider lock-in, and incur prohibitive monetary and latency overheads. Furthermore, client-side developer dashboards often fail to deliver reactive, offline-first persistence, while monolithic agent architectures lack structured task planning, multi-provider cost-performance routing, and verifiable safety guarantees.
+
+\vspace{8pt}
+
+\noindent To solve these fundamental engineering and architectural challenges, this project introduces \textbf{PrismSpace}: an intelligent, local-first developer operating environment and multi-agent orchestration platform. PrismSpace integrates a reactive presentation layer built with Next.js 15, React 19, and TypeScript with a high-throughput Python FastAPI Hive protocol backend supporting the open \textbf{Model Context Protocol (MCP)}. Within this architecture, PrismSpace incorporates a dedicated multi-stage Machine Learning subsystem that coordinates: (i) an ultra-low-latency 12-class \textit{Intent Classifier} operating on calibrated TF-IDF and lexical representations; (ii) an adaptive \textit{Multi-Provider Router} that intelligently dispatches tasks across Groq, NVIDIA NIM, OpenAI, Anthropic, and Gemini based on task semantics and cost-latency budgets; (iii) a dynamic \textit{Swarm Dispatcher} formulating Directed Acyclic Graph (DAG) task decompositions; (iv) a calibrated \textit{Human-in-the-Loop Safety Gate} predicting execution anomalies; and (v) single-stage preference alignment via \textit{Odds Ratio Preference Optimization (ORPO)} with LoRA adapters. The browser environment features \textbf{PrismDB}, an ACID-compliant IndexedDB storage layer managed via Dexie.js with reactive \texttt{useLiveQuery} bindings, alongside 23 integrated developer, AI, and productivity tools. Empirical evaluations across curated benchmarks (LMSYS Arena, RouterBench, WildGuardMix, and Agent Trajectories) show that PrismSpace achieves an 89.4\% multi-provider routing accuracy, 0.926 ROC-AUC safety gate discrimination, sub-50ms reactive state propagation, and substantial reductions in LLM operational expenditure.
+
+\end{spacing}
+
+\thispagestyle{plain}
+%=======================================================================
