@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.5)  7 OCT 2026 18:03
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (MiKTeX 25.12) (preloaded format=pdflatex 2026.9.5)  7 OCT 2026 18:33
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1077,7 +1077,7 @@ Package hyperref Warning: Option `pdfpagelabels' has already been used,
 
 Package hyperref Info: Option `colorlinks' set `true' on input line 53.
 LaTeX Font Info:    Trying to load font information for OT1+txr on input line 1
-05.
+09.
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\ot1txr.fd
 File: ot1txr.fd 2000/12/15 v3.1
 )
@@ -1089,48 +1089,48 @@ File: l3backend-pdftex.def 2025-10-09 L3 backend support: PDF output (pdfTeX)
 (abstract.aux) (acknowledgement.aux) (symbol.aux))
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 105.
+LaTeX Font Info:    Checking defaults for OML/txmi/m/it on input line 109.
 LaTeX Font Info:    Trying to load font information for OML+txmi on input line 
-105.
+109.
 
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\omltxmi.fd
 File: omltxmi.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OMS/txsy/m/n on input line 109.
 LaTeX Font Info:    Trying to load font information for OMS+txsy on input line 
-105.
+109.
 
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\omstxsy.fd
 File: omstxsy.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for OMX/txex/m/n on input line 109.
 LaTeX Font Info:    Trying to load font information for OMX+txex on input line 
-105.
+109.
 
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\omxtxex.fd
 File: omxtxex.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 105.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for U/txexa/m/n on input line 109.
 LaTeX Font Info:    Trying to load font information for U+txexa on input line 1
-05.
+09.
 
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxexa.fd
 File: utxexa.fd 2000/12/15 v3.1
 )
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 105.
-LaTeX Font Info:    ... okay on input line 105.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 109.
+LaTeX Font Info:    ... okay on input line 109.
 
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mk
 ii
@@ -1157,15 +1157,15 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 fg
 File: epstopdf-sys.cfg 2021/03/18 v2.0 Configuration of epstopdf for MiKTeX
 ))
-LaTeX Info: Redefining \celsius on input line 105.
-Package gensymb Info: Faking symbols for \degree and \celsius on input line 105
+LaTeX Info: Redefining \celsius on input line 109.
+Package gensymb Info: Faking symbols for \degree and \celsius on input line 109
 .
 
 
 Package gensymb Warning: Not defining \perthousand.
 
-LaTeX Info: Redefining \ohm on input line 105.
-Package gensymb Info: Using \Omega for \ohm on input line 105.
+LaTeX Info: Redefining \ohm on input line 109.
+Package gensymb Info: Using \Omega for \ohm on input line 109.
 
 Package gensymb Warning: Not defining \micro.
 
@@ -1206,13 +1206,13 @@ Package gensymb Warning: Not defining \micro.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring ON on input line 105.
+Package hyperref Info: Link coloring ON on input line 109.
 (main.out) (main.out)
 \@outlinefile=\write4
 \openout4 = `main.out'.
 
-Package tocbasic Info: usage of `tocbibind' detected on input line 105.
-Package hyperref Info: Option `pageanchor' set `false' on input line 110.
+Package tocbasic Info: usage of `tocbibind' detected on input line 109.
+Package hyperref Info: Option `pageanchor' set `false' on input line 114.
 \openout2 = `coverpage.aux'.
 
  (coverpage.tex (design_cover.tex)
@@ -1254,7 +1254,7 @@ LaTeX Font Info:    Trying to load font information for U+txsyc on input line 2
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\utxsyc.fd
 File: utxsyc.fd 2000/12/15 v3.1
 )
-<cek-logo.png, id=282, 293.095pt x 293.095pt>
+<cek-logo.png, id=349, 293.095pt x 293.095pt>
 File: cek-logo.png Graphic file (type png)
 <use cek-logo.png>
 Package pdftex.def Info: cek-logo.png  used on input line 29.
@@ -1273,8 +1273,8 @@ LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <12> not available
 File: cek-logo.png Graphic file (type png)
 <use cek-logo.png>
 Package pdftex.def Info: cek-logo.png  used on input line 18.
-(pdftex.def)             Requested size: 128.0374pt x 128.03642pt.
-LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <20.74> not available
+(pdftex.def)             Requested size: 102.43008pt x 102.42825pt.
+LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <17.28> not available
 (Font)              Font shape `OT1/txr/bx/n' tried instead on input line 23.
 ) [1
 
@@ -1291,7 +1291,7 @@ LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <14.4> not available
 
 
 ]
-Package hyperref Info: Option `pageanchor' set `true' on input line 114.
+Package hyperref Info: Option `pageanchor' set `true' on input line 118.
 \openout2 = `abstract.aux'.
 
  (abstract.tex
@@ -1351,7 +1351,7 @@ ent plat-forms and
 ]) [9]
 Chapter 1.
 
-Underfull \hbox (badness 1184) in paragraph at lines 151--152
+Underfull \hbox (badness 1184) in paragraph at lines 155--156
 \OT1/txr/m/n/12 In con-tem-po-rary soft-ware en-gi-neer-ing, de-vel-op-ers are 
 in-un-dated with an ever-
  []
@@ -1361,12 +1361,9 @@ in-un-dated with an ever-
 
 
 
-]
-LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <17.28> not available
-(Font)              Font shape `OT1/txr/bx/n' tried instead on input line 163.
- [2]
+] [2]
 LaTeX Font Info:    Trying to load font information for TS1+txr on input line 1
-71.
+75.
 
 (C:\Users\nobin\AppData\Local\Programs\MiKTeX\tex/latex/txfonts\ts1txr.fd
 File: ts1txr.fd 2000/12/15 v3.1
@@ -1376,23 +1373,23 @@ Chapter 2.
 [7
 
 ]
-Underfull \hbox (badness 1221) in paragraph at lines 231--231
+Underfull \hbox (badness 1221) in paragraph at lines 237--237
 []\OT1/txr/bx/n/17.28 Dynamic Role Dis-cov-ery and Hu-man Plan-ning
  []
 
 [8]
-Underfull \hbox (badness 3679) in paragraph at lines 238--238
+Underfull \hbox (badness 3679) in paragraph at lines 244--244
 []\OT1/txr/bx/n/17.28 Workflow Schedul-ing, Multi-Cloud Of-fload-ing,
  []
 
 
-Underfull \hbox (badness 1231) in paragraph at lines 239--240
+Underfull \hbox (badness 1231) in paragraph at lines 245--246
 \OT1/txr/m/n/12 Orchestrating agent work-flows and com-pu-ta-tional jobs across
  dis-tributed cloud
  []
 
 [9] [10] [11]
-Underfull \hbox (badness 2837) in paragraph at lines 263--263
+Underfull \hbox (badness 2837) in paragraph at lines 269--269
 []\OT1/txr/bx/n/17.28 Human-in-the-Loop Align-ment and In-struc-tion
  []
 
@@ -1401,7 +1398,7 @@ Chapter 3.
 [15
 
 ] [16] [17]
-Underfull \hbox (badness 1418) in paragraph at lines 365--366
+Underfull \hbox (badness 1418) in paragraph at lines 371--372
 []\OT1/txr/bx/n/12 Tier 6: De-ploy-ment and Per-sis-tence Layer (Pris-mDB + Fou
 n-da-tion
  []
@@ -1416,9 +1413,9 @@ LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <8> not available
 )
 [20] (diagrams/fig_4_3_system_flow.tex) [21] [22]
 LaTeX Font Info:    Font shape `OT1/txr/b/n' in size <6> not available
-(Font)              Font shape `OT1/txr/bx/n' tried instead on input line 441.
+(Font)              Font shape `OT1/txr/bx/n' tried instead on input line 447.
 
-Underfull \hbox (badness 2894) in paragraph at lines 450--451
+Underfull \hbox (badness 2894) in paragraph at lines 456--457
 \OT1/txr/m/n/12 To guar-an-tee local-first data sovereignty and sub-millisecond
  query re-trieval,
  []
@@ -1428,7 +1425,7 @@ LaTeX Font Info:    Calculating math sizes for size <7.5> on input line 51.
 ) [23] [24] [25] [26] [27
 
 ]
-Underfull \hbox (badness 1442) in paragraph at lines 553--554
+Underfull \hbox (badness 1442) in paragraph at lines 559--560
 []|\OT1/txr/m/n/12 Planning Agent (LLM) de-com-poses $\OMS/txsy/m/n/12 T[]$ \OT
 1/txr/m/n/12 into a DAG of sub-tasks
  []
@@ -1438,7 +1435,7 @@ Underfull \hbox (badness 1442) in paragraph at lines 553--554
 ]
 Chapter 5.
 
-Underfull \hbox (badness 2671) in paragraph at lines 605--606
+Underfull \hbox (badness 2671) in paragraph at lines 611--612
 []\OT1/txr/bx/n/12 Styling and An-i-ma-tions: \OT1/txtt/m/n/12 tailwindcss \OT1
 /txr/m/n/12 for re-spon-sive de-sign to-kens,
  []
@@ -1446,31 +1443,31 @@ Underfull \hbox (badness 2671) in paragraph at lines 605--606
 [29
 
 ]
-Overfull \hbox (12.84131pt too wide) in paragraph at lines 631--631
+Overfull \hbox (12.84131pt too wide) in paragraph at lines 637--637
 []      \OT1/txtt/m/n/10.95 agent_chat_messages: '++id, sessionId, [sessionId+c
 reatedAt], role',[] 
  []
 
 [30]
-Underfull \hbox (badness 3078) in paragraph at lines 662--663
+Underfull \hbox (badness 3078) in paragraph at lines 668--669
 []\OT1/txr/bx/n/12 MCP Pro-to-col Client: \OT1/txr/m/n/12 Spawns lo-cal MCP ser
 ver sub-pro-cesses (e.g.,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 662--663
+Underfull \hbox (badness 10000) in paragraph at lines 668--669
 \OT1/txtt/m/n/12 @modelcontextprotocol/server-filesystem\OT1/txr/m/n/12 , \OT1/
 txtt/m/n/12 server-github\OT1/txr/m/n/12 ),
  []
 
 [31]
-Underfull \hbox (badness 10000) in paragraph at lines 670--671
+Underfull \hbox (badness 10000) in paragraph at lines 676--677
 []\OT1/txtt/m/n/12 feature[]engineering.py\OT1/txr/m/n/12 : Builds scikit-learn
  \OT1/txtt/m/n/12 ColumnTransformer
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 670--671
+Underfull \hbox (badness 10000) in paragraph at lines 676--677
 \OT1/txr/m/n/12 pipelines ap-ply-ing \OT1/txtt/m/n/12 TfidfVectorizer(max[]feat
 ures=10000,
  []
@@ -1478,7 +1475,7 @@ ures=10000,
 [32]
 Chapter 6.
 
-Overfull \hbox (15.49768pt too wide) in paragraph at lines 690--691
+Overfull \hbox (15.49768pt too wide) in paragraph at lines 696--697
 []\OT1/txr/bx/n/12 UltraFeedback Bi-na-rized: \OT1/txr/m/n/12 High-quality pref
 -er-ence pairs ($\OMS/txsy/m/n/12 h[]\OML/txmi/m/it/12 ; y[]; y[]\OMS/txsy/m/n/
 12 i$\OT1/txr/m/n/12 )
@@ -1490,81 +1487,60 @@ Overfull \hbox (15.49768pt too wide) in paragraph at lines 690--691
 Chapter 7.
 [37
 
-] [38]
-Chapter 8.
+]
+Underfull \hbox (badness 1122) in paragraph at lines 780--781
+[]\OT1/txr/bx/n/12 Strict Client/Server Sep-a-ra-tion: \OT1/txr/m/n/12 Next.js 
+15 en-forces clean ar-chi-tec-tural
+ []
 
-Underfull \hbox (badness 1205) in paragraph at lines 801--802
+[38]
+Underfull \hbox (badness 10000) in paragraph at lines 793--793
+[]\OT1/txr/bx/n/14.4 Interaction Prim-i-tives, An-i-ma-tion, and Win-dow-ing
+ []
+
+[39] [40]
+Underfull \hbox (badness 1642) in paragraph at lines 826--827
+[]\OT1/txr/bx/n/12 Asynchronous Con-cur-rency (ASGI): \OT1/txr/m/n/12 FastAPI n
+a-tively lever-ages Python
+ []
+
+[41] [42] [43]
+Chapter 8.
+[44
+
+] [45]
+Chapter 9.
+
+Underfull \hbox (badness 1205) in paragraph at lines 908--909
 \OT1/txr/m/n/12 (ORPO), PrismSpace achieves an 89.4% rout-ing ac-cu-racy, a 0.9
 68 ROC-AUC
  []
 
-[39
+[46
 
-] [40] [41
+] [47] [48
 
 ]
-Underfull \hbox (badness 1735) in paragraph at lines 845--846
-\OT1/txr/m/n/12 no. 1, art. 24, 2026. [On-line]. Avail-able: [][]$\OT1/txtt/m/n
-/12 https : / / doi . org / 10 . 1007 /
+Underfull \hbox (badness 1226) in paragraph at lines 990--991
+\OT1/txr/m/n/12 multi-objective cloud work-flow schedul-ing," \OT1/txr/m/it/12 
+Jour-nal of Cloud Com-put-ing\OT1/txr/m/n/12 ,
  []
 
-
-Underfull \hbox (badness 1466) in paragraph at lines 857--858
-[]\OT1/txr/m/n/12 S. Zhuang, Z. Qiao, and G. Zuc-con, ``Re-in-force-ment on-lin
-e learn-ing to
- []
-
-[42]
-Underfull \hbox (badness 1122) in paragraph at lines 872--873
-\OT1/txr/m/n/12 tion of hu-man plan-ning strate-gies,'' \OT1/txr/m/it/12 Be-hav
--ior Re-search Meth-ods\OT1/txr/m/n/12 , vol. 56,
- []
-
-
-Underfull \hbox (badness 1062) in paragraph at lines 878--879
-\OT1/txr/m/n/12 no. 1, art. 174, 2023. [On-line]. Avail-able: [][]$\OT1/txtt/m/
-n/12 https : / / doi . org / 10 . 1186 /
- []
-
-
-Underfull \hbox (badness 1590) in paragraph at lines 884--885
-\OT1/txr/m/n/12 pp. 6211--6222, 2023. [On-line]. Avail-able: [][]$\OT1/txtt/m/n
-/12 https : / / doi . org / 10 . 1007 /
- []
-
-[43]
-Underfull \hbox (badness 1297) in paragraph at lines 896--897
-[]\OT1/txr/m/n/12 E. Vyh-meis-ter, G. Cas-tane, P.-O. []Ostberg, and S. Theveni
-n, ``A re-spon-
- []
-
-
-Underfull \hbox (badness 1852) in paragraph at lines 896--897
-\OT1/txr/m/n/12 si-ble AI frame-work: Pipeline con-tex-tu-al-i-sa-tion,'' \OT1/
-txr/m/it/12 AI and Ethics\OT1/txr/m/n/12 , vol. 3,
- []
-
-
-Underfull \hbox (badness 1325) in paragraph at lines 899--900
-[]\OT1/txr/m/n/12 L. C. Siebert, M. L. Lu-petti, E. Aizen-berg, N. Beck-ers, A.
- Zgonnikov,
- []
-
-[44] (main.aux (coverpage.aux) (certificate1.aux) (declaration.aux)
+[49] [50] (main.aux (coverpage.aux) (certificate1.aux) (declaration.aux)
 (abstract.aux) (acknowledgement.aux) (symbol.aux))
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2025-12-24>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 76B9EB6A504D4F28D400BEF1D311B6F2;14265.
+(rerunfilecheck)             Checksum: 430B1B19D351D7CCF25D25344A891BC8;19401.
  ) 
 Here is how much of TeX's memory you used:
- 32553 strings out of 467871
- 651189 string characters out of 5418377
- 1099703 words of memory out of 5000000
- 60559 multiletter control sequences out of 15000+600000
- 712708 words of font info for 224 fonts, out of 8000000 for 9000
+ 32589 strings out of 467871
+ 651705 string characters out of 5418377
+ 1099853 words of memory out of 5000000
+ 60575 multiletter control sequences out of 15000+600000
+ 710769 words of font info for 221 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  110i,13n,131p,1830b,1603s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/nobin/AppData/Local/Programs/MiKTeX/fonts/type1/public/txfonts/rtcx
@@ -1582,9 +1558,9 @@ eX/fonts/type1/urw/times/utmb8a.pfb><C:/Users/nobin/AppData/Local/Programs/MiKT
 eX/fonts/type1/urw/times/utmr8a.pfb><C:/Users/nobin/AppData/Local/Programs/MiKT
 eX/fonts/type1/urw/times/utmri8a.pfb><C:/Users/nobin/AppData/Local/Programs/MiK
 TeX/fonts/type1/urw/zapfchan/uzcmi8a.pfb>
-Output written on main.pdf (56 pages, 382268 bytes).
+Output written on main.pdf (62 pages, 401978 bytes).
 PDF statistics:
- 870 PDF objects out of 1000 (max. 8388607)
- 200 named destinations out of 1000 (max. 500000)
- 618 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 949 PDF objects out of 1000 (max. 8388607)
+ 222 named destinations out of 1000 (max. 500000)
+ 754 words of extra memory for PDF output out of 10000 (max. 10000000)
 

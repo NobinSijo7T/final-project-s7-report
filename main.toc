@@ -52,12 +52,29 @@
 \contentsline {subsection}{\numberline {6.2.3}Cost and Latency Regression Fidelity}{35}{subsection.6.2.3}%
 \contentsline {section}{\numberline {6.3}System Performance and Latency Benchmarking}{35}{section.6.3}%
 \contentsline {section}{\numberline {6.4}Software Verification and Testing}{35}{section.6.4}%
-\contentsline {chapter}{\numberline {7}Feasibility Study}{37}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Technical Feasibility}{37}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Economic Feasibility}{38}{section.7.2}%
-\contentsline {section}{\numberline {7.3}Schedule and Resource Feasibility}{38}{section.7.3}%
-\contentsline {chapter}{\numberline {8}Conclusion and Future Scope}{39}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Conclusion}{39}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Limitations Encountered}{40}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Future Scope}{40}{section.8.3}%
-\contentsline {chapter}{References}{41}{chapter*.15}%
+\contentsline {chapter}{\numberline {7}Preliminary Analysis}{37}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Analysis of Frontend Technologies and Reactive UI Frameworks}{37}{section.7.1}%
+\contentsline {subsection}{\numberline {7.1.1}Web Application Framework: Next.js 15 and React 19}{38}{subsection.7.1.1}%
+\contentsline {subsection}{\numberline {7.1.2}Styling and Design System: Tailwind CSS}{38}{subsection.7.1.2}%
+\contentsline {subsection}{\numberline {7.1.3}Interaction Primitives, Animation, and Windowing Libraries}{39}{subsection.7.1.3}%
+\contentsline {section}{\numberline {7.2}Analysis of Client-Side Data Persistence Engines}{39}{section.7.2}%
+\contentsline {subsection}{\numberline {7.2.1}Storage Mechanism: Browser IndexedDB vs. Alternatives}{39}{subsection.7.2.1}%
+\contentsline {subsection}{\numberline {7.2.2}Database Abstraction Layer: Dexie.js (PrismDB)}{40}{subsection.7.2.2}%
+\contentsline {section}{\numberline {7.3}Analysis of Backend Framework and Communication Protocols}{41}{section.7.3}%
+\contentsline {subsection}{\numberline {7.3.1}API Framework: FastAPI with Python 3.10+}{41}{subsection.7.3.1}%
+\contentsline {subsection}{\numberline {7.3.2}Event Streaming Protocol: Server-Sent Events (SSE) vs. WebSockets}{41}{subsection.7.3.2}%
+\contentsline {section}{\numberline {7.4}Analysis of Tool Protocols: Model Context Protocol (MCP)}{42}{section.7.4}%
+\contentsline {subsection}{\numberline {7.4.1}Protocol Selection Rationale}{42}{subsection.7.4.1}%
+\contentsline {section}{\numberline {7.5}Analysis of Machine Learning and Predictive Routing Stack}{43}{section.7.5}%
+\contentsline {subsection}{\numberline {7.5.1}Intent Classification: Scikit-Learn SGD with TF-IDF}{43}{subsection.7.5.1}%
+\contentsline {subsection}{\numberline {7.5.2}Multi-Provider Model Ecosystem Selection}{43}{subsection.7.5.2}%
+\contentsline {chapter}{\numberline {8}Feasibility Study}{44}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Technical Feasibility}{44}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Economic Feasibility}{45}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Schedule and Resource Feasibility}{45}{section.8.3}%
+\contentsline {chapter}{\numberline {9}Conclusion and Future Scope}{46}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Conclusion}{46}{section.9.1}%
+\contentsline {section}{\numberline {9.2}Limitations Encountered}{47}{section.9.2}%
+\contentsline {section}{\numberline {9.3}Future Scope}{47}{section.9.3}%
+\contentsline {chapter}{References}{48}{chapter*.15}%
+\contentsline {chapter}{References}{48}{chapter*.15}%

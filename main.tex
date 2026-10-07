@@ -96,6 +96,10 @@
 
 \gdef \guide{Dr. Leena Silvoster}
 \gdef \guidedes{Associate Professor}
+\gdef \coordinator{Rubeena M}
+\gdef \coordinatordes{Assistant Professor}
+\gdef \semcordinatorA{Rubeena M}
+\gdef \semcordinatorAdes{Assistant Professor}
 \gdef \hod{Dr. Smitha P}
 \gdef \hoddes{Professor and Head}
 
@@ -207,8 +211,10 @@ The remainder of this report is organized as follows:
     \item \textbf{Chapter 3 (System Requirements and Architecture Specification):} Presents the formal System Requirements Specification (SRS), hardware/software environments, 6-tier system architecture, and mathematical problem formulations.
     \item \textbf{Chapter 4 (Methodology and Design Details):} Details the PrismSpace multi-agent framework (Figure 4.1), layered architecture workflow (Figure 4.2), end-to-end system flow (Figure 4.3), browser IndexedDB database schema (Figure 4.4), and multi-agent swarm algorithms.
     \item \textbf{Chapter 5 (Implementation Details):} Explains the frontend Next.js/React engineering, Dexie.js integration, Dev Space tool suite, FastAPI Hive gateway, and Python ML model training pipelines.
-    \item \textbf{Chapter 6 (Results, Performance Evaluation and Testing):} Analyzes experimental findings across benchmark corpora, presenting routing accuracy, calibration curves, safety gate discrimination, latency profiling, and comprehensive test suite validation.
-    \item \textbf{Chapter 7 (Conclusion and Future Scope):} Summarizes the major engineering achievements, discusses current constraints, and outlines prospective research directions.
+    \item \textbf{Chapter 6 (Experimental Results, Performance Evaluation and Testing):} Analyzes experimental findings across benchmark corpora, presenting routing accuracy, calibration curves, safety gate discrimination, latency profiling, and comprehensive test suite validation.
+    \item \textbf{Chapter 7 (Preliminary Analysis):} Delivers a comparative analysis and technical rationale for selecting the core frontend frameworks, local persistence engines, asynchronous communication protocols, MCP tool bridges, and predictive machine learning models.
+    \item \textbf{Chapter 8 (Feasibility Study):} Evaluates the technical, economic, schedule, and resource feasibility of the platform.
+    \item \textbf{Chapter 9 (Conclusion and Future Scope):} Summarizes the major engineering achievements, discusses current constraints, and outlines prospective research directions.
 \end{itemize}
 
 
@@ -598,7 +604,7 @@ The PrismSpace multi-agent swarm algorithm is structured into sequential operati
 This chapter describes the concrete software implementation, engineering frameworks, library dependencies, and integration mechanics realizing PrismSpace.
 
 \section{Frontend Development Environment}
-The frontend architecture is implemented in TypeScript using the **Next.js 15** App Router and **React 19**. It features strict client/server boundary enforcement, leveraging `'use client'` directives for interactive developer tools and client-side database subscriptions.
+The frontend architecture is implemented in TypeScript using the \textbf{Next.js 15} App Router and \textbf{React 19}. It features strict client/server boundary enforcement, leveraging `'use client'` directives for interactive developer tools and client-side database subscriptions.
 
 Key frontend packages include:
 \begin{itemize}
@@ -654,7 +660,7 @@ PrismSpace provides 23+ fully operational developer tools partitioned into funct
 \end{itemize}
 
 \section{Backend Protocol and Gateway: FastAPI Hive Bridge}
-The backend service (\texttt{backend/hive\_api.py}) is written in Python 3.10+ utilizing **FastAPI** and served asynchronously by **Uvicorn**.
+The backend service (\texttt{backend/hive\_api.py}) is written in Python 3.10+ utilizing \textbf{FastAPI} and served asynchronously by \textbf{Uvicorn}.
 
 The backend manages:
 \begin{itemize}
@@ -759,7 +765,108 @@ The software codebase underwent systematic verification through a multi-tiered t
 
 
 %==============================================================================
-% CHAPTER 7: FEASIBILITY STUDY
+% CHAPTER 7: PRELIMINARY ANALYSIS
+%==============================================================================
+\chapter{Preliminary Analysis}
+
+This chapter provides a comprehensive analysis and evaluation of the core technologies, frameworks, runtime environments, and protocols selected for the engineering of the \textbf{PrismSpace} system. It details the software stack and models chosen for each primary tier of the architecture, from the reactive client-side desktop interface and in-browser transactional database to the asynchronous gateway, standardized tool execution protocol, and machine learning routing pipeline. The subsequent sections outline the comparative rationale, evaluation criteria, and trade-offs governing the selection of specific tools for frontend development, local data persistence, backend event streaming, MCP tool sandboxing, and predictive model routing. This preliminary analysis forms the technical foundation upon which the system's capabilities are constructed.
+
+\section{Analysis of Frontend Technologies and Reactive UI Frameworks}
+The user interface represents the primary interaction surface through which developers configure multi-agent swarms, monitor streaming execution logs, inspect AST code diffs, and interact with the 23+ integrated Dev Space tools. Selecting an appropriate frontend foundation required balancing execution performance, type safety, modular layout composition, and responsive reactivity.
+
+\subsection{Web Application Framework: Next.js 15 and React 19}
+Modern web development offers several competing framework paradigms, including single-page application (SPA) bundlers like Vite with React or Vue, and hybrid meta-frameworks like Next.js and Remix. For PrismSpace, \textbf{Next.js 15} utilizing \textbf{React 19} was selected as the core architecture based on the following capabilities:
+\begin{itemize}
+    \item \textbf{Strict Client/Server Separation:} Next.js 15 enforces clean architectural boundaries through explicit \texttt{'use client'} and \texttt{'use server'} directives. This ensures that secure operational secrets and environment variables remain protected while interactive client panels execute directly in browser memory.
+    \item \textbf{React 19 Concurrent Features:} React 19 introduces optimized concurrent rendering primitives, Actions, and enhanced hooks (such as \texttt{useTransition} and \texttt{useOptimistic}) that prevent heavy UI freezes during rapid multi-token streaming from multi-agent worker nodes.
+    \item \textbf{Turbopack Compilation Speed:} Next.js 15 incorporates Turbopack, providing sub-second incremental builds and fast-refresh hot reloading, substantially accelerating iterative component development.
+\end{itemize}
+
+\subsection{Styling and Design System: Tailwind CSS}
+To establish an aesthetically cohesive, developer-centric interface with dark-mode semantics and glassmorphism, \textbf{Tailwind CSS} was chosen over traditional runtime CSS-in-JS libraries (e.g., Styled Components, Emotion) or heavyweight UI kits (e.g., Material UI, Ant Design):
+\begin{itemize}
+    \item \textbf{Zero Runtime CSS Overhead:} Tailwind CSS compiles entirely at build time into an optimized, purged stylesheet of atomic utility classes, completely eliminating JavaScript runtime style calculation penalties.
+    \item \textbf{Design Token Consistency:} Standardized design tokens guarantee pixel-perfect spacing, fluid typography, and consistent high-contrast dark palette tokens across all 23+ tool windows.
+    \item \textbf{Arbitrary State and Transition Styling:} Tailwind facilitates intuitive pseudo-class styling (e.g., \texttt{hover:}, \texttt{focus-visible:}, \texttt{dark:}), enabling smooth micro-interactions and transitions with minimal markup.
+\end{itemize}
+
+\subsection{Interaction Primitives, Animation, and Windowing Libraries}
+PrismSpace requires dynamic, desktop-like window manipulation where terminal sessions, markdown editors, and chat panes can be concurrently repositioned:
+\begin{itemize}
+    \item \textbf{Base UI (\texttt{@base-ui/react}):} Selected for unstyled, headless accessible dialogs, popovers, and tabs, ensuring strict WCAG 2.1 compliance without imposing uncustomizable styles.
+    \item \textbf{React Rnd (\texttt{react-rnd}):} Provides robust resizable and draggable component boundaries, allowing developers to manipulate floating utility windows across the canvas with constraint bounds.
+    \item \textbf{Framer Motion and GSAP:} Selected to deliver hardware-accelerated SVG HUD matrix animations and fluid drawer transitions, ensuring the UI maintains consistent 60 frames-per-second fluidity.
+\end{itemize}
+
+\section{Analysis of Client-Side Data Persistence Engines}
+A foundational design pillar of PrismSpace is local-first data sovereignty. Developer chat logs, private API credentials, scratchpads, and execution histories must never be transmitted to external telemetry servers or unencrypted third-party clouds.
+
+\subsection{Storage Mechanism: Browser IndexedDB vs. Alternatives}
+Several browser storage mechanisms were evaluated, including \texttt{localStorage}, WebSQL, SQLite compiled to WebAssembly (WASM), and the W3C \textbf{IndexedDB} standard:
+\begin{itemize}
+    \item \textbf{Capacity and Asynchrony:} \texttt{localStorage} is constrained by a synchronous 5 MB storage limit per origin, which blocks the browser main thread during large JSON reads and causes frame drops. In contrast, IndexedDB operates completely asynchronously with quotas scaling into gigabytes depending on disk capacity.
+    \item \textbf{Structured Indexing and Transactions:} Unlike key-value string storage, IndexedDB provides ACID transactional guarantees and multi-column B-tree compound indexing, enabling fast queries over timestamp ranges and session identifiers.
+    \item \textbf{Native Browser Standardization:} While SQLite WASM offers SQL support, it requires substantial initial WASM binary download footprints and complex OPFS (Origin Private File System) integration. IndexedDB is natively embedded in all modern Chromium, WebKit, and Gecko browser engines.
+\end{itemize}
+
+\subsection{Database Abstraction Layer: Dexie.js (PrismDB)}
+Although the native browser IndexedDB API is feature-complete, its event-driven callback architecture is notoriously verbose and error-prone. \textbf{Dexie.js} was chosen to engineer \textbf{PrismDB}:
+\begin{itemize}
+    \item \textbf{Reactive Subscriptions via \texttt{useLiveQuery}:} Dexie.js provides observable query hooks that automatically push updated records to React components whenever transactions write to the underlying object stores, eliminating manual polling or state synchronizers.
+    \item \textbf{Declarative Schema and Version Migration:} Schema upgrades and index definitions are declared through clean semantic DSLs, ensuring safe automated migrations as database schemas evolve.
+    \item \textbf{High-Throughput Batch Operations:} Dexie.js optimizes transactional batch writes, achieving documented throughputs exceeding 3,000 entity writes per second.
+\end{itemize}
+
+\section{Analysis of Backend Framework and Communication Protocols}
+The backend serves as the orchestration bridge connecting client requests to local subprocess tool environments and machine learning inference engines.
+
+\subsection{API Framework: FastAPI with Python 3.10+}
+Python was mandatory due to its dominant machine learning ecosystem (PyTorch, scikit-learn, HuggingFace). Within the Python web ecosystem, \textbf{FastAPI} was chosen over legacy frameworks such as Flask and Django:
+\begin{itemize}
+    \item \textbf{Asynchronous Concurrency (ASGI):} FastAPI natively leverages Python \texttt{asyncio} and ASGI, allowing non-blocking concurrent request handling across hundreds of long-running agent threads. Flask, by contrast, relies on WSGI and requires multi-threading workarounds.
+    \item \textbf{Strict Schema Enforcement with Pydantic:} Every incoming request and model configuration payload is validated against Pydantic models at runtime, guaranteeing compile-time type safety, zero deserialization vulnerabilities, and automatic OpenAPI documentation generation.
+    \item \textbf{Near-Native C-Speed Performance:} Benchmarks demonstrate that FastAPI, powered by Starlette and Pydantic V2 (implemented in Rust), achieves throughputs comparable to Go and Node.js frameworks.
+\end{itemize}
+
+\subsection{Event Streaming Protocol: Server-Sent Events (SSE) vs. WebSockets}
+Multi-agent runs involve continuous thought trace generation, sub-task planning, and token streaming:
+\begin{itemize}
+    \item \textbf{Server-Sent Events (SSE):} SSE was chosen as the primary communication medium for agent execution streaming. Because streaming agent output is inherently unidirectional (server pushing events to the client UI), SSE utilizes standard HTTP/2 persistent connections, supports native browser automatic reconnection, and works seamlessly through standard HTTP proxies and firewalls without requiring bidirectional WebSocket handshake state machines.
+    \item \textbf{WebSockets Comparison:} While WebSockets allow full-duplex communication, they introduce substantial connection management complexity, stateful server load, and socket firewall blocks, which are unnecessary when client interventions are issued via discrete REST calls.
+\end{itemize}
+
+\section{Analysis of Tool Protocols: Model Context Protocol (MCP)}
+Traditional multi-agent frameworks rely on proprietary, vendor-locked function calling formats (e.g., OpenAI Assistant function schemas) or bespoke REST API endpoints for every tool integration.
+
+\subsection{Protocol Selection Rationale}
+PrismSpace adopts the open \textbf{Model Context Protocol (MCP)}, an open-source standard established by Anthropic:
+\begin{itemize}
+    \item \textbf{Standardized Client-Host-Server Architecture:} MCP decouples tool creation from specific LLM vendors. A single MCP tool server can be consumed by any compliant model or agent runtime without code modification.
+    \item \textbf{Process Isolation and Security:} MCP servers run as isolated child processes communicating over standard input/output (\texttt{stdio}) using JSON-RPC 2.0 messages. This ensures that tool execution failures or malicious scripts cannot crash the host application or access parent memory spaces.
+    \item \textbf{Dynamic Tool Discovery:} MCP servers dynamically advertise their callable tools, resources, and prompt templates through standardized metadata handshakes, enabling PrismSpace agents to discover and bind local capabilities on the fly.
+\end{itemize}
+
+\section{Analysis of Machine Learning and Predictive Routing Stack}
+To eliminate the extreme latency and monetary cost of delegating simple planning and routing queries to multi-billion parameter frontier models, PrismSpace integrates a dedicated machine learning subsystem informed by multi-agent coordination principles \cite{ref_wong2023_marlsurvey, ref_aina2026_smadrl}.
+
+\subsection{Intent Classification: Scikit-Learn SGD with TF-IDF}
+For intent classification across 12 distinct developer task categories, a calibrated linear model was chosen over heavy transformer architectures:
+\begin{itemize}
+    \item \textbf{Sub-Millisecond Inference Latency:} Applying a sub-linear TF-IDF vectorizer coupled with a Stochastic Gradient Descent (SGD) classifier with modified Huber loss achieves 28.5 ms CPU inference, compared to 300--800 ms for fine-tuned BERT or RoBERTa encoders.
+    \item \textbf{Well-Calibrated Probabilities:} Modified Huber loss produces accurate probabilistic confidence scores directly, enabling unambiguous routing thresholds and safety gating in line with human-in-the-loop governance \cite{ref_siebert2023_humancontrol, ref_vyhmeister2023_responsibleai}.
+\end{itemize}
+
+\subsection{Multi-Provider Model Ecosystem Selection}
+PrismSpace integrates a heterogeneous tier of foundation models to balance reasoning quality against cost:
+\begin{itemize}
+    \item \textbf{Groq LPU (Llama 3.3 70B):} Selected for ultra-low latency inference ($>300$ tokens/s) on standard coding and transformation tasks at minimal monetary expense.
+    \item \textbf{OpenAI (GPT-4o) and Anthropic (Claude 3.5 Sonnet):} Selected as premium fallback engines for multi-step reasoning, architectural decomposition, and complex debugging.
+    \item \textbf{Ollama and Local Small Language Models (SLMs):} Integrated to support offline air-gapped development environments where zero telemetry is mandatory.
+\end{itemize}
+
+
+%==============================================================================
+% CHAPTER 8: FEASIBILITY STUDY
 %==============================================================================
 \chapter{Feasibility Study}
 A feasibility study evaluates whether the proposed PrismSpace system is viable from technical, economic, and scheduling perspectives before full-scale development. This analysis guided resource allocation and confirmed the practical realizability of the project.
@@ -789,7 +896,7 @@ The project was executed by a team of four B.Tech students over a single academi
 All phases were completed within the allocated timeline using standard software engineering tooling (Git, VS Code, MiKTeX). The team size and skill set were adequate for the project scope, confirming schedule and resource feasibility.
 
 %==============================================================================
-% CHAPTER 8: CONCLUSION AND FUTURE SCOPE
+% CHAPTER 9: CONCLUSION AND FUTURE SCOPE
 %==============================================================================
 \chapter{Conclusion and Future Scope}
 
@@ -798,7 +905,7 @@ This project successfully designed, implemented, and evaluated \textbf{PrismSpac
 
 The system integrates a responsive desktop web application constructed using Next.js 15, React 19, TypeScript, and Tailwind CSS, housing an integrated Dev Space with 23+ developer and productivity tools. Client-side state persistence is managed through \textbf{PrismDB}, an ACID-compliant IndexedDB database layer engineered with Dexie.js that delivers sub-50ms query latency and automatic UI reactivity via \texttt{useLiveQuery}.
 
-The orchestration layer couples an open **Model Context Protocol (MCP)** tool execution engine with an advanced Machine Learning subsystem. By incorporating calibrated 12-class intent classification, multi-provider model routing (Groq, NVIDIA NIM, OpenAI, Anthropic, Gemini), multi-label agent swarm dispatching, threshold-tuned human-in-the-loop safety gating, and Odds Ratio Preference Optimization (ORPO), PrismSpace achieves an 89.4\% routing accuracy, a 0.968 ROC-AUC safety discrimination score, and drastic reductions in LLM operational expenditures. PrismSpace demonstrates that modern software engineering can synergistically combine local-first sovereignty with powerful, transparent, and controllable multi-agent artificial intelligence.
+The orchestration layer couples an open \textbf{Model Context Protocol (MCP)} tool execution engine with an advanced Machine Learning subsystem. By incorporating calibrated 12-class intent classification, multi-provider model routing (Groq, NVIDIA NIM, OpenAI, Anthropic, Gemini), multi-label agent swarm dispatching, threshold-tuned human-in-the-loop safety gating, and Odds Ratio Preference Optimization (ORPO), PrismSpace achieves an 89.4\% routing accuracy, a 0.968 ROC-AUC safety discrimination score, and drastic reductions in LLM operational expenditures. PrismSpace demonstrates that modern software engineering can synergistically combine local-first sovereignty with powerful, transparent, and controllable multi-agent artificial intelligence.
 
 \section{Limitations Encountered}
 Despite the substantial achievements of the project, several technical limitations were encountered:
@@ -822,81 +929,84 @@ Future enhancements to expand and advance PrismSpace include:
 % REFERENCES
 %==============================================================================
 \begin{thebibliography}{99}
+\addcontentsline{toc}{chapter}{References}
+\sloppy
 
 \bibitem{ref_yue2026_cpnhrl}
-Q.~Yue, L.~Tian, X.~Feng, Z.~Yuan, S.~Wei, J.~Xia, B.~Chen, X.~Song, Y.~Yao, and Y.~Liu, ``CPN-HRL: A hierarchical deep reinforcement learning approach for priority-aware task scheduling in CPN enabled by cloud-edge-end environments,'' \emph{Journal of King Saud University -- Computer and Information Sciences}, vol.~38, art. 290, 2026. [Online]. Available: \url{https://doi.org/10.1007/s44443-026-00690-x}
+Q. Yue et al., "CPN-HRL: A hierarchical deep reinforcement learning approach for priority-aware task scheduling in CPN enabled by cloud-edge-end environments," \textit{Journal of King Saud University -- Computer and Information Sciences}, vol.~38, art.~290, 2026.
 
 \bibitem{ref_cornalba2024_multiobj}
-F.~Cornalba, C.~Disselkamp, D.~Scassola, and C.~Helf, ``Multi-objective reward generalization: Improving performance of deep reinforcement learning for applications in single-asset trading,'' \emph{Neural Computing and Applications}, vol.~36, no.~2, pp.~619--637, 2024. [Online]. Available: \url{https://doi.org/10.1007/s00521-023-09033-7}
+F. Cornalba et al., "Multi-objective reward generalization: Improving performance of deep reinforcement learning for applications in single-asset trading," \textit{Neural Computing and Applications}, vol.~36, no.~2, pp.~619--637, 2024.
 
 \bibitem{ref_schneckenreither2025_aral}
-M.~Schneckenreither and G.~Moser, ``Average reward adjusted discounted reinforcement learning,'' \emph{Neural Computing and Applications}, vol.~37, no.~35, pp.~25663--25694, 2025. [Online]. Available: \url{https://doi.org/10.1007/s00521-024-10620-5}
+M. Schneckenreither and G. Moser, "Average reward adjusted discounted reinforcement learning," \textit{Neural Computing and Applications}, vol.~37, no.~35, pp.~25663--25694, 2025.
 
 \bibitem{ref_aina2026_smadrl}
-K.~O. Aina and S.~Ha, ``Deep reinforcement learning for multi-agent coordination,'' \emph{Artificial Life and Robotics}, vol.~31, no.~2, pp.~484--494, 2026. [Online]. Available: \url{https://doi.org/10.1007/s10015-025-01089-z}
+K. O. Aina and S. Ha, "Deep reinforcement learning for multi-agent coordination," \textit{Artificial Life and Robotics}, vol.~31, no.~2, pp.~484--494, 2026.
 
 \bibitem{ref_rother2025_openended}
-D.~Rother, J.~Pajarinen, J.~Peters, and T.~H. Weisswange, ``Open-ended coordination for multi-agent systems using modular open policies,'' \emph{Autonomous Agents and Multi-Agent Systems}, vol.~39, no.~2, art. 40, 2025. [Online]. Available: \url{https://doi.org/10.1007/s10458-025-09723-7}
+D. Rother et al., "Open-ended coordination for multi-agent systems using modular open policies," \textit{Autonomous Agents and Multi-Agent Systems}, vol.~39, no.~2, art.~40, 2025.
 
 \bibitem{ref_liu2026_humanknowledge}
-D.~Liu, F.~Ren, J.~Yan, G.~Su, W.~Gu, and S.~Kato, ``Improving scalability of multi-agent deep reinforcement learning with suboptimal human knowledge,'' \emph{Autonomous Agents and Multi-Agent Systems}, vol.~40, no.~1, art. 2, 2026. [Online]. Available: \url{https://doi.org/10.1007/s10458-025-09729-1}
+D. Liu et al., "Improving scalability of multi-agent deep reinforcement learning with suboptimal human knowledge," \textit{Autonomous Agents and Multi-Agent Systems}, vol.~40, no.~1, art.~2, 2026.
 
 \bibitem{ref_marzari2026_epsretrain}
-L.~Marzari, C.~Liu, P.~L. Donti, and E.~Marchesini, ``$\varepsilon$-retraining reinforcement learning algorithms,'' \emph{Autonomous Agents and Multi-Agent Systems}, vol.~40, no.~1, art. 24, 2026. [Online]. Available: \url{https://doi.org/10.1007/s10458-026-09748-6}
+L. Marzari et al., "$\varepsilon$-retraining reinforcement learning algorithms," \textit{Autonomous Agents and Multi-Agent Systems}, vol.~40, no.~1, art.~24, 2026.
 
 \bibitem{ref_wong2023_marlsurvey}
-A.~Wong, T.~B{\"a}ck, A.~V. Kononova, and A.~Plaat, ``Deep multiagent reinforcement learning: Challenges and directions,'' \emph{Artificial Intelligence Review}, vol.~56, no.~6, pp.~5023--5056, 2023. [Online]. Available: \url{https://doi.org/10.1007/s10462-022-10299-x}
+A. Wong et al., "Deep multiagent reinforcement learning: Challenges and directions," \textit{Artificial Intelligence Review}, vol.~56, no.~6, pp.~5023--5056, 2023.
 
 \bibitem{ref_niu2025_hiat}
-B.~Niu, B.~Luo, Y.~Cui, X.~Xu, Y.~Zhao, and Y.~Feng, ``HIAT: Human-in-the-loop reinforcement learning with auxiliary task,'' \emph{Artificial Intelligence Review}, vol.~58, no.~10, art. 273, 2025. [Online]. Available: \url{https://doi.org/10.1007/s10462-025-11260-4}
+B. Niu et al., "HIAT: Human-in-the-loop reinforcement learning with auxiliary task," \textit{Artificial Intelligence Review}, vol.~58, no.~10, art.~273, 2025.
 
 \bibitem{ref_lee2025_instructpatentgpt}
-J.-S. Lee, ``InstructPatentGPT: Training patent language models to follow instructions with human feedback,'' \emph{Artificial Intelligence and Law}, vol.~33, no.~3, pp.~739--782, 2025. [Online]. Available: \url{https://doi.org/10.1007/s10506-024-09401-1}
+J.-S. Lee, "InstructPatentGPT: Training patent language models to follow instructions with human feedback," \textit{Artificial Intelligence and Law}, vol.~33, no.~3, pp.~739--782, 2025.
 
 \bibitem{ref_zhuang2022_roltr}
-S.~Zhuang, Z.~Qiao, and G.~Zuccon, ``Reinforcement online learning to rank with unbiased reward shaping,'' \emph{Information Retrieval Journal}, vol.~25, no.~4, pp.~386--413, 2022. [Online]. Available: \url{https://doi.org/10.1007/s10791-022-09413-y}
+S. Zhuang et al., "Reinforcement online learning to rank with unbiased reward shaping," \textit{Information Retrieval Journal}, vol.~25, no.~4, pp.~386--413, 2022.
 
 \bibitem{ref_ghazal2025_mecworkflow}
-T.~M. Ghazal, A.~E. Awouda, M.~K. Hasan, A.~H.~A. Rahman, S.~Islam, R.~A. Saeed, H.~Elshafie, A.~Iqbal, and A.~H. Hussein, ``Knowledge learning for securing workflow scheduling algorithm in mobile edge computing,'' \emph{Mobile Networks and Applications}, vol.~30, no.~2, pp.~395--413, 2025. [Online]. Available: \url{https://doi.org/10.1007/s11036-025-02465-6}
+T. M. Ghazal et al., "Knowledge learning for securing workflow scheduling algorithm in mobile edge computing," \textit{Mobile Networks and Applications}, vol.~30, no.~2, pp.~395--413, 2025.
 
 \bibitem{ref_barredo2025_multifitness}
-P.~Barredo and J.~Puente, ``Energy-aware cooperative multi-fitness evolutionary algorithm for workflow scheduling in cloud computing,'' \emph{Natural Computing}, vol.~24, no.~3, pp.~557--570, 2025. [Online]. Available: \url{https://doi.org/10.1007/s11047-025-10023-y}
+P. Barredo and J. Puente, "Energy-aware cooperative multi-fitness evolutionary algorithm for workflow scheduling in cloud computing," \textit{Natural Computing}, vol.~24, no.~3, pp.~557--570, 2025.
 
 \bibitem{ref_heirati2026_fogcloud}
-A.~Heirati, M.~Fartash, and M.~Khalily-Dermany, ``Optimized task scheduling in fog-cloud computing using hybrid deep learning and metaheuristic algorithms,'' \emph{Neural Processing Letters}, vol.~58, no.~1, art. 5, 2026. [Online]. Available: \url{https://doi.org/10.1007/s11063-025-11819-w}
+A. Heirati et al., "Optimized task scheduling in fog-cloud computing using hybrid deep learning and metaheuristic algorithms," \textit{Neural Processing Letters}, vol.~58, no.~1, art.~5, 2026.
 
 \bibitem{ref_abdi2024_edgecloud}
-S.~Abdi, M.~Ashjaei, and S.~Mubeen, ``Cost-aware workflow offloading in edge-cloud computing using a genetic algorithm,'' \emph{The Journal of Supercomputing}, vol.~80, no.~16, pp.~24835--24870, 2024. [Online]. Available: \url{https://doi.org/10.1007/s11227-024-06341-0}
+S. Abdi et al., "Cost-aware workflow offloading in edge-cloud computing using a genetic algorithm," \textit{The Journal of Supercomputing}, vol.~80, no.~16, pp.~24835--24870, 2024.
 
 \bibitem{ref_skirzynski2024_humanplanning}
-J.~Skirzy{\'n}ski, Y.~R. Jain, and F.~Lieder, ``Automatic discovery and description of human planning strategies,'' \emph{Behavior Research Methods}, vol.~56, no.~3, pp.~1049--1076, 2024. [Online]. Available: \url{https://doi.org/10.3758/s13428-023-02062-z}
+J. Skirzy{\'n}ski et al., "Automatic discovery and description of human planning strategies," \textit{Behavior Research Methods}, vol.~56, no.~3, pp.~1049--1076, 2024.
 
 \bibitem{ref_zhang2023_dataintensive}
-S.~Zhang, Z.~Zhao, C.~Liu, and S.~Qin, ``Data-intensive workflow scheduling strategy based on deep reinforcement learning in multi-clouds,'' \emph{Journal of Cloud Computing}, vol.~12, no.~1, art. 125, 2023. [Online]. Available: \url{https://doi.org/10.1186/s13677-023-00504-9}
+S. Zhang et al., "Data-intensive workflow scheduling strategy based on deep reinforcement learning in multi-clouds," \textit{Journal of Cloud Computing}, vol.~12, no.~1, art.~125, 2023.
 
 \bibitem{ref_wang2023_ecofriendly}
-Z.~Wang, S.~Chen, L.~Bai, J.~Gao, J.~Tao, R.~R. Bond, and M.~D. Mulvenna, ``Reinforcement learning based task scheduling for environmentally sustainable federated cloud computing,'' \emph{Journal of Cloud Computing}, vol.~12, no.~1, art. 174, 2023. [Online]. Available: \url{https://doi.org/10.1186/s13677-023-00553-0}
+Z. Wang et al., "Reinforcement learning based task scheduling for environmentally sustainable federated cloud computing," \textit{Journal of Cloud Computing}, vol.~12, no.~1, art.~174, 2023.
 
 \bibitem{ref_subashree2025_dssso}
-S.~Subashree, M.~Rajakumaran, G.~Pushpa, and S.~Senthilkumar, ``Hybrid dolphin swarm sparrow search optimization based multi-objective cloud workflow scheduling,'' \emph{Journal of Cloud Computing}, vol.~14, no.~1, art. 80, 2025. [Online]. Available: \url{https://doi.org/10.1186/s13677-025-00828-8}
+S. Subashree et al., "Hybrid dolphin swarm sparrow search optimization based multi-objective cloud workflow scheduling," \textit{Journal of Cloud Computing}, vol.~14, no.~1, art.~80, 2025.
 
 \bibitem{ref_xia2023_dynamic_roles}
-Y.~Xia, J.~Zhu, and L.~Zhu, ``Dynamic role discovery and assignment in multi-agent task decomposition,'' \emph{Complex \& Intelligent Systems}, vol.~9, no.~6, pp.~6211--6222, 2023. [Online]. Available: \url{https://doi.org/10.1007/s40747-023-01071-x}
+Y. Xia et al., "Dynamic role discovery and assignment in multi-agent task decomposition," \textit{Complex \& Intelligent Systems}, vol.~9, no.~6, pp.~6211--6222, 2023.
 
 \bibitem{ref_li2023_vcaes}
-J.~Li, L.~Xing, W.~Zhong, Z.~Cai, and F.~Hou, ``Decision variable contribution based adaptive mechanism for evolutionary multi-objective cloud workflow scheduling,'' \emph{Complex \& Intelligent Systems}, vol.~9, no.~6, pp.~7337--7348, 2023. [Online]. Available: \url{https://doi.org/10.1007/s40747-023-01137-w}
+J. Li et al., "Decision variable contribution based adaptive mechanism for evolutionary multi-objective cloud workflow scheduling," \textit{Complex \& Intelligent Systems}, vol.~9, no.~6, pp.~7337--7348, 2023.
 
 \bibitem{ref_yu2024_ghq}
-X.~Yu, Y.~Lin, X.~Wang, S.~Han, and K.~Lv, ``GHQ: Grouped hybrid Q-learning for cooperative heterogeneous multi-agent reinforcement learning,'' \emph{Complex \& Intelligent Systems}, vol.~10, no.~4, pp.~5261--5280, 2024. [Online]. Available: \url{https://doi.org/10.1007/s40747-024-01415-1}
+X. Yu et al., "GHQ: Grouped hybrid Q-learning for cooperative heterogeneous multi-agent reinforcement learning," \textit{Complex \& Intelligent Systems}, vol.~10, no.~4, pp.~5261--5280, 2024.
 
 \bibitem{ref_xu2024_dapm}
-C.~Xu, J.~Wang, X.~Zhu, Y.~Yue, W.~Zhou, Z.~Liang, and D.~Wojtczak, ``Decentralized multi-agent cooperation via adaptive partner modeling,'' \emph{Complex \& Intelligent Systems}, vol.~10, no.~4, pp.~4989--5004, 2024. [Online]. Available: \url{https://doi.org/10.1007/s40747-024-01421-3}
+C. Xu et al., "Decentralized multi-agent cooperation via adaptive partner modeling," \textit{Complex \& Intelligent Systems}, vol.~10, no.~4, pp.~4989--5004, 2024.
 
 \bibitem{ref_vyhmeister2023_responsibleai}
-E.~Vyhmeister, G.~Castane, P.-O. {\"O}stberg, and S.~Thevenin, ``A responsible AI framework: Pipeline contextualisation,'' \emph{AI and Ethics}, vol.~3, no.~1, pp.~175--197, 2023. [Online]. Available: \url{https://doi.org/10.1007/s43681-022-00154-8}
+E. Vyhmeister et al., "A responsible AI framework: Pipeline contextualisation," \textit{AI and Ethics}, vol.~3, no.~1, pp.~175--197, 2023.
 
 \bibitem{ref_siebert2023_humancontrol}
-L.~C. Siebert, M.~L. Lupetti, E.~Aizenberg, N.~Beckers, A.~Zgonnikov, H.~Veluwenkamp, D.~Abbink, E.~Giaccardi, G.-J. Houben, C.~M. Jonker, J.~van~den Hoven, D.~Forster, and R.~L. Lagendijk, ``Meaningful human control: Actionable properties for AI system development,'' \emph{AI and Ethics}, vol.~3, no.~1, pp.~241--255, 2023. [Online]. Available: \url{https://doi.org/10.1007/s43681-022-00167-3}
+L. C. Siebert et al., "Meaningful human control: Actionable properties for AI system development," \textit{AI and Ethics}, vol.~3, no.~1, pp.~241--255, 2023.
+
 
 \end{thebibliography}
 
